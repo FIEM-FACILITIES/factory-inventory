@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Διαχείριση Αποθήκης - Admin</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #1e1e2d; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #00d2ff; }
+        .admin-panel { background: #2b2b40; padding: 20px; border-radius: 10px; max-width: 600px; margin: 0 auto 30px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        input { padding: 10px; margin: 5px; border-radius: 5px; border: none; font-size: 16px; text-align: center; }
+        .btn-add { background: #00d2ff; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .btn-add:active { background: #009ecc; }
+        
+        #inventory-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+        .item-card { background: #2b2b40; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; }
+        .item-name { font-size: 20px; font-weight: bold; color: #fff; }
+        .item-stock { font-size: 32px; color: #00d2ff; margin: 10px 0; }
+        .restock-area { display: flex; gap: 10px; margin-bottom: 15px; }
+        .restock-input { flex: 1; min-width: 0; }
+        .btn-restock { flex: 2; background: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-delete { background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <h1>Πίνακας Ελέγχου - Παραλαβές</h1>
+
+    <div class="admin-panel">
+        <h3>Προσθήκη Νέου Είδους</h3>
+        <input type="text" id="new-name" placeholder="Όνομα (π.χ. Χλωρίνη)">
+        <input type="number" id="new-stock" placeholder="Αρχική Ποσότητα">
+        <button class="btn-add" id="add-item-btn">Καταχώρηση</button>
+    </div>
+
+    <div id="inventory-container"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Τα νέα σου κλειδιά!
+        const firebaseConfig = {
+          apiKey: "AIzaSyBYYM4O7qYiVM1H4pOAxzpGZUBPEzH8gZI",
+          authDomain: "janitorial-closet-e1682.firebaseapp.com",
+          projectId: "janitorial-closet-e1682",
+          storageBucket: "janitorial-closet-e1682.firebasestorage.app",
+          messagingSenderId: "942021937097",
+          appId: "1:942021937097:web:560ce78117a4746a4a4a18"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const container = document.getElementById('inventory-container');
+
+        onSnapshot(collection(db, "items"), (snapshot) => {
+            container.innerHTML = '';
+            
+            snapshot.forEach((docSnapshot) => {
+                const item = docSnapshot.data();
+                const id = docSnapshot.id;
+                
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-stock">${item.stock} τμχ</div>
+                    <div class="restock-area">
+                        <input type="number" id="input-${id}" class="restock-input" placeholder="+">
+                        <button class="btn-restock" id="btn-${id}">Ανανέωση</button>
+                    </div>
+                    <button class="btn-delete" id="del-${id}">Διαγραφή Είδους</button>
+                `;
+                container.appendChild(card);
+
+                document.getElementById(`btn-${id}`).addEventListener('click', async () => {
+                    const inputField = document.getElementById(`input-${id}`);
+                    const inputVal = parseInt(inputField.value);
+                    if (inputVal && inputVal > 0) {
+                        const itemRef = doc(db, "items", id);
+                        await updateDoc(itemRef, { stock: increment(inputVal) });
+                        inputField.value = '';
+                    }
+                });
+
+                document.getElementById(`del-${id}`).addEventListener('click', async () => {
+                    if (confirm(`Είσαι σίγουρος ότι θέλεις να διαγράψεις οριστικά το είδος "${item.name}";`)) {
+                        await deleteDoc(doc(db, "items", id));
+                    }
+                });
+            });
+        });
+
+        document.getElementById('add-item-btn').addEventListener('click', async () => {
+            const name = document.getElementById('new-name').value;
+            const stock = parseInt(document.getElementById('new-stock').value);
+            
+            if (name && stock >= 0) {
+                await addDoc(collection(db, "items"), { name: name, stock: stock });
+                document.getElementById('new-name').value = '';
+                document.getElementById('new-stock').value = '';
+            } else {
+                alert('Παρακαλώ συμπλήρωσε σωστά το όνομα και την ποσότητα.');
+            }
+        });
+    </script>
+</body>
+</html>

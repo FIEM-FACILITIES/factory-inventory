@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Αποθήκη Καθαριστικών</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #333; font-size: 32px; margin-bottom: 30px; }
+        #inventory-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+        .item-card { background-color: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .item-name { font-size: 24px; font-weight: bold; color: #2c3e50; }
+        .item-stock { font-size: 48px; color: #3498db; margin: 20px 0; font-weight: bold; }
+        .action-area { display: flex; gap: 10px; margin-top: 15px; }
+        .qty-input { flex: 1; padding: 15px; font-size: 20px; text-align: center; border: 2px solid #ddd; border-radius: 10px; width: 100%; box-sizing: border-box; }
+        .take-btn { flex: 2; background-color: #27ae60; color: white; border: none; padding: 15px; font-size: 20px; border-radius: 10px; cursor: pointer; transition: background-color 0.3s; font-weight: bold; }
+        .take-btn:active { background-color: #219653; transform: scale(0.98); }
+        .take-btn:disabled, .qty-input:disabled { background-color: #e0e0e0; cursor: not-allowed; border-color: #ccc; color: #888; }
+        .loading { font-size: 24px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <h1>Αποθήκη Καθαριστικών</h1>
+    <div id="inventory-container">
+        <div class="loading">Φόρτωση δεδομένων από τη βάση...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Τα νέα σου κλειδιά!
+        const firebaseConfig = {
+          apiKey: "AIzaSyBYYM4O7qYiVM1H4pOAxzpGZUBPEzH8gZI",
+          authDomain: "janitorial-closet-e1682.firebaseapp.com",
+          projectId: "janitorial-closet-e1682",
+          storageBucket: "janitorial-closet-e1682.firebasestorage.app",
+          messagingSenderId: "942021937097",
+          appId: "1:942021937097:web:560ce78117a4746a4a4a18"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const container = document.getElementById('inventory-container');
+
+        onSnapshot(collection(db, "items"), (snapshot) => {
+            container.innerHTML = '';
+            
+            snapshot.forEach((docSnapshot) => {
+                const item = docSnapshot.data();
+                const id = docSnapshot.id;
+                const isOutOfStock = item.stock <= 0;
+                
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-stock">${item.stock}</div>
+                    <div class="action-area">
+                        <input type="number" id="input-${id}" class="qty-input" placeholder="Ποσότητα" min="1" max="${item.stock}" ${isOutOfStock ? 'disabled' : ''}>
+                        <button class="take-btn" id="btn-${id}" ${isOutOfStock ? 'disabled' : ''}>
+                            ${isOutOfStock ? 'Τελείωσε' : 'Αφαίρεση'}
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+
+                if (!isOutOfStock) {
+                    document.getElementById(`btn-${id}`).addEventListener('click', async () => {
+                        const inputField = document.getElementById(`input-${id}`);
+                        const qty = parseInt(inputField.value);
+
+                        if (qty && qty > 0) {
+                            if (qty > item.stock) {
+                                alert(`Προσοχή: Προσπαθείς να αφαιρέσεις ${qty}, αλλά υπάρχουν μόνο ${item.stock}.`);
+                                return;
+                            }
+                            const itemRef = doc(db, "items", id);
+                            await updateDoc(itemRef, { stock: increment(-qty) });
+                            inputField.value = ''; 
+                        } else {
+                            alert('Παρακαλώ συμπλήρωσε μια έγκυρη ποσότητα.');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
