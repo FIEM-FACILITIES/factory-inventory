@@ -11,14 +11,26 @@
             margin: 0; padding: 20px; text-align: center; min-height: 100vh;
             user-select: none; -webkit-user-select: none;
         }
-        h1 { color: #1a202c; font-size: 36px; margin-bottom: 30px; font-weight: 700; letter-spacing: -0.5px; }
+        h1 { color: #1a202c; font-size: 32px; margin-bottom: 10px; font-weight: 700; letter-spacing: -0.5px; }
         
+        /* Μπάρα Επιλογής Εργαζομένου */
+        .worker-bar {
+            background: white; padding: 15px 25px; border-radius: 16px; max-width: 500px; margin: 0 auto 30px auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; gap: 15px;
+            border: 2px solid #e2e8f0;
+        }
+        .worker-bar label { font-weight: 600; color: #2d3748; font-size: 18px; }
+        .worker-select {
+            padding: 10px 15px; border-radius: 8px; border: 2px solid #cbd5e0; font-size: 18px; 
+            background: #f8fafc; color: #1a202c; font-family: 'Inter', sans-serif; font-weight: 600; outline: none; cursor: pointer;
+        }
+        .worker-select:focus { border-color: #3182ce; }
+
         .columns-wrapper { display: flex; flex-direction: row; gap: 40px; justify-content: center; max-width: 1400px; margin: 0 auto; align-items: stretch; }
         .divider { width: 2px; background: linear-gradient(to bottom, transparent, #cbd5e0, transparent); border-radius: 5px; }
         
         details { flex: 1; min-width: 350px; background: transparent; text-align: left; }
         
-        /* Κύριες Κατηγορίες - Γενικό Στυλ */
         summary.main-summary { 
             color: white; font-size: 24px; font-weight: 700; 
             padding: 20px 25px; border-radius: 12px; cursor: pointer; list-style: none; 
@@ -26,7 +38,6 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); transition: transform 0.1s ease, background-color 0.1s ease; 
         }
         
-        /* Χρώματα προσβασιμότητας (Okabe-Ito Palette για Δυσχρωματοψία) */
         .cleaning-header { background-color: #0072B2; }
         .cleaning-header:active { background-color: #005382; transform: scale(0.98); }
         
@@ -39,7 +50,6 @@
         
         .inventory-section { display: block; padding-top: 15px; }
 
-        /* Υποκατηγορίες */
         .sub-details { background: rgba(255, 255, 255, 0.4); margin-bottom: 15px; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.6); }
         summary.sub-summary {
             background-color: #4a5568; color: white; font-size: 18px; font-weight: 600;
@@ -54,7 +64,6 @@
         
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; }
         
-        /* Κάρτες Προϊόντων */
         .item-card { background-color: white; padding: 20px 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
         .item-name { font-size: 18px; font-weight: 600; color: #2d3748; line-height: 1.2; height: 45px; display: flex; align-items: center; justify-content: center; }
         .item-stock { font-size: 42px; color: #3182ce; margin: 10px 0; font-weight: 700; }
@@ -78,6 +87,21 @@
 <body>
 
     <h1>Διαχείριση Υλικών Αποθήκης</h1>
+    
+    <!-- Μπάρα Επιλογής Ονόματος Εργαζομένου -->
+    <div class="worker-bar">
+        <label for="worker-name">👤 Εργαζόμενος:</label>
+        <select id="worker-name" class="worker-select">
+            <option value="" disabled selected>-- Επιλέξτε Όνομα --</option>
+            <option value="Μαρία">Μαρία</option>
+            <option value="Σάκης">Σάκης</option>
+            <option value="Γιώργος">Γιώργος</option>
+            <option value="Νίκος">Νίκος</option>
+            <option value="Κώστας">Κώστας</option>
+            <option value="Ελένη">Ελένη</option>
+        </select>
+    </div>
+
     <div id="loading-msg" class="loading">Φόρτωση δεδομένων...</div>
 
     <div class="columns-wrapper">
@@ -94,7 +118,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBYYM4O7qYiVM1H4pOAxzpGZUBPEzH8gZI",
@@ -111,6 +135,7 @@
         const cleaningContainer = document.getElementById('cleaning-container');
         const electricalContainer = document.getElementById('electrical-container');
         const loadingMsg = document.getElementById('loading-msg');
+        const workerSelect = document.getElementById('worker-name');
 
         let detailsState = {}; 
 
@@ -163,7 +188,7 @@
                             <div class="item-stock">${item.stock}</div>
                             <div class="action-area">
                                 <input type="number" id="input-${item.id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" ${isOutOfStock ? 'disabled' : ''}>
-                                <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Λήψη'}</button>
+                                <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Αφαίρεση'}</button>
                             </div>
                         `;
                         grid.appendChild(card);
@@ -171,6 +196,13 @@
                         setTimeout(() => {
                             if (!isOutOfStock) {
                                 document.getElementById(`btn-${item.id}`).addEventListener('click', async () => {
+                                    const worker = workerSelect.value;
+                                    if (!worker) {
+                                        alert('⚠️ Παρακαλώ επιλέξτε πρώτα το όνομά σας από πάνω!');
+                                        workerSelect.focus();
+                                        return;
+                                    }
+
                                     const inputField = document.getElementById(`input-${item.id}`);
                                     const qty = parseInt(inputField.value);
                                     if (qty && qty > 0) {
@@ -178,7 +210,18 @@
                                             alert(`Προσπαθείς να αφαιρέσεις ${qty}, αλλά υπάρχουν μόνο ${item.stock}.`);
                                             return;
                                         }
+
+                                        // 1. Ενημέρωση αποθέματος
                                         await updateDoc(doc(db, "items", item.id), { stock: increment(-qty) });
+
+                                        // 2. Καταγραφή στην ιστορία (Logs)
+                                        await addDoc(collection(db, "history"), {
+                                            worker: worker,
+                                            item: item.name,
+                                            quantity: qty,
+                                            timestamp: new Date().toLocaleString('el-GR') // Ελληνική μορφή ημερομηνίας/ώρας
+                                        });
+
                                         inputField.value = ''; 
                                     } else {
                                         alert('Παρακαλώ βάλε μια έγκυρη ποσότητα.');

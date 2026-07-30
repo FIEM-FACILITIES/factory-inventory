@@ -13,7 +13,7 @@
         h1 { color: #38bdf8; font-size: 34px; margin-bottom: 35px; font-weight: 700; letter-spacing: -0.5px; }
         
         .admin-panel { 
-            background: #1e293b; padding: 25px; border-radius: 16px; max-width: 950px; margin: 0 auto 40px auto; 
+            background: #1e293b; padding: 25px; border-radius: 16px; max-width: 1000px; margin: 0 auto 40px auto; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; align-items: flex-start; border: 1px solid #334155;
         }
         
@@ -22,7 +22,7 @@
         input, select { 
             padding: 12px; border-radius: 8px; border: 1px solid #334155; font-size: 15px; text-align: center; 
             background: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.3s;
-            box-sizing: border-box;
+            box-sizing: border-box; min-width: 180px;
         }
         input:focus, select:focus { border-color: #38bdf8; }
         
@@ -87,6 +87,15 @@
         .btn-delete { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: auto; transition: transform 0.1s ease; }
         .btn-delete:active { transform: scale(0.95); background: #ef4444; color: white; }
 
+        /* Στυλ για το Ιστορικό (Logs) */
+        .history-wrapper { max-width: 1400px; margin: 50px auto 0 auto; text-align: left; }
+        .history-box { background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; max-height: 300px; overflow-y: auto; }
+        .history-item { padding: 10px 15px; border-bottom: 1px solid #334155; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .history-item:last-child { border-bottom: none; }
+        .history-worker { color: #38bdf8; font-weight: 700; }
+        .history-action { color: #f8fafc; }
+        .history-time { color: #94a3b8; font-size: 13px; }
+
         @media (max-width: 850px) {
             .columns-wrapper { flex-direction: column; }
             .divider { width: 100%; height: 2px; background: linear-gradient(to right, transparent, #334155, transparent); margin: 15px 0; }
@@ -104,6 +113,7 @@
         <div class="input-group">
             <input type="number" id="new-stock" placeholder="Αρχική Ποσ.">
         </div>
+        
         <div class="input-group">
             <select id="new-category">
                 <option value="cleaning">Καθαριστικά</option>
@@ -111,34 +121,48 @@
             </select>
         </div>
         
-        <div class="input-group">
-            <select id="subcategory-select">
+        <div class="input-group" id="group-cleaning-wrapper">
+            <select id="subcategory-cleaning">
                 <option value="" disabled selected>Επιλέξτε Ομάδα</option>
                 <option value="__NEW__">--- Νέα Ομάδα ---</option>
             </select>
-            <input type="text" id="new-subcategory-text" placeholder="Όνομα νέας ομάδας" style="display: none; margin-top: 5px; width: 100%;">
+            <input type="text" id="new-cleaning-text" placeholder="Όνομα νέας ομάδας" style="display: none; margin-top: 5px; width: 100%;">
+        </div>
+
+        <div class="input-group" id="group-electrical-wrapper" style="display: none;">
+            <select id="subcategory-electrical">
+                <option value="" disabled selected>Επιλέξτε Ομάδα</option>
+                <option value="__NEW__">--- Νέα Ομάδα ---</option>
+            </select>
+            <input type="text" id="new-electrical-text" placeholder="Όνομα νέας ομάδας" style="display: none; margin-top: 5px; width: 100%;">
         </div>
 
         <button class="btn-add" id="add-item-btn">Καταχώρηση</button>
     </div>
 
     <div class="columns-wrapper">
-        <!-- Αφαιρέθηκε το open, προστέθηκε ID -->
         <details id="main-cleaning">
             <summary class="main-summary">Καθαριστικά</summary>
             <div id="cleaning-container" class="inventory-section"></div>
         </details>
         <div class="divider"></div>
-        <!-- Αφαιρέθηκε το open, προστέθηκε ID -->
         <details id="main-electrical">
             <summary class="main-summary">Ηλεκτρολογικά</summary>
             <div id="electrical-container" class="inventory-section"></div>
         </details>
     </div>
 
+    <!-- Ενότητα Ιστορικού (Logs) -->
+    <div class="history-wrapper">
+        <h2 style="color: #38bdf8; font-size: 22px; margin-bottom: 15px;">📋 Ιστορικό Κινήσεων Εργαζομένων</h2>
+        <div class="history-box" id="history-container">
+            <div style="color: #94a3b8; text-align: center;">Φόρτωση ιστορικού...</div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, deleteDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBYYM4O7qYiVM1H4pOAxzpGZUBPEzH8gZI",
@@ -154,66 +178,98 @@
         
         const cleaningContainer = document.getElementById('cleaning-container');
         const electricalContainer = document.getElementById('electrical-container');
-        const subcategorySelect = document.getElementById('subcategory-select');
-        const newSubcategoryText = document.getElementById('new-subcategory-text');
+        const historyContainer = document.getElementById('history-container');
+        
+        const categorySelect = document.getElementById('new-category');
+        const cleaningWrapper = document.getElementById('group-cleaning-wrapper');
+        const electricalWrapper = document.getElementById('group-electrical-wrapper');
 
-        let existingSubcategories = new Set();
-        let detailsState = {}; // Αντικείμενο που αποθηκεύει ποιες κατηγοριες είναι ανοιχτές
+        const subcleaningSelect = document.getElementById('subcategory-cleaning');
+        const newCleaningText = document.getElementById('new-cleaning-text');
 
-        subcategorySelect.addEventListener('change', function() {
-            if (this.value === '__NEW__') {
-                newSubcategoryText.style.display = 'block';
-                newSubcategoryText.focus();
+        const subelectricalSelect = document.getElementById('subcategory-electrical');
+        const newElectricalText = document.getElementById('new-electrical-text');
+
+        let detailsState = {};
+
+        categorySelect.addEventListener('change', function() {
+            if (this.value === 'cleaning') {
+                cleaningWrapper.style.display = 'flex';
+                electricalWrapper.style.display = 'none';
             } else {
-                newSubcategoryText.style.display = 'none';
-                newSubcategoryText.value = ''; 
+                cleaningWrapper.style.display = 'none';
+                electricalWrapper.style.display = 'flex';
             }
         });
 
-        function updateSubcategoryDropdown(itemsSnapshot) {
-            const currentSelection = subcategorySelect.value;
-            const newSet = new Set();
+        subcleaningSelect.addEventListener('change', function() {
+            if (this.value === '__NEW__') {
+                newCleaningText.style.display = 'block';
+                newCleaningText.focus();
+            } else {
+                newCleaningText.style.display = 'none';
+                newCleaningText.value = '';
+            }
+        });
+
+        subelectricalSelect.addEventListener('change', function() {
+            if (this.value === '__NEW__') {
+                newElectricalText.style.display = 'block';
+                newElectricalText.focus();
+            } else {
+                newElectricalText.style.display = 'none';
+                newElectricalText.value = '';
+            }
+        });
+
+        function updateSubcategoryDropdowns(itemsSnapshot) {
+            const cleaningSet = new Set();
+            const electricalSet = new Set();
             
             itemsSnapshot.forEach(doc => {
                 const data = doc.data();
                 if (data.subcategory) {
-                    newSet.add(data.subcategory.trim());
+                    if (data.category === 'electrical') {
+                        electricalSet.add(data.subcategory.trim());
+                    } else {
+                        cleaningSet.add(data.subcategory.trim());
+                    }
                 }
             });
 
-            const sortedSubcats = Array.from(newSet).sort();
-
-            if (JSON.stringify(Array.from(existingSubcategories).sort()) === JSON.stringify(sortedSubcats)) {
-                return;
+            const currentClean = subcleaningSelect.value;
+            const cleanPrompt = subcleaningSelect.options[0];
+            const cleanNewOpt = subcleaningSelect.options[subcleaningSelect.options.length - 1];
+            subcleaningSelect.innerHTML = '';
+            subcleaningSelect.appendChild(cleanPrompt);
+            Array.from(cleaningSet).sort().forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub; opt.textContent = sub;
+                subcleaningSelect.appendChild(opt);
+            });
+            subcleaningSelect.appendChild(cleanNewOpt);
+            if (Array.from(subcleaningSelect.options).some(o => o.value === currentClean)) {
+                subcleaningSelect.value = currentClean;
             }
 
-            existingSubcategories = newSet;
-
-            const promptOption = subcategorySelect.options[0];
-            const newOption = subcategorySelect.options[subcategorySelect.options.length - 1];
-            
-            subcategorySelect.innerHTML = '';
-            subcategorySelect.appendChild(promptOption);
-
-            sortedSubcats.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.textContent = sub;
-                subcategorySelect.appendChild(option);
+            const currentElec = subelectricalSelect.value;
+            const elecPrompt = subelectricalSelect.options[0];
+            const elecNewOpt = subelectricalSelect.options[subelectricalSelect.options.length - 1];
+            subelectricalSelect.innerHTML = '';
+            subelectricalSelect.appendChild(elecPrompt);
+            Array.from(electricalSet).sort().forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub; opt.textContent = sub;
+                subelectricalSelect.appendChild(opt);
             });
-
-            subcategorySelect.appendChild(newOption);
-
-            if (Array.from(subcategorySelect.options).some(opt => opt.value === currentSelection)) {
-                subcategorySelect.value = currentSelection;
-            } else {
-                subcategorySelect.value = ''; 
-                newSubcategoryText.style.display = 'none';
+            subelectricalSelect.appendChild(elecNewOpt);
+            if (Array.from(subelectricalSelect.options).some(o => o.value === currentElec)) {
+                subelectricalSelect.value = currentElec;
             }
         }
 
+        // Real-time ακρόαση αποθεμάτων
         onSnapshot(collection(db, "items"), (snapshot) => {
-            // 1. Αποθήκευση της κατάστασης των μενού (τι είναι ανοιχτό/κλειστό)
             document.querySelectorAll('details').forEach(d => {
                 if (d.id) detailsState[d.id] = d.open;
             });
@@ -221,7 +277,7 @@
             cleaningContainer.innerHTML = '';
             electricalContainer.innerHTML = '';
             
-            updateSubcategoryDropdown(snapshot);
+            updateSubcategoryDropdowns(snapshot);
 
             const groupedData = { cleaning: {}, electrical: {} };
 
@@ -242,9 +298,8 @@
                     const items = dataObj[subcat];
                     const subDetails = document.createElement('details');
                     subDetails.className = 'sub-details';
-                    subDetails.id = `sub-${catKey}-${subcat}`; // Δημιουργία ID
+                    subDetails.id = `sub-${catKey}-${subcat}`;
                     
-                    // Επαναφορά της κατάστασης αν ήταν ανοιχτό πριν την ανανέωση (αλλιώς μένει κλειστό)
                     if (detailsState[subDetails.id]) {
                         subDetails.open = true;
                     }
@@ -306,7 +361,6 @@
             renderCategory(cleaningContainer, groupedData.cleaning, 'cleaning');
             renderCategory(electricalContainer, groupedData.electrical, 'electrical');
 
-            // 2. Επαναφορά της κατάστασης των δύο Κεντρικών Μενού (Καθαριστικά & Ηλεκτρολογικά)
             if (detailsState['main-cleaning']) {
                 const mc = document.getElementById('main-cleaning');
                 if (mc) mc.open = true;
@@ -317,26 +371,59 @@
             }
         });
 
-        document.getElementById('add-item-btn').addEventListener('click', async () => {
-            const name = document.getElementById('new-name').value;
-            const stock = parseInt(document.getElementById('new-stock').value);
-            const category = document.getElementById('new-category').value;
-            
-            let subcategory = '';
-            const selectValue = subcategorySelect.value;
+        // Real-time ακρόαση Ιστορικού (History)
+        onSnapshot(collection(db, "history"), (snapshot) => {
+            historyContainer.innerHTML = '';
+            const logs = [];
+            snapshot.forEach(doc => {
+                logs.push(doc.data());
+            });
 
-            if (selectValue === '__NEW__') {
-                subcategory = newSubcategoryText.value.trim();
-            } else if (selectValue) {
-                subcategory = selectValue;
-            } else {
-                alert('Παρακαλώ επιλέξτε ή δημιουργήστε μια Ομάδα.');
+            if (logs.length === 0) {
+                historyContainer.innerHTML = '<div style="color: #94a3b8; text-align: center;">Δεν υπάρχουν καταγεγραμμένες κινήσεις ακόμα.</div>';
                 return;
             }
 
+            // Ταξινόμηση ώστε οι πιο πρόσφατες να φαίνονται επάνω (αν και βασίζεται στο timestamp string, βοηθάει)
+            logs.reverse().forEach(log => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div>
+                        <span class="history-worker">${log.worker}</span> 
+                        <span class="history-action">πήρε <b>${log.quantity} τμχ</b> από <b>${log.item}</b></span>
+                    </div>
+                    <div class="history-time">${log.timestamp}</div>
+                `;
+                historyContainer.appendChild(div);
+            });
+        });
+
+        document.getElementById('add-item-btn').addEventListener('click', async () => {
+            const name = document.getElementById('new-name').value;
+            const stock = parseInt(document.getElementById('new-stock').value);
+            const category = categorySelect.value;
+            
+            let subcategory = '';
+
+            if (category === 'cleaning') {
+                const selVal = subcleaningSelect.value;
+                if (selVal === '__NEW__') {
+                    subcategory = newCleaningText.value.trim();
+                } else {
+                    subcategory = selVal;
+                }
+            } else {
+                const selVal = subelectricalSelect.value;
+                if (selVal === '__NEW__') {
+                    subcategory = newElectricalText.value.trim();
+                } else {
+                    subcategory = selVal;
+                }
+            }
+
             if (!subcategory) {
-                alert('Παρακαλώ δώστε όνομα στη νέα Ομάδα.');
-                newSubcategoryText.focus();
+                alert('Παρακαλώ επιλέξτε ή πληκτρολογήστε μια Ομάδα.');
                 return;
             }
             
@@ -350,12 +437,17 @@
                 
                 document.getElementById('new-name').value = '';
                 document.getElementById('new-stock').value = '';
-                subcategorySelect.value = '';
-                newSubcategoryText.value = '';
-                newSubcategoryText.style.display = 'none';
+                
+                subcleaningSelect.value = '';
+                newCleaningText.value = '';
+                newCleaningText.style.display = 'none';
+
+                subelectricalSelect.value = '';
+                newElectricalText.value = '';
+                newElectricalText.style.display = 'none';
                 
             } else {
-                alert('Παρακαλώ συμπληρώσε σωστά το Όνομα και την Ποσότητα.');
+                alert('Παρακαλώ συμπληρώστε σωστά το Όνομα και την Ποσότητα.');
             }
         });
     </script>
