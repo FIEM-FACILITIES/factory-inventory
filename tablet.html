@@ -7,91 +7,87 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
-            font-family: 'Inter', sans-serif; 
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%); 
-            margin: 0; 
-            padding: 20px; 
-            text-align: center; 
-            min-height: 100vh;
-            /* Αποτρέπει την επιλογή κειμένου κατά λάθος πατήματα */
-            user-select: none; 
-            -webkit-user-select: none;
+            font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%); 
+            margin: 0; padding: 20px; text-align: center; min-height: 100vh;
+            user-select: none; -webkit-user-select: none;
         }
         h1 { color: #1a202c; font-size: 36px; margin-bottom: 30px; font-weight: 700; letter-spacing: -0.5px; }
         
         .columns-wrapper { display: flex; flex-direction: row; gap: 40px; justify-content: center; max-width: 1400px; margin: 0 auto; align-items: stretch; }
-        
         .divider { width: 2px; background: linear-gradient(to bottom, transparent, #cbd5e0, transparent); border-radius: 5px; }
         
         details { flex: 1; min-width: 350px; background: transparent; text-align: left; }
-        summary { 
-            background-color: #2d3748; color: white; font-size: 22px; font-weight: 600; 
-            padding: 18px 25px; border-radius: 12px; cursor: pointer; list-style: none; 
+        
+        /* Κύριες Κατηγορίες - Γενικό Στυλ */
+        summary.main-summary { 
+            color: white; font-size: 24px; font-weight: 700; 
+            padding: 20px 25px; border-radius: 12px; cursor: pointer; list-style: none; 
             display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 8px 16px rgba(45, 55, 72, 0.15); 
-            transition: transform 0.1s ease, background-color 0.1s ease; 
-        }
-        /* Εφέ πατήματος (Αφή) */
-        summary:active { transform: scale(0.98); background-color: #1a202c; }
-        summary::-webkit-details-marker { display: none; }
-        summary::after { content: '▼'; font-size: 16px; transition: transform 0.3s ease; }
-        details[open] summary::after { transform: rotate(180deg); }
-        
-        .inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding-top: 25px; }
-        
-        .item-card { 
-            background-color: white; padding: 25px 20px; border-radius: 16px; 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.04); text-align: center; 
-            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); transition: transform 0.1s ease, background-color 0.1s ease; 
         }
         
-        .item-name { font-size: 20px; font-weight: 600; color: #2d3748; line-height: 1.3; height: 52px; display: flex; align-items: center; justify-content: center; }
-        .item-stock { font-size: 48px; color: #3182ce; margin: 15px 0; font-weight: 700; }
+        /* Χρώματα προσβασιμότητας (Okabe-Ito Palette για Δυσχρωματοψία) */
+        .cleaning-header { background-color: #0072B2; }
+        .cleaning-header:active { background-color: #005382; transform: scale(0.98); }
+        
+        .electrical-header { background-color: #D55E00; }
+        .electrical-header:active { background-color: #A64900; transform: scale(0.98); }
+
+        summary.main-summary::-webkit-details-marker { display: none; }
+        summary.main-summary::after { content: '▼'; font-size: 18px; transition: transform 0.3s ease; }
+        details[open] > summary.main-summary::after { transform: rotate(180deg); }
+        
+        .inventory-section { display: block; padding-top: 15px; }
+
+        /* Υποκατηγορίες */
+        .sub-details { background: rgba(255, 255, 255, 0.4); margin-bottom: 15px; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.6); }
+        summary.sub-summary {
+            background-color: #4a5568; color: white; font-size: 18px; font-weight: 600;
+            padding: 12px 20px; border-radius: 8px; cursor: pointer; list-style: none;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: transform 0.1s ease, background-color 0.1s ease;
+        }
+        summary.sub-summary:active { transform: scale(0.98); background-color: #2d3748; }
+        summary.sub-summary::-webkit-details-marker { display: none; }
+        summary.sub-summary::after { content: '▼'; font-size: 14px; transition: transform 0.3s ease; }
+        details[open] > summary.sub-summary::after { transform: rotate(180deg); }
+        
+        .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; }
+        
+        /* Κάρτες Προϊόντων */
+        .item-card { background-color: white; padding: 20px 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
+        .item-name { font-size: 18px; font-weight: 600; color: #2d3748; line-height: 1.2; height: 45px; display: flex; align-items: center; justify-content: center; }
+        .item-stock { font-size: 42px; color: #3182ce; margin: 10px 0; font-weight: 700; }
         
         .action-area { display: flex; gap: 8px; margin-top: 15px; }
-        .qty-input { 
-            flex: 1; padding: 12px; font-size: 18px; text-align: center; 
-            border: 2px solid #e2e8f0; border-radius: 10px; width: 100%; 
-            box-sizing: border-box; outline: none; transition: border-color 0.3s; 
-            font-family: 'Inter', sans-serif; font-weight: 600;
-        }
+        .qty-input { flex: 1; padding: 10px; font-size: 16px; text-align: center; border: 2px solid #e2e8f0; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; font-weight: 600; }
         .qty-input:focus { border-color: #3182ce; }
         
-        .take-btn { 
-            flex: 2; background-color: #38a169; color: white; border: none; 
-            padding: 12px; font-size: 18px; border-radius: 10px; cursor: pointer; 
-            transition: transform 0.1s ease, background-color 0.1s ease; 
-            font-weight: 600; font-family: 'Inter', sans-serif;
-            box-shadow: 0 4px 6px rgba(56, 161, 105, 0.2);
-        }
-        /* Εφέ πατήματος (Αφή) στο κουμπί */
-        .take-btn:active:not(:disabled) { transform: scale(0.95); background-color: #276749; box-shadow: none; }
-        .take-btn:disabled, .qty-input:disabled { background-color: #edf2f7; cursor: not-allowed; border-color: #cbd5e0; color: #a0aec0; box-shadow: none; }
+        .take-btn { flex: 2; background-color: #38a169; color: white; border: none; padding: 10px; font-size: 16px; border-radius: 8px; cursor: pointer; transition: transform 0.1s ease, background-color 0.1s ease; font-weight: 600; font-family: 'Inter', sans-serif; }
+        .take-btn:active:not(:disabled) { transform: scale(0.95); background-color: #276749; }
+        .take-btn:disabled, .qty-input:disabled { background-color: #edf2f7; cursor: not-allowed; border-color: #cbd5e0; color: #a0aec0; }
         
         .loading { font-size: 20px; color: #718096; width: 100%; text-align: center; font-weight: 600; }
 
         @media (max-width: 850px) {
             .columns-wrapper { flex-direction: column; }
-            .divider { width: 100%; height: 2px; background: linear-gradient(to right, transparent, #cbd5e0, transparent); margin: 15px 0; }
+            .divider { width: 100%; height: 2px; background: linear-gradient(to right, transparent, #cbd5e0, transparent); margin: 10px 0; }
         }
     </style>
 </head>
 <body>
 
     <h1>Διαχείριση Υλικών Αποθήκης</h1>
-    
     <div id="loading-msg" class="loading">Φόρτωση δεδομένων...</div>
 
     <div class="columns-wrapper">
-        <details open>
-            <summary>Καθαριστικά</summary>
+        <details id="main-cleaning">
+            <summary class="main-summary cleaning-header">Καθαριστικά</summary>
             <div id="cleaning-container" class="inventory-section"></div>
         </details>
-
         <div class="divider"></div>
-
-        <details>
-            <summary>Ηλεκτρολογικά</summary>
+        <details id="main-electrical">
+            <summary class="main-summary electrical-header">Ηλεκτρολογικά</summary>
             <div id="electrical-container" class="inventory-section"></div>
         </details>
     </div>
@@ -116,54 +112,96 @@
         const electricalContainer = document.getElementById('electrical-container');
         const loadingMsg = document.getElementById('loading-msg');
 
+        let detailsState = {}; 
+
         onSnapshot(collection(db, "items"), (snapshot) => {
+            document.querySelectorAll('details').forEach(d => {
+                if (d.id) detailsState[d.id] = d.open;
+            });
+
             cleaningContainer.innerHTML = '';
             electricalContainer.innerHTML = '';
             loadingMsg.style.display = 'none';
             
+            const groupedData = { cleaning: {}, electrical: {} };
+            
             snapshot.forEach((docSnapshot) => {
                 const item = docSnapshot.data();
-                const id = docSnapshot.id;
-                const isOutOfStock = item.stock <= 0;
+                const cat = item.category || 'cleaning';
+                const sub = item.subcategory || 'Γενικά';
                 
-                const card = document.createElement('div');
-                card.className = 'item-card';
-                card.innerHTML = `
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-stock">${item.stock}</div>
-                    <div class="action-area">
-                        <input type="number" id="input-${id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" ${isOutOfStock ? 'disabled' : ''}>
-                        <button class="take-btn" id="btn-${id}" ${isOutOfStock ? 'disabled' : ''}>
-                            ${isOutOfStock ? 'Τελείωσε' : 'Λήψη'}
-                        </button>
-                    </div>
-                `;
-                
-                if (item.category === 'electrical') {
-                    electricalContainer.appendChild(card);
-                } else {
-                    cleaningContainer.appendChild(card);
-                }
-
-                if (!isOutOfStock) {
-                    document.getElementById(`btn-${id}`).addEventListener('click', async () => {
-                        const inputField = document.getElementById(`input-${id}`);
-                        const qty = parseInt(inputField.value);
-
-                        if (qty && qty > 0) {
-                            if (qty > item.stock) {
-                                alert(`Προσπαθείς να αφαιρέσεις ${qty}, αλλά υπάρχουν μόνο ${item.stock}.`);
-                                return;
-                            }
-                            const itemRef = doc(db, "items", id);
-                            await updateDoc(itemRef, { stock: increment(-qty) });
-                            inputField.value = ''; 
-                        } else {
-                            alert('Παρακαλώ βάλε μια έγκυρη ποσότητα.');
-                        }
-                    });
-                }
+                if (!groupedData[cat]) groupedData[cat] = {};
+                if (!groupedData[cat][sub]) groupedData[cat][sub] = [];
+                groupedData[cat][sub].push({ id: docSnapshot.id, ...item });
             });
+
+            const renderCategory = (container, dataObj, catKey) => {
+                const sortedSubcats = Object.keys(dataObj).sort();
+                
+                sortedSubcats.forEach(subcat => {
+                    const items = dataObj[subcat];
+                    const subDetails = document.createElement('details');
+                    subDetails.className = 'sub-details';
+                    subDetails.id = `sub-${catKey}-${subcat}`;
+                    
+                    if (detailsState[subDetails.id]) {
+                        subDetails.open = true;
+                    }
+
+                    subDetails.innerHTML = `
+                        <summary class="sub-summary">${subcat}</summary>
+                        <div class="sub-inventory-section"></div>
+                    `;
+                    const grid = subDetails.querySelector('.sub-inventory-section');
+
+                    items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+                        const isOutOfStock = item.stock <= 0;
+                        const card = document.createElement('div');
+                        card.className = 'item-card';
+                        card.innerHTML = `
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-stock">${item.stock}</div>
+                            <div class="action-area">
+                                <input type="number" id="input-${item.id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" ${isOutOfStock ? 'disabled' : ''}>
+                                <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Λήψη'}</button>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                        
+                        setTimeout(() => {
+                            if (!isOutOfStock) {
+                                document.getElementById(`btn-${item.id}`).addEventListener('click', async () => {
+                                    const inputField = document.getElementById(`input-${item.id}`);
+                                    const qty = parseInt(inputField.value);
+                                    if (qty && qty > 0) {
+                                        if (qty > item.stock) {
+                                            alert(`Προσπαθείς να αφαιρέσεις ${qty}, αλλά υπάρχουν μόνο ${item.stock}.`);
+                                            return;
+                                        }
+                                        await updateDoc(doc(db, "items", item.id), { stock: increment(-qty) });
+                                        inputField.value = ''; 
+                                    } else {
+                                        alert('Παρακαλώ βάλε μια έγκυρη ποσότητα.');
+                                    }
+                                });
+                            }
+                        }, 0);
+                    });
+                    container.appendChild(subDetails);
+                });
+            };
+
+            renderCategory(cleaningContainer, groupedData.cleaning, 'cleaning');
+            renderCategory(electricalContainer, groupedData.electrical, 'electrical');
+
+            if (detailsState['main-cleaning']) {
+                const mc = document.getElementById('main-cleaning');
+                if (mc) mc.open = true;
+            }
+            if (detailsState['main-electrical']) {
+                const me = document.getElementById('main-electrical');
+                if (me) me.open = true;
+            }
         });
     </script>
 </body>
