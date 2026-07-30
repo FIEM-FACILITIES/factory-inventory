@@ -13,18 +13,22 @@
         }
         h1 { color: #1a202c; font-size: 32px; margin-bottom: 10px; font-weight: 700; letter-spacing: -0.5px; }
         
-        /* Μπάρα Επιλογής Εργαζομένου */
         .worker-bar {
-            background: white; padding: 15px 25px; border-radius: 16px; max-width: 500px; margin: 0 auto 30px auto;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; gap: 15px;
+            background: white; padding: 15px 25px; border-radius: 16px; max-width: 550px; margin: 0 auto 30px auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; gap: 10px;
             border: 2px solid #e2e8f0;
         }
+        .worker-inner { display: flex; align-items: center; justify-content: center; gap: 15px; width: 100%; }
         .worker-bar label { font-weight: 600; color: #2d3748; font-size: 18px; }
         .worker-select {
             padding: 10px 15px; border-radius: 8px; border: 2px solid #cbd5e0; font-size: 18px; 
             background: #f8fafc; color: #1a202c; font-family: 'Inter', sans-serif; font-weight: 600; outline: none; cursor: pointer;
         }
         .worker-select:focus { border-color: #3182ce; }
+        .new-worker-input {
+            padding: 10px; border-radius: 8px; border: 2px solid #3182ce; font-size: 16px; width: 80%;
+            text-align: center; outline: none; font-family: 'Inter', sans-serif; font-weight: 600; display: none;
+        }
 
         .columns-wrapper { display: flex; flex-direction: row; gap: 40px; justify-content: center; max-width: 1400px; margin: 0 auto; align-items: stretch; }
         .divider { width: 2px; background: linear-gradient(to bottom, transparent, #cbd5e0, transparent); border-radius: 5px; }
@@ -35,17 +39,14 @@
             color: white; font-size: 24px; font-weight: 700; 
             padding: 20px 25px; border-radius: 12px; cursor: pointer; list-style: none; 
             display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); transition: transform 0.1s ease, background-color 0.1s ease; 
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); transition: transform 0.1s ease; 
         }
         
         .cleaning-header { background-color: #0072B2; }
-        .cleaning-header:active { background-color: #005382; transform: scale(0.98); }
-        
         .electrical-header { background-color: #D55E00; }
-        .electrical-header:active { background-color: #A64900; transform: scale(0.98); }
 
         summary.main-summary::-webkit-details-marker { display: none; }
-        summary.main-summary::after { content: '▼'; font-size: 18px; transition: transform 0.3s ease; }
+        summary.main-summary::after { content: '▼'; font-size: 18px; }
         details[open] > summary.main-summary::after { transform: rotate(180deg); }
         
         .inventory-section { display: block; padding-top: 15px; }
@@ -55,26 +56,41 @@
             background-color: #4a5568; color: white; font-size: 18px; font-weight: 600;
             padding: 12px 20px; border-radius: 8px; cursor: pointer; list-style: none;
             display: flex; justify-content: space-between; align-items: center;
-            transition: transform 0.1s ease, background-color 0.1s ease;
         }
-        summary.sub-summary:active { transform: scale(0.98); background-color: #2d3748; }
         summary.sub-summary::-webkit-details-marker { display: none; }
-        summary.sub-summary::after { content: '▼'; font-size: 14px; transition: transform 0.3s ease; }
-        details[open] > summary.sub-summary::after { transform: rotate(180deg); }
+        summary.sub-summary::after { content: '▼'; font-size: 14px; }
+
+        .child-details { background: rgba(255, 255, 255, 0.7); margin: 10px 0; border-radius: 10px; padding: 8px; border: 1px solid #cbd5e0; }
+        summary.child-summary {
+            background-color: #718096; color: white; font-size: 16px; font-weight: 600;
+            padding: 10px 15px; border-radius: 6px; cursor: pointer; list-style: none;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        summary.child-summary::-webkit-details-marker { display: none; }
+        summary.child-summary::after { content: '▼'; font-size: 12px; }
+
+        .sub-child-details { background: rgba(255, 255, 255, 0.9); margin: 8px 0; border-radius: 8px; padding: 6px; border: 1px solid #a0aec0; }
+        summary.sub-child-summary {
+            background-color: #a0aec0; color: white; font-size: 15px; font-weight: 600;
+            padding: 8px 12px; border-radius: 6px; cursor: pointer; list-style: none;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        summary.sub-child-summary::-webkit-details-marker { display: none; }
+        summary.sub-child-summary::after { content: '▼'; font-size: 10px; }
         
-        .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; }
+        .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding-top: 15px; }
         
-        .item-card { background-color: white; padding: 20px 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
-        .item-name { font-size: 18px; font-weight: 600; color: #2d3748; line-height: 1.2; height: 45px; display: flex; align-items: center; justify-content: center; }
-        .item-stock { font-size: 42px; color: #3182ce; margin: 10px 0; font-weight: 700; }
+        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
+        .item-name { font-size: 16px; font-weight: 600; color: #2d3748; line-height: 1.2; height: 35px; display: flex; align-items: center; justify-content: center; }
+        .item-stock { font-size: 36px; color: #3182ce; margin: 8px 0; font-weight: 700; }
         
-        .action-area { display: flex; gap: 8px; margin-top: 15px; }
-        .qty-input { flex: 1; padding: 10px; font-size: 16px; text-align: center; border: 2px solid #e2e8f0; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; font-weight: 600; }
+        .action-area { display: flex; gap: 6px; margin-top: 10px; }
+        .qty-input { flex: 1; padding: 8px; font-size: 15px; text-align: center; border: 2px solid #e2e8f0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; font-weight: 600; }
         .qty-input:focus { border-color: #3182ce; }
         
-        .take-btn { flex: 2; background-color: #38a169; color: white; border: none; padding: 10px; font-size: 16px; border-radius: 8px; cursor: pointer; transition: transform 0.1s ease, background-color 0.1s ease; font-weight: 600; font-family: 'Inter', sans-serif; }
+        .take-btn { flex: 2; background-color: #38a169; color: white; border: none; padding: 8px; font-size: 15px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .take-btn:active:not(:disabled) { transform: scale(0.95); background-color: #276749; }
-        .take-btn:disabled, .qty-input:disabled { background-color: #edf2f7; cursor: not-allowed; border-color: #cbd5e0; color: #a0aec0; }
+        .take-btn:disabled, .qty-input:disabled { background-color: #edf2f7; cursor: not-allowed; color: #a0aec0; }
         
         .loading { font-size: 20px; color: #718096; width: 100%; text-align: center; font-weight: 600; }
 
@@ -88,18 +104,14 @@
 
     <h1>Διαχείριση Υλικών Αποθήκης</h1>
     
-    <!-- Μπάρα Επιλογής Ονόματος Εργαζομένου -->
     <div class="worker-bar">
-        <label for="worker-name">👤 Εργαζόμενος:</label>
-        <select id="worker-name" class="worker-select">
-            <option value="" disabled selected>-- Επιλέξτε Όνομα --</option>
-            <option value="Μαρία">Μαρία</option>
-            <option value="Σάκης">Σάκης</option>
-            <option value="Γιώργος">Γιώργος</option>
-            <option value="Νίκος">Νίκος</option>
-            <option value="Κώστας">Κώστας</option>
-            <option value="Ελένη">Ελένη</option>
-        </select>
+        <div class="worker-inner">
+            <label for="worker-name">👤 Εργαζόμενος:</label>
+            <select id="worker-name" class="worker-select">
+                <option value="" disabled selected>-- Επιλέξτε Όνομα --</option>
+            </select>
+        </div>
+        <input type="text" id="new-worker-input" class="new-worker-input" placeholder="Πληκτρολογήστε το όνομα σας...">
     </div>
 
     <div id="loading-msg" class="loading">Φόρτωση δεδομένων...</div>
@@ -118,7 +130,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBYYM4O7qYiVM1H4pOAxzpGZUBPEzH8gZI",
@@ -136,14 +148,50 @@
         const electricalContainer = document.getElementById('electrical-container');
         const loadingMsg = document.getElementById('loading-msg');
         const workerSelect = document.getElementById('worker-name');
+        const newWorkerInput = document.getElementById('new-worker-input');
 
-        let detailsState = {}; 
+        onSnapshot(collection(db, "workers"), (snapshot) => {
+            const currentSelection = workerSelect.value;
+            const defaultOpt = workerSelect.options[0];
+            
+            workerSelect.innerHTML = '';
+            workerSelect.appendChild(defaultOpt);
 
-        onSnapshot(collection(db, "items"), (snapshot) => {
-            document.querySelectorAll('details').forEach(d => {
-                if (d.id) detailsState[d.id] = d.open;
+            const workers = [];
+            snapshot.forEach(docSnap => {
+                workers.push({ id: docSnap.id, name: docSnap.data().name });
             });
 
+            workers.sort((a, b) => a.name.localeCompare(b.name));
+
+            workers.forEach(w => {
+                const opt = document.createElement('option');
+                opt.value = w.name;
+                opt.textContent = w.name;
+                workerSelect.appendChild(opt);
+            });
+
+            const newOpt = document.createElement('option');
+            newOpt.value = "__NEW_WORKER__";
+            newOpt.textContent = "➕ Άλλος / Νέος Εργαζόμενος";
+            workerSelect.appendChild(newOpt);
+
+            if (currentSelection && currentSelection !== "__NEW_WORKER__" && Array.from(workerSelect.options).some(o => o.value === currentSelection)) {
+                workerSelect.value = currentSelection;
+            }
+        });
+
+        workerSelect.addEventListener('change', function() {
+            if (this.value === '__NEW_WORKER__') {
+                newWorkerInput.style.display = 'block';
+                newWorkerInput.focus();
+            } else {
+                newWorkerInput.style.display = 'none';
+                newWorkerInput.value = '';
+            }
+        });
+
+        onSnapshot(collection(db, "items"), (snapshot) => {
             cleaningContainer.innerHTML = '';
             electricalContainer.innerHTML = '';
             loadingMsg.style.display = 'none';
@@ -154,81 +202,122 @@
                 const item = docSnapshot.data();
                 const cat = item.category || 'cleaning';
                 const sub = item.subcategory || 'Γενικά';
+                const child = item.childcategory || 'Γενικά';
+                const subchild = item.subchildcategory || 'Γενικά';
                 
                 if (!groupedData[cat]) groupedData[cat] = {};
-                if (!groupedData[cat][sub]) groupedData[cat][sub] = [];
-                groupedData[cat][sub].push({ id: docSnapshot.id, ...item });
+                if (!groupedData[cat][sub]) groupedData[cat][sub] = {};
+                if (!groupedData[cat][sub][child]) groupedData[cat][sub][child] = {};
+                if (!groupedData[cat][sub][child][subchild]) groupedData[cat][sub][child][subchild] = [];
+                groupedData[cat][sub][child][subchild].push({ id: docSnapshot.id, ...item });
             });
 
             const renderCategory = (container, dataObj, catKey) => {
                 const sortedSubcats = Object.keys(dataObj).sort();
                 
                 sortedSubcats.forEach(subcat => {
-                    const items = dataObj[subcat];
+                    const childObj = dataObj[subcat];
                     const subDetails = document.createElement('details');
                     subDetails.className = 'sub-details';
-                    subDetails.id = `sub-${catKey}-${subcat}`;
-                    
-                    if (detailsState[subDetails.id]) {
-                        subDetails.open = true;
-                    }
 
                     subDetails.innerHTML = `
                         <summary class="sub-summary">${subcat}</summary>
-                        <div class="sub-inventory-section"></div>
+                        <div class="child-container" style="padding-top: 10px;"></div>
                     `;
-                    const grid = subDetails.querySelector('.sub-inventory-section');
+                    const childContainer = subDetails.querySelector('.child-container');
 
-                    items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
-                        const isOutOfStock = item.stock <= 0;
-                        const card = document.createElement('div');
-                        card.className = 'item-card';
-                        card.innerHTML = `
-                            <div class="item-name">${item.name}</div>
-                            <div class="item-stock">${item.stock}</div>
-                            <div class="action-area">
-                                <input type="number" id="input-${item.id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" ${isOutOfStock ? 'disabled' : ''}>
-                                <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Αφαίρεση'}</button>
-                            </div>
+                    Object.keys(childObj).sort().forEach(childcat => {
+                        const subChildObj = childObj[childcat];
+                        const childDetails = document.createElement('details');
+                        childDetails.className = 'child-details';
+
+                        childDetails.innerHTML = `
+                            <summary class="child-summary">${childcat}</summary>
+                            <div class="sub-child-container" style="padding-top: 8px;"></div>
                         `;
-                        grid.appendChild(card);
-                        
-                        setTimeout(() => {
-                            if (!isOutOfStock) {
-                                document.getElementById(`btn-${item.id}`).addEventListener('click', async () => {
-                                    const worker = workerSelect.value;
-                                    if (!worker) {
-                                        alert('⚠️ Παρακαλώ επιλέξτε πρώτα το όνομά σας από πάνω!');
-                                        workerSelect.focus();
-                                        return;
-                                    }
+                        const subChildContainer = childDetails.querySelector('.sub-child-container');
 
-                                    const inputField = document.getElementById(`input-${item.id}`);
-                                    const qty = parseInt(inputField.value);
-                                    if (qty && qty > 0) {
-                                        if (qty > item.stock) {
-                                            alert(`Προσπαθείς να αφαιρέσεις ${qty}, αλλά υπάρχουν μόνο ${item.stock}.`);
-                                            return;
-                                        }
+                        Object.keys(subChildObj).sort().forEach(subchildcat => {
+                            const items = subChildObj[subchildcat];
+                            const subChildDetails = document.createElement('details');
+                            subChildDetails.className = 'sub-child-details';
 
-                                        // 1. Ενημέρωση αποθέματος
-                                        await updateDoc(doc(db, "items", item.id), { stock: increment(-qty) });
+                            subChildDetails.innerHTML = `
+                                <summary class="sub-child-summary">${subchildcat}</summary>
+                                <div class="sub-inventory-section"></div>
+                            `;
+                            const grid = subChildDetails.querySelector('.sub-inventory-section');
 
-                                        // 2. Καταγραφή στην ιστορία (Logs)
-                                        await addDoc(collection(db, "history"), {
-                                            worker: worker,
-                                            item: item.name,
-                                            quantity: qty,
-                                            timestamp: new Date().toLocaleString('el-GR') // Ελληνική μορφή ημερομηνίας/ώρας
+                            items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+                                const isOutOfStock = item.stock <= 0;
+                                const card = document.createElement('div');
+                                card.className = 'item-card';
+                                card.innerHTML = `
+                                    <div class="item-name">${item.name}</div>
+                                    <div class="item-stock">${item.stock}</div>
+                                    <div class="action-area">
+                                        <input type="number" id="input-${item.id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" ${isOutOfStock ? 'disabled' : ''}>
+                                        <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Αφαίρεση'}</button>
+                                    </div>
+                                `;
+                                grid.appendChild(card);
+                                
+                                setTimeout(() => {
+                                    if (!isOutOfStock) {
+                                        document.getElementById(`btn-${item.id}`).addEventListener('click', async () => {
+                                            let worker = workerSelect.value;
+                                            
+                                            if (!worker) {
+                                                alert('⚠️ Παρακαλώ επιλέξτε πρώτα το όνομά σας από πάνω!');
+                                                workerSelect.focus();
+                                                return;
+                                            }
+
+                                            if (worker === '__NEW_WORKER__') {
+                                                worker = newWorkerInput.value.trim();
+                                                if (!worker) {
+                                                    alert('⚠️ Παρακαλώ πληκτρολογήστε το όνομά σας στο πεδίο που άνοιξε!');
+                                                    newWorkerInput.focus();
+                                                    return;
+                                                }
+
+                                                try {
+                                                    await setDoc(doc(db, "workers", worker), { name: worker });
+                                                } catch(e) {}
+                                            }
+
+                                            const inputField = document.getElementById(`input-${item.id}`);
+                                            const qty = parseInt(inputField.value);
+                                            if (qty && qty > 0) {
+                                                if (qty > item.stock) {
+                                                    alert(`Προσπαθείς να αφαιρέσεις ${qty}, αλλά υπάρχουν μόνο ${item.stock}.`);
+                                                    return;
+                                                }
+
+                                                await updateDoc(doc(db, "items", item.id), { stock: increment(-qty) });
+
+                                                const logName = `${item.subcategory} (${item.childcategory} - ${item.subchildcategory}: ${item.name})`;
+
+                                                await addDoc(collection(db, "history"), {
+                                                    worker: worker,
+                                                    item: logName,
+                                                    quantity: qty,
+                                                    timestamp: new Date().toLocaleString('el-GR'),
+                                                    createdAt: Date.now()
+                                                });
+
+                                                location.reload();
+
+                                            } else {
+                                                alert('Παρακαλώ βάλτε μια έγκυρη ποσότητα.');
+                                            }
                                         });
-
-                                        inputField.value = ''; 
-                                    } else {
-                                        alert('Παρακαλώ βάλε μια έγκυρη ποσότητα.');
                                     }
-                                });
-                            }
-                        }, 0);
+                                }, 0);
+                            });
+                            subChildContainer.appendChild(subChildDetails);
+                        });
+                        childContainer.appendChild(childDetails);
                     });
                     container.appendChild(subDetails);
                 });
@@ -236,15 +325,6 @@
 
             renderCategory(cleaningContainer, groupedData.cleaning, 'cleaning');
             renderCategory(electricalContainer, groupedData.electrical, 'electrical');
-
-            if (detailsState['main-cleaning']) {
-                const mc = document.getElementById('main-cleaning');
-                if (mc) mc.open = true;
-            }
-            if (detailsState['main-electrical']) {
-                const me = document.getElementById('main-electrical');
-                if (me) me.open = true;
-            }
         });
     </script>
 </body>
