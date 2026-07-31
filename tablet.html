@@ -11,7 +11,35 @@
             margin: 0; padding: 20px; text-align: center; min-height: 100vh;
             user-select: none; -webkit-user-select: none;
         }
-        h1 { color: #1a202c; font-size: 32px; margin-bottom: 10px; font-weight: 700; letter-spacing: -0.5px; }
+        
+        /* --- ΣΤΥΛ ΓΙΑ ΤΗΝ ΟΘΟΝΗ LOGIN --- */
+        #login-screen {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 80vh;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 15px;
+        }
+        .login-box h2 { margin: 0 0 10px 0; color: #1a202c; }
+        .login-input {
+            padding: 12px; border-radius: 8px; border: 2px solid #e2e8f0; font-size: 16px;
+            font-family: 'Inter', sans-serif; outline: none;
+        }
+        .login-input:focus { border-color: #3182ce; }
+        .login-btn {
+            background: #3182ce; color: white; border: none; padding: 12px; font-size: 16px;
+            font-weight: 700; border-radius: 8px; cursor: pointer; margin-top: 10px;
+        }
+        .login-btn:active { background: #2b6cb0; }
+        .error-msg { color: #e53e3e; font-size: 14px; display: none; font-weight: 600; }
+
+        /* --- ΣΤΥΛ ΕΦΑΡΜΟΓΗΣ --- */
+        #main-app { display: none; }
+        
+        .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 10px auto; }
+        h1 { color: #1a202c; font-size: 32px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
+        .logout-btn { background: transparent; border: 2px solid #e53e3e; color: #e53e3e; padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; }
         
         .worker-bar {
             background: white; padding: 15px 25px; border-radius: 16px; max-width: 550px; margin: 0 auto 30px auto;
@@ -24,113 +52,113 @@
             padding: 10px 15px; border-radius: 8px; border: 2px solid #cbd5e0; font-size: 18px; 
             background: #f8fafc; color: #1a202c; font-family: 'Inter', sans-serif; font-weight: 600; outline: none; cursor: pointer;
         }
-        .worker-select:focus { border-color: #3182ce; }
         .new-worker-input {
             padding: 10px; border-radius: 8px; border: 2px solid #3182ce; font-size: 16px; width: 80%;
             text-align: center; outline: none; font-family: 'Inter', sans-serif; font-weight: 600; display: none;
+            text-transform: uppercase;
         }
 
         .columns-wrapper { display: flex; flex-direction: row; gap: 40px; justify-content: center; max-width: 1400px; margin: 0 auto; align-items: stretch; }
-        .divider { width: 2px; background: linear-gradient(to bottom, transparent, #cbd5e0, transparent); border-radius: 5px; }
+        .divider { width: 4px; background: linear-gradient(to bottom, transparent, #475569, transparent); border-radius: 5px; }
         
         details { flex: 1; min-width: 350px; background: transparent; text-align: left; }
-        
         summary.main-summary { 
-            color: white; font-size: 24px; font-weight: 700; 
-            padding: 20px 25px; border-radius: 12px; cursor: pointer; list-style: none; 
-            display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); transition: transform 0.1s ease; 
+            color: white; font-size: 24px; font-weight: 700; padding: 20px 25px; border-radius: 12px; cursor: pointer; list-style: none; 
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); 
         }
-        
         .cleaning-header { background-color: #0072B2; }
         .electrical-header { background-color: #D55E00; }
-
         summary.main-summary::-webkit-details-marker { display: none; }
         summary.main-summary::after { content: '▼'; font-size: 18px; }
         details[open] > summary.main-summary::after { transform: rotate(180deg); }
         
         .inventory-section { display: block; padding-top: 15px; }
-
         .sub-details { background: rgba(255, 255, 255, 0.4); margin-bottom: 15px; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.6); }
-        summary.sub-summary {
-            background-color: #4a5568; color: white; font-size: 18px; font-weight: 600;
-            padding: 12px 20px; border-radius: 8px; cursor: pointer; list-style: none;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        summary.sub-summary { background-color: #4a5568; color: white; font-size: 18px; font-weight: 600; padding: 12px 20px; border-radius: 8px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
         summary.sub-summary::-webkit-details-marker { display: none; }
         summary.sub-summary::after { content: '▼'; font-size: 14px; }
 
         .child-details { background: rgba(255, 255, 255, 0.7); margin: 10px 0; border-radius: 10px; padding: 8px; border: 1px solid #cbd5e0; }
-        summary.child-summary {
-            background-color: #718096; color: white; font-size: 16px; font-weight: 600;
-            padding: 10px 15px; border-radius: 6px; cursor: pointer; list-style: none;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        summary.child-summary { background-color: #718096; color: white; font-size: 16px; font-weight: 600; padding: 10px 15px; border-radius: 6px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
         summary.child-summary::-webkit-details-marker { display: none; }
         summary.child-summary::after { content: '▼'; font-size: 12px; }
 
         .sub-child-details { background: rgba(255, 255, 255, 0.9); margin: 8px 0; border-radius: 8px; padding: 6px; border: 1px solid #a0aec0; }
-        summary.sub-child-summary {
-            background-color: #a0aec0; color: white; font-size: 15px; font-weight: 600;
-            padding: 8px 12px; border-radius: 6px; cursor: pointer; list-style: none;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        summary.sub-child-summary { background-color: #a0aec0; color: white; font-size: 15px; font-weight: 600; padding: 8px 12px; border-radius: 6px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
         summary.sub-child-summary::-webkit-details-marker { display: none; }
         summary.sub-child-summary::after { content: '▼'; font-size: 10px; }
         
-        .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding-top: 15px; }
+        .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
-        .item-name { font-size: 16px; font-weight: 600; color: #2d3748; line-height: 1.2; height: 35px; display: flex; align-items: center; justify-content: center; }
+        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; }
+        .item-name { font-size: 16px; font-weight: 600; color: #2d3748; height: 45px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
         .item-stock { font-size: 36px; color: #3182ce; margin: 8px 0; font-weight: 700; }
         
         .action-area { display: flex; gap: 6px; margin-top: 10px; }
         .qty-input { flex: 1; padding: 8px; font-size: 15px; text-align: center; border: 2px solid #e2e8f0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; font-weight: 600; }
-        .qty-input:focus { border-color: #3182ce; }
         
         .take-btn { flex: 2; background-color: #38a169; color: white; border: none; padding: 8px; font-size: 15px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .take-btn:active:not(:disabled) { transform: scale(0.95); background-color: #276749; }
         .take-btn:disabled, .qty-input:disabled { background-color: #edf2f7; cursor: not-allowed; color: #a0aec0; }
         
         .loading { font-size: 20px; color: #718096; width: 100%; text-align: center; font-weight: 600; }
 
         @media (max-width: 850px) {
             .columns-wrapper { flex-direction: column; }
-            .divider { width: 100%; height: 2px; background: linear-gradient(to right, transparent, #cbd5e0, transparent); margin: 10px 0; }
+            .divider { width: 100%; height: 4px; background: linear-gradient(to right, transparent, #475569, transparent); margin: 15px 0; }
+            .header-container { flex-direction: column; gap: 15px; }
         }
     </style>
 </head>
 <body>
 
-    <h1>Διαχείριση Υλικών Αποθήκης</h1>
-    
-    <div class="worker-bar">
-        <div class="worker-inner">
-            <label for="worker-name">👤 Εργαζόμενος:</label>
-            <select id="worker-name" class="worker-select">
-                <option value="" disabled selected>-- Επιλέξτε Όνομα --</option>
-            </select>
+    <!-- ΟΘΟΝΗ LOGIN -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>Είσοδος στο Tablet</h2>
+            <div id="login-error" class="error-msg">Λάθος Email ή Κωδικός</div>
+            <input type="email" id="login-email" class="login-input" placeholder="Email (πχ. tablet@...)">
+            <input type="password" id="login-password" class="login-input" placeholder="Κωδικός">
+            <button id="login-btn" class="login-btn">Σύνδεση</button>
         </div>
-        <input type="text" id="new-worker-input" class="new-worker-input" placeholder="Πληκτρολογήστε το όνομα σας...">
     </div>
 
-    <div id="loading-msg" class="loading">Φόρτωση δεδομένων...</div>
+    <!-- ΚΥΡΙΩΣ ΕΦΑΡΜΟΓΗ -->
+    <div id="main-app">
+        <div class="header-container">
+            <div></div>
+            <h1>Διαχείριση Υλικών Αποθήκης</h1>
+            <button id="logout-btn" class="logout-btn">Αποσύνδεση</button>
+        </div>
+        
+        <div class="worker-bar">
+            <div class="worker-inner">
+                <label for="worker-name">👤 Εργαζόμενος:</label>
+                <select id="worker-name" class="worker-select">
+                    <option value="" disabled selected>-- Επιλέξτε Όνομα --</option>
+                </select>
+            </div>
+            <input type="text" id="new-worker-input" class="new-worker-input" placeholder="Πληκτρολογήστε το όνομα σας...">
+        </div>
 
-    <div class="columns-wrapper">
-        <details id="main-cleaning">
-            <summary class="main-summary cleaning-header">Καθαριστικά</summary>
-            <div id="cleaning-container" class="inventory-section"></div>
-        </details>
-        <div class="divider"></div>
-        <details id="main-electrical">
-            <summary class="main-summary electrical-header">Ηλεκτρολογικά</summary>
-            <div id="electrical-container" class="inventory-section"></div>
-        </details>
+        <div id="loading-msg" class="loading">Φόρτωση δεδομένων...</div>
+
+        <div class="columns-wrapper">
+            <details id="main-cleaning">
+                <summary class="main-summary cleaning-header">Καθαριστικά</summary>
+                <div id="cleaning-container" class="inventory-section"></div>
+            </details>
+            <div class="divider"></div>
+            <details id="main-electrical">
+                <summary class="main-summary electrical-header">Ηλεκτρολογικά</summary>
+                <div id="electrical-container" class="inventory-section"></div>
+            </details>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBYYM4O7qYiVM1H4pOAxzpGZUBPEzH8gZI",
@@ -143,41 +171,49 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
         
+        const loginScreen = document.getElementById('login-screen');
+        const mainApp = document.getElementById('main-app');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const errorMsg = document.getElementById('login-error');
+
         const cleaningContainer = document.getElementById('cleaning-container');
         const electricalContainer = document.getElementById('electrical-container');
         const loadingMsg = document.getElementById('loading-msg');
         const workerSelect = document.getElementById('worker-name');
         const newWorkerInput = document.getElementById('new-worker-input');
+        let unsubscribeWorkers = null;
+        let unsubscribeItems = null;
 
-        onSnapshot(collection(db, "workers"), (snapshot) => {
-            const currentSelection = workerSelect.value;
-            const defaultOpt = workerSelect.options[0];
-            
-            workerSelect.innerHTML = '';
-            workerSelect.appendChild(defaultOpt);
+        // AUTH LOGIC με ENTER
+        const handleLoginEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); loginBtn.click(); } };
+        document.getElementById('login-email').addEventListener('keypress', handleLoginEnter);
+        document.getElementById('login-password').addEventListener('keypress', handleLoginEnter);
 
-            const workers = [];
-            snapshot.forEach(docSnap => {
-                workers.push({ id: docSnap.id, name: docSnap.data().name });
+        loginBtn.addEventListener('click', () => {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            signInWithEmailAndPassword(auth, email, pass).catch(error => {
+                errorMsg.style.display = 'block';
             });
+        });
 
-            workers.sort((a, b) => a.name.localeCompare(b.name));
+        logoutBtn.addEventListener('click', () => { signOut(auth); });
 
-            workers.forEach(w => {
-                const opt = document.createElement('option');
-                opt.value = w.name;
-                opt.textContent = w.name;
-                workerSelect.appendChild(opt);
-            });
-
-            const newOpt = document.createElement('option');
-            newOpt.value = "__NEW_WORKER__";
-            newOpt.textContent = "➕ Άλλος / Νέος Εργαζόμενος";
-            workerSelect.appendChild(newOpt);
-
-            if (currentSelection && currentSelection !== "__NEW_WORKER__" && Array.from(workerSelect.options).some(o => o.value === currentSelection)) {
-                workerSelect.value = currentSelection;
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginScreen.style.display = 'none';
+                mainApp.style.display = 'block';
+                loadData();
+            } else {
+                loginScreen.style.display = 'flex';
+                mainApp.style.display = 'none';
+                document.getElementById('login-password').value = '';
+                errorMsg.style.display = 'none';
+                if(unsubscribeWorkers) unsubscribeWorkers();
+                if(unsubscribeItems) unsubscribeItems();
             }
         });
 
@@ -190,142 +226,189 @@
                 newWorkerInput.value = '';
             }
         });
+        
+        // Κλείσιμο πληκτρολογίου αν πατηθεί enter στο όνομα εργαζόμενου
+        newWorkerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); newWorkerInput.blur(); }
+        });
 
-        onSnapshot(collection(db, "items"), (snapshot) => {
-            cleaningContainer.innerHTML = '';
-            electricalContainer.innerHTML = '';
-            loadingMsg.style.display = 'none';
-            
-            const groupedData = { cleaning: {}, electrical: {} };
-            
-            snapshot.forEach((docSnapshot) => {
-                const item = docSnapshot.data();
-                const cat = item.category || 'cleaning';
-                const sub = item.subcategory || 'Γενικά';
-                const child = item.childcategory || 'Γενικά';
-                const subchild = item.subchildcategory || 'Γενικά';
-                
-                if (!groupedData[cat]) groupedData[cat] = {};
-                if (!groupedData[cat][sub]) groupedData[cat][sub] = {};
-                if (!groupedData[cat][sub][child]) groupedData[cat][sub][child] = {};
-                if (!groupedData[cat][sub][child][subchild]) groupedData[cat][sub][child][subchild] = [];
-                groupedData[cat][sub][child][subchild].push({ id: docSnapshot.id, ...item });
+        function loadData() {
+            unsubscribeWorkers = onSnapshot(collection(db, "workers"), (snapshot) => {
+                const currentSelection = workerSelect.value;
+                const defaultOpt = workerSelect.options[0];
+                workerSelect.innerHTML = '';
+                workerSelect.appendChild(defaultOpt);
+
+                const workers = [];
+                snapshot.forEach(docSnap => { workers.push({ id: docSnap.id, name: docSnap.data().name }); });
+                workers.sort((a, b) => a.name.localeCompare(b.name));
+
+                workers.forEach(w => {
+                    const opt = document.createElement('option');
+                    opt.value = w.name; opt.textContent = w.name;
+                    workerSelect.appendChild(opt);
+                });
+
+                const newOpt = document.createElement('option');
+                newOpt.value = "__NEW_WORKER__"; newOpt.textContent = "➕ Άλλος / Νέος Εργαζόμενος";
+                workerSelect.appendChild(newOpt);
+
+                if (currentSelection && currentSelection !== "__NEW_WORKER__" && Array.from(workerSelect.options).some(o => o.value === currentSelection)) {
+                    workerSelect.value = currentSelection;
+                }
             });
 
-            const renderCategory = (container, dataObj, catKey) => {
-                const sortedSubcats = Object.keys(dataObj).sort();
+            unsubscribeItems = onSnapshot(collection(db, "items"), (snapshot) => {
+                cleaningContainer.innerHTML = '';
+                electricalContainer.innerHTML = '';
+                loadingMsg.style.display = 'none';
                 
-                sortedSubcats.forEach(subcat => {
-                    const childObj = dataObj[subcat];
-                    const subDetails = document.createElement('details');
-                    subDetails.className = 'sub-details';
+                const tree = { cleaning: { items: [], children: {} }, electrical: { items: [], children: {} } };
+                
+                snapshot.forEach((docSnapshot) => {
+                    const item = docSnapshot.data();
+                    const cat = item.category || 'cleaning';
+                    let sub = item.subcategory || 'Γενικά';
+                    let child = item.childcategory || 'Γενικά';
+                    let subchild = item.subchildcategory || 'Γενικά';
+                    
+                    if (!tree[cat]) tree[cat] = { items: [], children: {} };
+                    if (!tree[cat].children[sub]) tree[cat].children[sub] = { items: [], children: {} };
+                    let subNode = tree[cat].children[sub];
 
-                    subDetails.innerHTML = `
-                        <summary class="sub-summary">${subcat}</summary>
-                        <div class="child-container" style="padding-top: 10px;"></div>
-                    `;
-                    const childContainer = subDetails.querySelector('.child-container');
+                    if (child === 'Γενικά' && subchild === 'Γενικά') {
+                        subNode.items.push({ id: docSnapshot.id, ...item });
+                    } else if (child !== 'Γενικά' && subchild === 'Γενικά') {
+                        if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
+                        subNode.children[child].items.push({ id: docSnapshot.id, ...item });
+                    } else if (child === 'Γενικά' && subchild !== 'Γενικά') {
+                        if (!subNode.children[subchild]) subNode.children[subchild] = { items: [], children: {} };
+                        subNode.children[subchild].items.push({ id: docSnapshot.id, ...item });
+                    } else {
+                        if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
+                        let childNode = subNode.children[child];
+                        if (!childNode.children[subchild]) childNode.children[subchild] = { items: [], children: {} };
+                        childNode.children[subchild].items.push({ id: docSnapshot.id, ...item });
+                    }
+                });
 
-                    Object.keys(childObj).sort().forEach(childcat => {
-                        const subChildObj = childObj[childcat];
-                        const childDetails = document.createElement('details');
-                        childDetails.className = 'child-details';
-
-                        childDetails.innerHTML = `
-                            <summary class="child-summary">${childcat}</summary>
-                            <div class="sub-child-container" style="padding-top: 8px;"></div>
-                        `;
-                        const subChildContainer = childDetails.querySelector('.sub-child-container');
-
-                        Object.keys(subChildObj).sort().forEach(subchildcat => {
-                            const items = subChildObj[subchildcat];
-                            const subChildDetails = document.createElement('details');
-                            subChildDetails.className = 'sub-child-details';
-
-                            subChildDetails.innerHTML = `
-                                <summary class="sub-child-summary">${subchildcat}</summary>
-                                <div class="sub-inventory-section"></div>
+                const renderNode = (container, node, levelClass, summaryClass) => {
+                    if (node.items && node.items.length > 0) {
+                        const grid = document.createElement('div');
+                        grid.className = 'sub-inventory-section';
+                        node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+                            const isOutOfStock = item.stock <= 0;
+                            const card = document.createElement('div');
+                            card.className = 'item-card';
+                            card.innerHTML = `
+                                <div class="item-name">
+                                    <span>${item.name}</span>
+                                    ${item.code ? `<span style="font-size: 12px; font-weight: 400; color: #718096; margin-top: 4px;">Κωδ: ${item.code}</span>` : ''}
+                                </div>
+                                <div class="item-stock">${item.stock}</div>
+                                <div class="action-area">
+                                    <input type="number" id="input-${item.id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" ${isOutOfStock ? 'disabled' : ''}>
+                                    <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Αφαίρεση'}</button>
+                                </div>
                             `;
-                            const grid = subChildDetails.querySelector('.sub-inventory-section');
+                            grid.appendChild(card);
+                            
+                            setTimeout(() => {
+                                if (!isOutOfStock) {
+                                    // ΕΝΕΡΓΟΠΟΙΗΣΗ ΤΟΥ ENTER ΓΙΑ ΑΦΑΙΡΕΣΗ
+                                    document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            document.getElementById(`btn-${item.id}`).click();
+                                        }
+                                    });
 
-                            items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
-                                const isOutOfStock = item.stock <= 0;
-                                const card = document.createElement('div');
-                                card.className = 'item-card';
-                                card.innerHTML = `
-                                    <div class="item-name">${item.name}</div>
-                                    <div class="item-stock">${item.stock}</div>
-                                    <div class="action-area">
-                                        <input type="number" id="input-${item.id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" ${isOutOfStock ? 'disabled' : ''}>
-                                        <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Αφαίρεση'}</button>
-                                    </div>
-                                `;
-                                grid.appendChild(card);
-                                
-                                setTimeout(() => {
-                                    if (!isOutOfStock) {
-                                        document.getElementById(`btn-${item.id}`).addEventListener('click', async () => {
-                                            let worker = workerSelect.value;
-                                            
+                                    document.getElementById(`btn-${item.id}`).addEventListener('click', async () => {
+                                        let worker = workerSelect.value;
+                                        
+                                        if (!worker || worker === "-- Επιλέξτε Όνομα --") {
+                                            alert("⚠️ Παρακαλώ επιλέξτε το όνομά σας από τη λίστα στο πάνω μέρος της οθόνης!");
+                                            workerSelect.focus();
+                                            return;
+                                        } 
+                                        
+                                        if (worker === '__NEW_WORKER__') {
+                                            worker = newWorkerInput.value.trim().toUpperCase();
                                             if (!worker) {
-                                                alert('⚠️ Παρακαλώ επιλέξτε πρώτα το όνομά σας από πάνω!');
-                                                workerSelect.focus();
+                                                alert("⚠️ Παρακαλώ πληκτρολογήστε το όνομά σας στο πλαίσιο!");
+                                                newWorkerInput.focus();
                                                 return;
                                             }
+                                            try { await setDoc(doc(db, "workers", worker), { name: worker }); } catch(e) {}
+                                        }
 
-                                            if (worker === '__NEW_WORKER__') {
-                                                worker = newWorkerInput.value.trim();
-                                                if (!worker) {
-                                                    alert('⚠️ Παρακαλώ πληκτρολογήστε το όνομά σας στο πεδίο που άνοιξε!');
-                                                    newWorkerInput.focus();
-                                                    return;
-                                                }
+                                        const inputField = document.getElementById(`input-${item.id}`);
+                                        let qty = parseInt(inputField.value);
+                                        if (isNaN(qty) || qty <= 0) qty = 1;
 
-                                                try {
-                                                    await setDoc(doc(db, "workers", worker), { name: worker });
-                                                } catch(e) {}
-                                            }
+                                        if (qty > item.stock) {
+                                            alert(`Προσπαθείς να αφαιρέσεις ${qty}, αλλά υπάρχουν μόνο ${item.stock}.`);
+                                            return;
+                                        }
 
-                                            const inputField = document.getElementById(`input-${item.id}`);
-                                            const qty = parseInt(inputField.value);
-                                            if (qty && qty > 0) {
-                                                if (qty > item.stock) {
-                                                    alert(`Προσπαθείς να αφαιρέσεις ${qty}, αλλά υπάρχουν μόνο ${item.stock}.`);
-                                                    return;
-                                                }
+                                        await updateDoc(doc(db, "items", item.id), { stock: increment(-qty) });
 
-                                                await updateDoc(doc(db, "items", item.id), { stock: increment(-qty) });
+                                        let logParts = [];
+                                        if(item.childcategory && item.childcategory !== 'Γενικά') logParts.push(item.childcategory);
+                                        if(item.subchildcategory && item.subchildcategory !== 'Γενικά') logParts.push(item.subchildcategory);
+                                        let logSuffix = logParts.length > 0 ? ` (${logParts.join(' - ')})` : '';
+                                        const logName = `${item.subcategory}: ${item.name}${logSuffix}`;
 
-                                                const logName = `${item.subcategory} (${item.childcategory} - ${item.subchildcategory}: ${item.name})`;
-
-                                                await addDoc(collection(db, "history"), {
-                                                    worker: worker,
-                                                    item: logName,
-                                                    quantity: qty,
-                                                    timestamp: new Date().toLocaleString('el-GR'),
-                                                    createdAt: Date.now()
-                                                });
-
-                                                location.reload();
-
-                                            } else {
-                                                alert('Παρακαλώ βάλτε μια έγκυρη ποσότητα.');
-                                            }
+                                        await addDoc(collection(db, "history"), {
+                                            worker: worker,
+                                            item: logName,
+                                            quantity: qty,
+                                            timestamp: new Date().toLocaleString('el-GR'),
+                                            createdAt: Date.now()
                                         });
-                                    }
-                                }, 0);
-                            });
-                            subChildContainer.appendChild(subChildDetails);
-                        });
-                        childContainer.appendChild(childDetails);
-                    });
-                    container.appendChild(subDetails);
-                });
-            };
 
-            renderCategory(cleaningContainer, groupedData.cleaning, 'cleaning');
-            renderCategory(electricalContainer, groupedData.electrical, 'electrical');
-        });
+                                        location.reload();
+                                    });
+                                }
+                            }, 0);
+                        });
+                        container.appendChild(grid);
+                    }
+
+                    if (node.children) {
+                        Object.keys(node.children).sort().forEach(childKey => {
+                            const childNode = node.children[childKey];
+                            const details = document.createElement('details');
+                            details.className = levelClass;
+                            details.innerHTML = `
+                                <summary class="${summaryClass}">${childKey}</summary>
+                                <div class="node-container" style="padding-top: 8px; padding-bottom: 5px;"></div>
+                            `;
+                            renderNode(details.querySelector('.node-container'), childNode, 'sub-child-details', 'sub-child-summary');
+                            container.appendChild(details);
+                        });
+                    }
+                };
+
+                const renderCategory = (container, catData) => {
+                    if(!catData || !catData.children) return;
+                    Object.keys(catData.children).sort().forEach(subKey => {
+                        const subNode = catData.children[subKey];
+                        const details = document.createElement('details');
+                        details.className = 'sub-details';
+                        details.innerHTML = `
+                            <summary class="sub-summary">${subKey}</summary>
+                            <div class="node-container" style="padding-top: 10px;"></div>
+                        `;
+                        renderNode(details.querySelector('.node-container'), subNode, 'child-details', 'child-summary');
+                        container.appendChild(details);
+                    });
+                };
+
+                renderCategory(cleaningContainer, tree.cleaning);
+                renderCategory(electricalContainer, tree.electrical);
+            });
+        }
     </script>
 </body>
 </html>
