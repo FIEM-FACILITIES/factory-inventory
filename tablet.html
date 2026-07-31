@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Αποθήκη - Tablet</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%); 
             margin: 0; padding: 20px; text-align: center; min-height: 100vh;
             user-select: none; -webkit-user-select: none;
+            display: flex; flex-direction: column; /* Για να κολλήσει η υπογραφή κάτω */
         }
         
         /* --- ΣΤΥΛ ΓΙΑ ΤΗΝ ΟΘΟΝΗ LOGIN --- */
         #login-screen {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 80vh;
+            flex-grow: 1; /* Πιάνει τον κενό χώρο */
         }
         .login-box {
             background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
@@ -35,7 +36,11 @@
         .error-msg { color: #e53e3e; font-size: 14px; display: none; font-weight: 600; }
 
         /* --- ΣΤΥΛ ΕΦΑΡΜΟΓΗΣ --- */
-        #main-app { display: none; }
+        #main-app { 
+            display: none; 
+            flex-grow: 1; /* Πιάνει τον κενό χώρο */
+            width: 100%;
+        }
         
         .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 10px auto; }
         h1 { color: #1a202c; font-size: 32px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
@@ -96,11 +101,24 @@
         
         .action-area { display: flex; gap: 6px; margin-top: 10px; }
         .qty-input { flex: 1; padding: 8px; font-size: 15px; text-align: center; border: 2px solid #e2e8f0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; font-weight: 600; }
+        .qty-input:focus { border-color: #3182ce; }
         
         .take-btn { flex: 2; background-color: #38a169; color: white; border: none; padding: 8px; font-size: 15px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .take-btn:active:not(:disabled) { transform: scale(0.95); background-color: #276749; }
         .take-btn:disabled, .qty-input:disabled { background-color: #edf2f7; cursor: not-allowed; color: #a0aec0; }
         
         .loading { font-size: 20px; color: #718096; width: 100%; text-align: center; font-weight: 600; }
+
+        /* --- ΣΤΥΛ ΓΙΑ ΤΗΝ ΥΠΟΓΡΑΦΗ (ΔΙΑΚΡΙΤΙΚΗ ΣΤΟ ΤΕΛΟΣ) --- */
+        .creator-credit {
+            text-align: center;
+            margin-top: auto; /* Το σπρώχνει τέρμα κάτω */
+            padding-top: 40px;
+            font-size: 13px;
+            color: #a0aec0; /* Απαλό γκρι */
+            font-weight: 500;
+            width: 100%;
+        }
 
         @media (max-width: 850px) {
             .columns-wrapper { flex-direction: column; }
@@ -155,6 +173,9 @@
         </div>
     </div>
 
+    <!-- ΥΠΟΓΡΑΦΗ ΔΗΜΙΟΥΡΓΟΥ ΕΞΩ ΑΠΟ ΤΑ ΠΛΑΙΣΙΑ -->
+    <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos 👨‍💻</div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -187,7 +208,6 @@
         let unsubscribeWorkers = null;
         let unsubscribeItems = null;
 
-        // AUTH LOGIC με ENTER
         const handleLoginEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); loginBtn.click(); } };
         document.getElementById('login-email').addEventListener('keypress', handleLoginEnter);
         document.getElementById('login-password').addEventListener('keypress', handleLoginEnter);
@@ -227,7 +247,6 @@
             }
         });
         
-        // Κλείσιμο πληκτρολογίου αν πατηθεί enter στο όνομα εργαζόμενου
         newWorkerInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') { e.preventDefault(); newWorkerInput.blur(); }
         });
@@ -315,7 +334,6 @@
                             
                             setTimeout(() => {
                                 if (!isOutOfStock) {
-                                    // ΕΝΕΡΓΟΠΟΙΗΣΗ ΤΟΥ ENTER ΓΙΑ ΑΦΑΙΡΕΣΗ
                                     document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => {
                                         if (e.key === 'Enter') {
                                             e.preventDefault();

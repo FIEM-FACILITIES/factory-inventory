@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Διαχείριση - Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; 
             margin: 0; padding: 20px; text-align: center; min-height: 100vh;
+            display: flex; flex-direction: column; /* Για να κολλήσει η υπογραφή κάτω */
         }
         
         /* --- ΣΤΥΛ ΓΙΑ ΤΗΝ ΟΘΟΝΗ LOGIN --- */
         #login-screen {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 80vh;
+            flex-grow: 1; /* Πιάνει τον κενό χώρο */
         }
         .login-box {
             background: #1e293b; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -34,7 +35,11 @@
         .error-msg { color: #ef4444; font-size: 14px; display: none; font-weight: 600; }
 
         /* --- ΣΤΥΛ ΕΦΑΡΜΟΓΗΣ --- */
-        #main-app { display: none; }
+        #main-app { 
+            display: none; 
+            flex-grow: 1; /* Πιάνει τον κενό χώρο */
+            width: 100%;
+        }
 
         .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 20px auto; }
         h1 { color: #38bdf8; font-size: 34px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
@@ -112,6 +117,17 @@
         .history-item { padding: 8px 0; border-bottom: 1px solid #334155; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
         .history-worker { color: #38bdf8; font-weight: 700; }
         .history-time { color: #94a3b8; font-size: 12px; }
+
+        /* --- ΣΤΥΛ ΓΙΑ ΤΗΝ ΥΠΟΓΡΑΦΗ (ΔΙΑΚΡΙΤΙΚΗ ΣΤΟ ΤΕΛΟΣ) --- */
+        .creator-credit {
+            text-align: center;
+            margin-top: auto; /* Το σπρώχνει τέρμα κάτω */
+            padding-top: 40px;
+            font-size: 13px;
+            color: #475569; /* Σκούρο γκρι για να δένει με το dark theme */
+            font-weight: 500;
+            width: 100%;
+        }
 
         @media (max-width: 850px) {
             .columns-wrapper { flex-direction: column; }
@@ -220,6 +236,9 @@
         </div>
     </div>
 
+    <!-- ΥΠΟΓΡΑΦΗ ΔΗΜΙΟΥΡΓΟΥ ΕΞΩ ΑΠΟ ΤΑ ΠΛΑΙΣΙΑ -->
+    <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos 👨‍💻</div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, deleteDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -263,7 +282,6 @@
         
         let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory;
 
-        // AUTH LOGIC με ENTER
         const handleLoginEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); loginBtn.click(); } };
         document.getElementById('login-email').addEventListener('keypress', handleLoginEnter);
         document.getElementById('login-password').addEventListener('keypress', handleLoginEnter);
@@ -312,7 +330,6 @@
             else { newElectricalText.style.display = 'none'; newElectricalText.value = ''; }
         });
 
-        // ΕΝΕΡΓΟΠΟΙΗΣΗ ΤΟΥ ENTER ΣΤΗΝ ΠΡΟΣΘΗΚΗ ΕΡΓΑΖΟΜΕΝΟΥ
         workerInputName.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -429,11 +446,10 @@
                             `;
                             grid.appendChild(card);
                             setTimeout(() => {
-                                // ΕΝΕΡΓΟΠΟΙΗΣΗ ΤΟΥ ENTER ΓΙΑ ΠΡΟΣΘΗΚΗ ΠΟΣΟΤΗΤΑΣ ΣΤΟ ADMIN
                                 document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        document.getElementById(`add-${item.id}`).click(); // Λειτουργεί ως προσθήκη (+)
+                                        document.getElementById(`add-${item.id}`).click();
                                     }
                                 });
 
@@ -486,7 +502,6 @@
             });
         }
 
-        // ΕΝΕΡΓΟΠΟΙΗΣΗ ΤΟΥ ENTER ΣΤΗΝ ΠΡΟΣΘΗΚΗ ΝΕΟΥ ΕΙΔΟΥΣ
         const addItemInputs = ['new-name', 'new-code', 'new-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
         addItemInputs.forEach(id => {
             const el = document.getElementById(id);
