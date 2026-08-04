@@ -20,10 +20,6 @@
         .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 20px auto; }
         h1 { color: #38bdf8; font-size: 34px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
         .logout-btn { background: transparent; border: 2px solid #ef4444; color: #ef4444; padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-        
-        /* ΚΟΥΜΠΙ AUTO-IMPORT */
-        .btn-magic { background: #8b5cf6; color: white; border: none; padding: 10px 20px; font-weight: 700; border-radius: 8px; cursor: pointer; font-size: 15px; margin-right: 15px;}
-        .btn-magic:hover { background: #7c3aed; }
 
         .admin-panel { background: #1e293b; padding: 25px; border-radius: 16px; max-width: 1250px; margin: 0 auto 30px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; align-items: flex-start; border: 1px solid #334155; }
         .input-group { display: flex; flex-direction: column; gap: 5px; align-items: center; }
@@ -59,6 +55,7 @@
 
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
+        /* ΚΑΡΤΑ ΜΕ ΥΠΟΣΤΗΡΙΞΗ ΕΙΚΟΝΑΣ */
         .item-card { background: #0f172a; padding: 20px 15px; border-radius: 12px; display: flex; flex-direction: column; text-align: center; border: 1px solid #334155; height: 100%; box-sizing: border-box; }
         .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .product-img { width: 50px; height: 50px; object-fit: contain; border-radius: 6px; border: 1px solid #334155; background: #1e293b; }
@@ -124,15 +121,13 @@
                 <button id="low-stock-btn" style="background:#ef4444; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 15px;">⚠️ Είδη σε Έλλειψη</button>
             </div>
             <h1>Πίνακας Ελέγχου Αποθήκης</h1>
-            <div style="display: flex; align-items: center;">
-                <button id="magic-import-btn" class="btn-magic">🚀 Γρήγορη Εισαγωγή (ΠΑΤΑ ΤΟ 1 ΦΟΡΑ)</button>
-                <button id="logout-btn" class="logout-btn">Αποσύνδεση</button>
-            </div>
+            <button id="logout-btn" class="logout-btn">Αποσύνδεση</button>
         </div>
 
         <div class="admin-panel">
             <div class="input-group"><input type="text" id="new-name" placeholder="Όνομα είδους"></div>
             <div class="input-group"><input type="text" id="new-code" placeholder="Κωδικός / Barcode"></div>
+            <!-- ΝΕΟ ΠΕΔΙΟ ΓΙΑ ΤΗΝ ΕΙΚΟΝΑ -->
             <div class="input-group"><input type="url" id="new-image" placeholder="Link Εικόνας (Προαιρετικό)"></div>
             <div class="input-group"><input type="number" id="new-stock" placeholder="Αρχική Ποσ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
             
@@ -232,101 +227,6 @@
         
         let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory;
         let lowStockMode = false; 
-
-        // --- SCRIPT ΑΥΤΟΜΑΤΗΣ ΕΙΣΑΓΩΓΗΣ (MAGIC BUTTON) ---
-        document.getElementById('magic-import-btn').addEventListener('click', async () => {
-            const btn = document.getElementById('magic-import-btn');
-            btn.textContent = "⏳ Γίνεται εισαγωγή...";
-            btn.disabled = true;
-
-            const itemsToImport = [
-                // ΟΜΑΔΑ 1: Υγρά Καθαρισμού & Απολυμαντικά
-                {name: "AJAX - Καθαριστικό Επιφανειών", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "CIF - Κρέμα γεν. καθαρισμού", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "CIF καθαριστικό γενικής χρήσης με λεμόνι 5 ltr", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "DETTOL – Αντιβακτηριακό Απολυμαντικό Σπρέι", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "DIVERSEY - Γυαλιστικό ανοξείδωτων επιφανειών SUMA INOX", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "DIVERSEY – Απολυμαντικό DIVODES FG", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "DIVERSEY - Καθαριστικό δαπέδων TASKI JONTEC GEMINI", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "DRAGON CLEAN – Καθαριστικό για αμαξάκι", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "SPARK ULTRA Καθαριστικό γεν. χρήσης", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Πράσινο Σαπούνι", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "VIAKAL - Σπρέι για άλατα", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "BUZIL - UNIBUZ G235 (10ltr)", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Απορρυπαντικό συντήρησης", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΤΑΦ – Καθαριστής δαπέδου/επιφανειών", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΧΛΩΡΙΝΗ KLINEX", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΧΛΩΡΙΝΗ ΔΟΧΕΙΟ", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "KARCHER RM 81", category: "cleaning", subcategory: "Υγρά Καθαρισμού & Απολυμαντικά", childcategory: "Σαπούνι για φορτηγά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-
-                // ΟΜΑΔΑ 2: Πλυντήριο & Πιάτα
-                {name: "ARIEL - Σκόνη Πλυντηρίου", category: "cleaning", subcategory: "Πλυντήριο & Πιάτα", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΜΑΛΑΚΤΙΚΟ ΡΟΥΧΩΝ", category: "cleaning", subcategory: "Πλυντήριο & Πιάτα", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "AVA - Υγρό πιάτων", category: "cleaning", subcategory: "Πλυντήριο & Πιάτα", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΛΑΜΠΡΥΝΤΙΚΟ", category: "cleaning", subcategory: "Πλυντήριο & Πιάτα", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-
-                // ΟΜΑΔΑ 3: Σαπούνια Χεριών & Είδη WC
-                {name: "DIVERSEY SOFT CARE DES_E SPRAY", category: "cleaning", subcategory: "Σαπούνια Χεριών & Είδη WC", childcategory: "Απολυμαντικό χεριών", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "DIVERSEY SOFT CARE PLUS", category: "cleaning", subcategory: "Σαπούνια Χεριών & Είδη WC", childcategory: "Σαπούνι χεριών", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "DRAGON CLEAN CD-FOAM", category: "cleaning", subcategory: "Σαπούνια Χεριών & Είδη WC", childcategory: "Σαπούνι χεριών", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΚΡΕΜΟΣΑΠΟΥΝΟ ΛΕΥΚΟ - VANILLA DRAGON 4L", category: "cleaning", subcategory: "Σαπούνια Χεριών & Είδη WC", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΑΡΩΜΑΤΙΚΟ ΑΠΟΛΥΜ. WC (ΑΝΤΑΛ/ΚΟ)", category: "cleaning", subcategory: "Σαπούνια Χεριών & Είδη WC", childcategory: "Γραφεία", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "Αυτόματο Αρωματικό Σπρέι - ALYA", category: "cleaning", subcategory: "Σαπούνια Χεριών & Είδη WC", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "X-ΑΠΟΛΥΜΑΝΤΙΚΟ WC KENNEDIA 310ML", category: "cleaning", subcategory: "Σαπούνια Χεριών & Είδη WC", childcategory: "Αποδυτήρια", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-
-                // ΟΜΑΔΑ 4: Χαρτικά
-                {name: "ΡΟΛΟ ΧΑΡΤΙ ΜΠΛΕ ΓΙΑ ΤΟ ΚΟΥΤΑΛΑΚΙ", category: "cleaning", subcategory: "Χαρτικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΧΑΡΤΙ ΚΟΥΖΙΝΑΣ ΜΠΛΕ DRAGON (M)", category: "cleaning", subcategory: "Χαρτικά", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΧΑΡΤΙ ΥΓΕΙΑΣ", category: "cleaning", subcategory: "Χαρτικά", childcategory: "Απλό", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΧΑΡΤΙ ΥΓΕΙΑΣ MINI DOWN PULL STRONG 430gr", category: "cleaning", subcategory: "Χαρτικά", childcategory: "Αποδυτήρια", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΧΑΡΤΙ ΥΓΕΙΑΣ SMART ONE 600gr DRAGON 7300", category: "cleaning", subcategory: "Χαρτικά", childcategory: "Γραφεία", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΧΕΙΡΟΠΕΤΣΕΤΑ ΡΟΛΛΟ ΛΕΥΚΗ BARCODE IQ TAD", category: "cleaning", subcategory: "Χαρτικά", childcategory: "Αποδυτήρια", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΧΕΙΡΟΠΕΤΣΕΤΑ ΡΟΛΛΟ(6x800gr) ΛΕΥΚΗ", category: "cleaning", subcategory: "Χαρτικά", childcategory: "Γραφεία", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-
-                // ΟΜΑΔΑ 5: Εργαλεία Καθαρισμού
-                {name: "DELTA – CLEANING ΠΑΝΑΚΙΑ ΜΠΛΕ ΜΙΚΡΟΪΝΩΝ", category: "cleaning", subcategory: "Εργαλεία Καθαρισμού", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "SWIFFER – Ξεσκόνισμα επιφανειών", category: "cleaning", subcategory: "Εργαλεία Καθαρισμού", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "WETTEX", category: "cleaning", subcategory: "Εργαλεία Καθαρισμού", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "Βούρτσες για αμαξάκι", category: "cleaning", subcategory: "Εργαλεία Καθαρισμού", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΚΟΝΤΑΡΙΑ ΣΚΟΥΠΑΣ", category: "cleaning", subcategory: "Εργαλεία Καθαρισμού", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΣΦΟΥΓΓΑΡΙΑ ΚΟΥΖΙΝΑΣ με σύρμα", category: "cleaning", subcategory: "Εργαλεία Καθαρισμού", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΣΦΟΥΓΓΑΡΙΣΤΡΕΣ", category: "cleaning", subcategory: "Εργαλεία Καθαρισμού", childcategory: "Απλή", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΣΦΟΥΓΓΑΡΙΣΤΡΑ ΕΠΑΓΓΕΛΜΑΤΙΚΗ", category: "cleaning", subcategory: "Εργαλεία Καθαρισμού", childcategory: "Πράσινη", subchildcategory: "Ακρυλική 450gr", stock: 0, code: "", imageUrl: ""},
-                {name: "ΣΦΟΥΓΓΑΡΙΣΤΡΑ ΕΠΑΓΓΕΛΜΑΤΙΚΗ", category: "cleaning", subcategory: "Εργαλεία Καθαρισμού", childcategory: "Μπλε", subchildcategory: "Μικροϊνών 300gr", stock: 0, code: "", imageUrl: ""},
-
-                // ΟΜΑΔΑ 6: Σακούλες & Καλάθια
-                {name: "ΣΑΚΟΥΛΕΣ ΑΠΟΡΡΙΜΜΑΤΩΝ", category: "cleaning", subcategory: "Σακούλες & Καλάθια", childcategory: "Μαύρες", subchildcategory: "50x70", stock: 0, code: "", imageUrl: ""},
-                {name: "ΣΑΚΟΥΛΕΣ ΑΠΟΡΡΙΜΜΑΤΩΝ", category: "cleaning", subcategory: "Σακούλες & Καλάθια", childcategory: "Μαύρες", subchildcategory: "95x120", stock: 0, code: "", imageUrl: ""},
-                {name: "ΣΑΚΟΥΛΕΣ ΓΙΑ ΤΗΝ ΣΚΟΥΠΑ", category: "cleaning", subcategory: "Σακούλες & Καλάθια", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "Καλαθάκια", category: "cleaning", subcategory: "Σακούλες & Καλάθια", childcategory: "Άσπρα", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "Καλαθάκια", category: "cleaning", subcategory: "Σακούλες & Καλάθια", childcategory: "Μαύρα", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-
-                // ΟΜΑΔΑ 7: Είδη Προστασίας (ΜΑΠ)
-                {name: "ΓΑΝΤΙΑ BOLD", category: "cleaning", subcategory: "Είδη Προστασίας (ΜΑΠ)", childcategory: "Μαύρα", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΓΑΝΤΙΑ HUGOSTAR", category: "cleaning", subcategory: "Είδη Προστασίας (ΜΑΠ)", childcategory: "Μπλε", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΓΑΝΤΙΑ ROBUST", category: "cleaning", subcategory: "Είδη Προστασίας (ΜΑΠ)", childcategory: "Μπλε", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΕΠΙΜΑΝΙΚΙΑ", category: "cleaning", subcategory: "Είδη Προστασίας (ΜΑΠ)", childcategory: "Λευκά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΜΟΥΣΟΚΑΛΥΠΤΡΑ", category: "cleaning", subcategory: "Είδη Προστασίας (ΜΑΠ)", childcategory: "Λευκά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΡΟΜΠΕΣ ΕΠΙΣΚΕΠΤΩΝ", category: "cleaning", subcategory: "Είδη Προστασίας (ΜΑΠ)", childcategory: "Λευκές", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΣΚΟΥΦΑΚΙΑ ΕΠΙΣΚΕΠΤΩΝ", category: "cleaning", subcategory: "Είδη Προστασίας (ΜΑΠ)", childcategory: "Κόκκινα", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΣΚΟΥΦΑΚΙΑ ΕΠΙΣΚΕΠΤΩΝ", category: "cleaning", subcategory: "Είδη Προστασίας (ΜΑΠ)", childcategory: "Σιέλ", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-
-                // ΟΜΑΔΑ 8: Διάφορα
-                {name: "DIVERSEY - Κενές φιάλες με ψεκαστήρα", category: "cleaning", subcategory: "Διάφορα", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "ΔΙΑΦΑΝΑ ΠΛΑΣΤΙΚΑ ΠΟΤΗΡΙΑ ΨΥΚΤΩΝ", category: "cleaning", subcategory: "Διάφορα", childcategory: "Γενικά", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""},
-                {name: "Πλαστικά κιβώτια - Τελάρα PAV RC 13", category: "cleaning", subcategory: "Διάφορα", childcategory: "Κόκκινα", subchildcategory: "Γενικά", stock: 0, code: "", imageUrl: ""}
-            ];
-
-            try {
-                await Promise.all(itemsToImport.map(item => addDoc(collection(db, "items"), item)));
-                btn.textContent = "✅ Τα 62 Είδη Προστέθηκαν!";
-                btn.style.background = "#10b981";
-                alert("Η εισαγωγή ολοκληρώθηκε! Τα 62 προϊόντα βρίσκονται πλέον στις σωστές τους κατηγορίες.");
-            } catch(e) {
-                alert("Υπήρξε σφάλμα κατά την εισαγωγή.");
-                btn.textContent = "Σφάλμα!";
-                btn.disabled = false;
-            }
-        });
-        // --- ΤΕΛΟΣ SCRIPT ΕΙΣΑΓΩΓΗΣ ---
 
         const handleLoginEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); loginBtn.click(); } };
         document.getElementById('login-email').addEventListener('keypress', handleLoginEnter);
@@ -490,6 +390,7 @@
                             const isLowStock = item.stock <= 5;
                             const stockColor = isLowStock && item.stock > 0 ? '#e53e3e' : '#38bdf8';
 
+                            // Δημιουργία Εικόνας
                             const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
                                 ? `<img src="${item.imageUrl}" class="product-img" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
                                 : `<div class="no-img">📦</div>`;
@@ -583,6 +484,7 @@
             });
         }
 
+        // ΠΡΟΣΘΗΚΗ ΕΙΔΟΥΣ ΜΕ ΤΟ ΝΕΟ ΠΕΔΙΟ EIKONAS
         const addItemInputs = ['new-name', 'new-code', 'new-image', 'new-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
         addItemInputs.forEach(id => { const el = document.getElementById(id); if (el) { el.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById('add-item-btn').click(); } }); } });
 
