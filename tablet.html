@@ -91,7 +91,6 @@
         .loading { font-size: 20px; color: #718096; width: 100%; text-align: center; font-weight: 600; }
         .creator-credit { text-align: center; margin-top: auto; padding-top: 40px; font-size: 13px; color: #a0aec0; font-weight: 500; width: 100%; }
 
-        /* --- TOAST NOTIFICATION --- */
         .toast {
             visibility: hidden; min-width: 250px; background-color: #38a169; color: #fff; text-align: center; 
             border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; transform: translateX(-50%); 
@@ -182,7 +181,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // Ενεργοποίηση Offline Λειτουργίας
         enableIndexedDbPersistence(db).catch((err) => { console.warn("Offline persistence issue:", err); });
 
         const loginScreen = document.getElementById('login-screen');
@@ -267,7 +265,6 @@
             });
         }
 
-        // ΟΜΑΛΟΣ ΚΑΘΑΡΙΣΜΟΣ ΟΘΟΝΗΣ ΑΝΤΙ ΓΙΑ RELOAD
         function resetTabletUI() {
             document.querySelectorAll('details').forEach(d => d.open = false);
             workerSelect.selectedIndex = 0;
@@ -334,7 +331,6 @@
                             const warningIcon = isLowStock && !isOutOfStock ? '⚠️' : '';
 
                             const card = document.createElement('div'); card.className = 'item-card';
-                            // ΠΡΟΣΤΑΣΙΑ ΕΙΣΑΓΩΓΗΣ (oninput) ΜΟΝΟ ΓΙΑ ΨΗΦΙΑ
                             card.innerHTML = `
                                 <div class="item-name"><span>${item.name}</span>${item.code ? `<span style="font-size: 12px; font-weight: 400; color: #718096; margin-top: 4px;">Κωδ: ${item.code}</span>` : ''}</div>
                                 <div class="item-stock" style="color: ${stockColor}">${item.stock} ${warningIcon}</div>
@@ -351,13 +347,13 @@
                                         if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`btn-${item.id}`).click(); }
                                     });
 
-                                    document.getElementById(`btn-${item.id}`).addEventListener('click', async () => {
+                                    document.getElementById(`btn-${item.id}`).addEventListener('click', () => {
                                         let worker = workerSelect.value;
                                         if (!worker || worker === "-- Επιλέξτε Όνομα --") { alert("⚠️ Παρακαλώ επιλέξτε το όνομά σας!"); workerSelect.focus(); return; } 
                                         if (worker === '__NEW_WORKER__') {
                                             worker = newWorkerInput.value.trim().toUpperCase();
                                             if (!worker) { alert("⚠️ Πληκτρολογήστε το όνομά σας!"); newWorkerInput.focus(); return; }
-                                            try { await setDoc(doc(db, "workers", worker), { name: worker }); } catch(e) {}
+                                            setDoc(doc(db, "workers", worker), { name: worker }).catch(()=>{});
                                         }
 
                                         const inputField = document.getElementById(`input-${item.id}`);
@@ -368,18 +364,19 @@
                                         inputField.blur();
                                         if(document.activeElement) document.activeElement.blur();
 
-                                        await updateDoc(doc(db, "items", item.id), { stock: increment(-qty) });
+                                        // ΑΦΑΙΡΕΣΗ AWAIT - ΕΚΤΕΛΕΣΗ ΚΑΙ ΣΤΟ ΠΑΡΑΣΚΗΝΙΟ (OFFLINE)
+                                        updateDoc(doc(db, "items", item.id), { stock: increment(-qty) }).catch(()=>{});
 
                                         let logParts = [];
                                         if(item.childcategory && item.childcategory !== 'Γενικά') logParts.push(item.childcategory);
                                         if(item.subchildcategory && item.subchildcategory !== 'Γενικά') logParts.push(item.subchildcategory);
                                         let logSuffix = logParts.length > 0 ? ` (${logParts.join(' - ')})` : '';
                                         
-                                        await addDoc(collection(db, "history"), {
+                                        addDoc(collection(db, "history"), {
                                             worker: worker, item: `${item.subcategory}: ${item.name}${logSuffix}`,
                                             itemId: item.id,
                                             quantity: qty, timestamp: new Date().toLocaleString('el-GR'), createdAt: Date.now()
-                                        });
+                                        }).catch(()=>{});
 
                                         showToast(`✅ Αφαιρέθηκαν ${qty}x ${item.name}`);
                                         inputField.value = '';
