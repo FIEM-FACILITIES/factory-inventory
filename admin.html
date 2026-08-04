@@ -9,13 +9,12 @@
         body { 
             font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; 
             margin: 0; padding: 20px; text-align: center; min-height: 100vh;
-            display: flex; flex-direction: column; /* Για να κολλήσει η υπογραφή κάτω */
+            display: flex; flex-direction: column; 
         }
         
-        /* --- ΣΤΥΛ ΓΙΑ ΤΗΝ ΟΘΟΝΗ LOGIN --- */
         #login-screen {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            flex-grow: 1; /* Πιάνει τον κενό χώρο */
+            flex-grow: 1; 
         }
         .login-box {
             background: #1e293b; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -34,10 +33,9 @@
         .login-btn:active { background: #0ea5e9; }
         .error-msg { color: #ef4444; font-size: 14px; display: none; font-weight: 600; }
 
-        /* --- ΣΤΥΛ ΕΦΑΡΜΟΓΗΣ --- */
         #main-app { 
             display: none; 
-            flex-grow: 1; /* Πιάνει τον κενό χώρο */
+            flex-grow: 1; 
             width: 100%;
         }
 
@@ -76,7 +74,7 @@
         
         .inventory-section { display: block; padding-top: 15px; }
         .sub-details { background: #1e293b; margin-bottom: 15px; border-radius: 12px; padding: 10px; border: 1px solid #334155; }
-        summary.sub-summary { background-color: #334155; color: #e2e8f0; font-size: 18px; font-weight: 600; padding: 12px 20px; border-radius: 8px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        summary.sub-summary { background-color: #334155; color: #e2e8f0; font-size: 18px; font-weight: 600; padding: 12px 20px; border-radius: 8px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; transition: transform 0.1s ease; }
         summary.sub-summary::-webkit-details-marker { display: none; }
         summary.sub-summary::after { content: '▼'; font-size: 14px; }
 
@@ -92,17 +90,31 @@
 
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        .item-card { background: #0f172a; padding: 20px 15px; border-radius: 12px; display: flex; flex-direction: column; text-align: center; border: 1px solid #334155; }
-        .item-name { font-size: 16px; font-weight: 600; color: #e2e8f0; height: 45px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+        /* --- ΑΛΛΑΓΕΣ ΓΙΑ ΝΑ ΧΩΡΑΕΙ ΤΟ ΚΕΙΜΕΝΟ --- */
+        .item-card { 
+            background: #0f172a; padding: 20px 15px; border-radius: 12px; display: flex; flex-direction: column; 
+            text-align: center; border: 1px solid #334155; height: 100%; box-sizing: border-box; /* Flexbox */
+        }
+        .item-name { 
+            font-size: 16px; font-weight: 600; color: #e2e8f0; 
+            min-height: 45px; height: auto; /* Αντί για σταθερό ύψος */
+            display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; 
+            word-break: break-word; overflow-wrap: break-word; margin-bottom: 5px;
+        }
         .item-stock { font-size: 36px; color: #38bdf8; margin: 10px 0; font-weight: 700; }
         
         .input-row { margin-bottom: 10px; }
         .restock-input { width: 100%; box-sizing: border-box; padding: 10px; font-weight: 600; }
         
-        .action-buttons { display: flex; gap: 8px; margin-bottom: 15px; }
+        .action-buttons { display: flex; gap: 8px; margin-bottom: 15px; margin-top: auto; /* Σπρώχνει κάτω τα κουμπιά */ }
         .btn-add-stock { flex: 1; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-sub-stock { flex: 1; background: #f59e0b; color: #0f172a; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .btn-delete { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: auto; }
+        .btn-delete { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+        .btn-edit-group { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 0; filter: grayscale(0.2); transition: transform 0.1s; }
+        .btn-edit-group:hover { transform: scale(1.2); filter: grayscale(0); }
+        .btn-edit-item { background: transparent; border: none; cursor: pointer; padding: 0; transition: transform 0.1s; }
+        .btn-edit-item:hover { transform: scale(1.2); }
 
         .admin-sections-wrapper { display: flex; flex-wrap: wrap; gap: 30px; max-width: 1400px; margin: 40px auto 0 auto; }
         .section-box { flex: 1; min-width: 350px; background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; text-align: left; }
@@ -118,15 +130,8 @@
         .history-worker { color: #38bdf8; font-weight: 700; }
         .history-time { color: #94a3b8; font-size: 12px; }
 
-        /* --- ΣΤΥΛ ΓΙΑ ΤΗΝ ΥΠΟΓΡΑΦΗ (ΔΙΑΚΡΙΤΙΚΗ ΣΤΟ ΤΕΛΟΣ) --- */
         .creator-credit {
-            text-align: center;
-            margin-top: auto; /* Το σπρώχνει τέρμα κάτω */
-            padding-top: 40px;
-            font-size: 13px;
-            color: #475569; /* Σκούρο γκρι για να δένει με το dark theme */
-            font-weight: 500;
-            width: 100%;
+            text-align: center; margin-top: auto; padding-top: 40px; font-size: 13px; color: #475569; font-weight: 500; width: 100%;
         }
 
         @media (max-width: 850px) {
@@ -148,6 +153,7 @@
             <input type="password" id="login-password" class="login-input" placeholder="Κωδικός">
             <button id="login-btn" class="login-btn">Σύνδεση</button>
         </div>
+        <div class="creator-credit">Made by Fotis Vasilopoulos</div>
     </div>
 
     <!-- ΚΥΡΙΩΣ ΕΦΑΡΜΟΓΗ -->
@@ -234,10 +240,9 @@
                 </div>
             </div>
         </div>
+        
+        <div class="creator-credit">Made by Fotis Vasilopoulos</div>
     </div>
-
-    <!-- ΥΠΟΓΡΑΦΗ ΔΗΜΙΟΥΡΓΟΥ ΕΞΩ ΑΠΟ ΤΑ ΠΛΑΙΣΙΑ -->
-    <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos 👨‍💻</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -353,6 +358,19 @@
         });
 
         function loadData() {
+            function getAllItemIds(node) {
+                let ids = [];
+                if (node.items && node.items.length > 0) {
+                    ids = ids.concat(node.items.map(i => i.id));
+                }
+                if (node.children) {
+                    Object.values(node.children).forEach(childNode => {
+                        ids = ids.concat(getAllItemIds(childNode));
+                    });
+                }
+                return ids;
+            }
+
             unsubscribeWorkers = onSnapshot(collection(db, "workers"), (snapshot) => {
                 workersListContainer.innerHTML = '';
                 const workers = [];
@@ -432,13 +450,22 @@
                     }
                 });
 
-                const renderNode = (container, node, levelClass, summaryClass) => {
+                const renderNode = (container, node, levelClass, summaryClass, levelIndex) => {
                     if (node.items && node.items.length > 0) {
                         const grid = document.createElement('div'); grid.className = 'sub-inventory-section';
                         node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
                             const card = document.createElement('div'); card.className = 'item-card';
                             card.innerHTML = `
-                                <div class="item-name"><span>${item.name}</span>${item.code ? `<span style="font-size: 12px; font-weight: 400; color: #94a3b8; margin-top: 4px;">Κωδ: ${item.code}</span>` : ''}</div>
+                                <div class="item-name">
+                                    <div style="display:flex; align-items:center; justify-content:center; gap:6px; width:100%;">
+                                        <span>${item.name}</span>
+                                        <button class="btn-edit-item" id="edit-name-${item.id}" style="font-size:14px;" title="Μετονομασία Είδους">✏️</button>
+                                    </div>
+                                    <div style="font-size: 12px; font-weight: 400; color: #94a3b8; margin-top: 4px; display:flex; align-items:center; justify-content:center; gap:5px;">
+                                        ${item.code ? `Κωδ: ${item.code}` : 'Χωρίς Κωδικό'}
+                                        <button class="btn-edit-item" id="edit-code-${item.id}" style="font-size:12px;" title="Αλλαγή Κωδικού">✏️</button>
+                                    </div>
+                                </div>
                                 <div class="item-stock">${item.stock} τμχ</div>
                                 <div class="input-row"><input type="number" id="input-${item.id}" class="restock-input" placeholder="Ποσότητα"></div>
                                 <div class="action-buttons"><button class="btn-add-stock" id="add-${item.id}">+</button><button class="btn-sub-stock" id="sub-${item.id}">-</button></div>
@@ -446,13 +473,25 @@
                             `;
                             grid.appendChild(card);
                             setTimeout(() => {
+                                document.getElementById(`edit-name-${item.id}`).addEventListener('click', async () => {
+                                    let newName = prompt(`Νέο όνομα για το είδος:`, item.name);
+                                    if (newName !== null && newName.trim() !== "" && newName.trim() !== item.name) {
+                                        await updateDoc(doc(db, "items", item.id), { name: newName.trim() });
+                                    }
+                                });
+                                document.getElementById(`edit-code-${item.id}`).addEventListener('click', async () => {
+                                    let newCode = prompt(`Νέος κωδικός για "${item.name}":`, item.code || "");
+                                    if (newCode !== null && newCode.trim() !== item.code) {
+                                        await updateDoc(doc(db, "items", item.id), { code: newCode.trim() });
+                                    }
+                                });
+
                                 document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault();
                                         document.getElementById(`add-${item.id}`).click();
                                     }
                                 });
-
                                 document.getElementById(`add-${item.id}`).addEventListener('click', async () => {
                                     let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1;
                                     await updateDoc(doc(db, "items", item.id), { stock: increment(val) }); document.getElementById(`input-${item.id}`).value = '';
@@ -471,9 +510,36 @@
                     }
                     if (node.children) {
                         Object.keys(node.children).sort().forEach(childKey => {
-                            const childNode = node.children[childKey]; const details = document.createElement('details'); details.className = levelClass;
-                            details.innerHTML = `<summary class="${summaryClass}">${childKey}</summary><div class="node-container" style="padding-top: 8px; padding-bottom: 5px;"></div>`;
-                            renderNode(details.querySelector('.node-container'), childNode, 'sub-child-details', 'sub-child-summary'); container.appendChild(details);
+                            const childNode = node.children[childKey]; 
+                            const details = document.createElement('details'); details.className = levelClass;
+                            details.innerHTML = `
+                                <summary class="${summaryClass}">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span>${childKey}</span>
+                                        <button class="btn-edit-group" title="Μετονομασία Υποομάδας">✏️</button>
+                                    </div>
+                                </summary>
+                                <div class="node-container" style="padding-top: 8px; padding-bottom: 5px;"></div>
+                            `;
+                            
+                            const editBtn = details.querySelector('.btn-edit-group');
+                            editBtn.addEventListener('click', async (e) => {
+                                e.preventDefault(); e.stopPropagation();
+                                let newName = prompt(`Μετονομασία υποομάδας "${childKey}":`, childKey);
+                                if (newName !== null && newName.trim() !== "" && newName.trim() !== childKey) {
+                                    const finalName = newName.trim();
+                                    const ids = getAllItemIds(childNode);
+                                    const fieldToUpdate = levelIndex === 1 ? 'childcategory' : 'subchildcategory';
+                                    try {
+                                        await Promise.all(ids.map(id => updateDoc(doc(db, "items", id), { [fieldToUpdate]: finalName })));
+                                    } catch(err) { alert("Υπήρξε σφάλμα κατά την μετονομασία."); }
+                                }
+                            });
+
+                            let nextLevelClass = 'sub-child-details';
+                            let nextSummaryClass = 'sub-child-summary';
+                            renderNode(details.querySelector('.node-container'), childNode, nextLevelClass, nextSummaryClass, levelIndex + 1); 
+                            container.appendChild(details);
                         });
                     }
                 };
@@ -481,11 +547,36 @@
                 const renderCategory = (container, catData) => {
                     if(!catData || !catData.children) return;
                     Object.keys(catData.children).sort().forEach(subKey => {
-                        const subNode = catData.children[subKey]; const details = document.createElement('details'); details.className = 'sub-details';
-                        details.innerHTML = `<summary class="sub-summary">${subKey}</summary><div class="node-container" style="padding-top: 10px;"></div>`;
-                        renderNode(details.querySelector('.node-container'), subNode, 'child-details', 'child-summary'); container.appendChild(details);
+                        const subNode = catData.children[subKey]; 
+                        const details = document.createElement('details'); details.className = 'sub-details';
+                        details.innerHTML = `
+                            <summary class="sub-summary">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span>${subKey}</span>
+                                    <button class="btn-edit-group" title="Μετονομασία Ομάδας">✏️</button>
+                                </div>
+                            </summary>
+                            <div class="node-container" style="padding-top: 10px;"></div>
+                        `;
+                        
+                        const editBtn = details.querySelector('.btn-edit-group');
+                        editBtn.addEventListener('click', async (e) => {
+                            e.preventDefault(); e.stopPropagation();
+                            let newName = prompt(`Μετονομασία Ομάδας "${subKey}":`, subKey);
+                            if (newName !== null && newName.trim() !== "" && newName.trim() !== subKey) {
+                                const finalName = newName.trim();
+                                const ids = getAllItemIds(subNode);
+                                try {
+                                    await Promise.all(ids.map(id => updateDoc(doc(db, "items", id), { subcategory: finalName })));
+                                } catch(err) { alert("Υπήρξε σφάλμα κατά την μετονομασία."); }
+                            }
+                        });
+
+                        renderNode(details.querySelector('.node-container'), subNode, 'child-details', 'child-summary', 1); 
+                        container.appendChild(details);
                     });
                 };
+                
                 renderCategory(cleaningContainer, tree.cleaning); renderCategory(electricalContainer, tree.electrical);
             });
 

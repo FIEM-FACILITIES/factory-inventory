@@ -10,13 +10,12 @@
             font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%); 
             margin: 0; padding: 20px; text-align: center; min-height: 100vh;
             user-select: none; -webkit-user-select: none;
-            display: flex; flex-direction: column; /* Για να κολλήσει η υπογραφή κάτω */
+            display: flex; flex-direction: column; 
         }
         
-        /* --- ΣΤΥΛ ΓΙΑ ΤΗΝ ΟΘΟΝΗ LOGIN --- */
         #login-screen {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            flex-grow: 1; /* Πιάνει τον κενό χώρο */
+            flex-grow: 1; 
         }
         .login-box {
             background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
@@ -35,10 +34,9 @@
         .login-btn:active { background: #2b6cb0; }
         .error-msg { color: #e53e3e; font-size: 14px; display: none; font-weight: 600; }
 
-        /* --- ΣΤΥΛ ΕΦΑΡΜΟΓΗΣ --- */
         #main-app { 
             display: none; 
-            flex-grow: 1; /* Πιάνει τον κενό χώρο */
+            flex-grow: 1; 
             width: 100%;
         }
         
@@ -95,11 +93,26 @@
         
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; }
-        .item-name { font-size: 16px; font-weight: 600; color: #2d3748; height: 45px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+        /* --- ΑΛΛΑΓΕΣ ΓΙΑ ΝΑ ΧΩΡΑΕΙ ΤΟ ΚΕΙΜΕΝΟ --- */
+        .item-card { 
+            background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+            text-align: center; border: 1px solid #e2e8f0; 
+            display: flex; flex-direction: column; height: 100%; box-sizing: border-box; /* Flexbox για να μεγαλώνει */
+        }
+        .item-name { 
+            font-size: 16px; font-weight: 600; color: #2d3748; 
+            min-height: 45px; height: auto; /* Αντί για σκέτο height */
+            display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; 
+            word-break: break-word; overflow-wrap: break-word; /* Σπάει τα τεράστια κείμενα */
+        }
         .item-stock { font-size: 36px; color: #3182ce; margin: 8px 0; font-weight: 700; }
         
-        .action-area { display: flex; gap: 6px; margin-top: 10px; }
+        .action-area { 
+            display: flex; gap: 6px; 
+            margin-top: auto; /* Σπρώχνει τα κουμπιά πάντα στο κάτω μέρος της κάρτας */
+            padding-top: 10px; 
+        }
+        
         .qty-input { flex: 1; padding: 8px; font-size: 15px; text-align: center; border: 2px solid #e2e8f0; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; font-weight: 600; }
         .qty-input:focus { border-color: #3182ce; }
         
@@ -109,15 +122,8 @@
         
         .loading { font-size: 20px; color: #718096; width: 100%; text-align: center; font-weight: 600; }
 
-        /* --- ΣΤΥΛ ΓΙΑ ΤΗΝ ΥΠΟΓΡΑΦΗ (ΔΙΑΚΡΙΤΙΚΗ ΣΤΟ ΤΕΛΟΣ) --- */
         .creator-credit {
-            text-align: center;
-            margin-top: auto; /* Το σπρώχνει τέρμα κάτω */
-            padding-top: 40px;
-            font-size: 13px;
-            color: #a0aec0; /* Απαλό γκρι */
-            font-weight: 500;
-            width: 100%;
+            text-align: center; margin-top: auto; padding-top: 40px; font-size: 13px; color: #a0aec0; font-weight: 500; width: 100%;
         }
 
         @media (max-width: 850px) {
@@ -173,8 +179,7 @@
         </div>
     </div>
 
-    <!-- ΥΠΟΓΡΑΦΗ ΔΗΜΙΟΥΡΓΟΥ ΕΞΩ ΑΠΟ ΤΑ ΠΛΑΙΣΙΑ -->
-    <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos 👨‍💻</div>
+    <div class="creator-credit">Made by Fotis Vasilopoulos</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
