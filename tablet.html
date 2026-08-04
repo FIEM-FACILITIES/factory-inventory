@@ -28,15 +28,11 @@
         h1 { color: #1a202c; font-size: 32px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
         .logout-btn { background: transparent; border: 2px solid #e53e3e; color: #e53e3e; padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; }
         
-        /* --- ΝΕΟ DESIGN ΓΙΑ ΤΑ CONTROLS ΠΑΝΩ --- */
-        .top-actions {
-            display: flex; justify-content: center; align-items: stretch; gap: 15px;
-            max-width: 650px; margin: 0 auto 20px auto;
-        }
+        .controls-wrapper { display: flex; flex-wrap: wrap; gap: 15px; max-width: 1400px; margin: 0 auto 25px auto; justify-content: center; align-items: center; }
         
         .worker-bar {
             background: white; padding: 15px 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-            display: flex; flex-direction: column; align-items: center; gap: 10px; border: 2px solid #e2e8f0; flex: 1;
+            display: flex; flex-direction: column; align-items: center; gap: 10px; border: 2px solid #e2e8f0; flex: 1; min-width: 300px;
         }
         .worker-inner { display: flex; align-items: center; justify-content: center; gap: 15px; width: 100%; }
         .worker-bar label { font-weight: 600; color: #2d3748; font-size: 18px; }
@@ -50,9 +46,7 @@
         }
         .search-toggle-btn:hover, .search-toggle-btn.active { border-color: #3182ce; background: #ebf8ff; }
 
-        .search-box-wrapper {
-            display: none; max-width: 650px; margin: 0 auto 25px auto; animation: slideDown 0.3s ease;
-        }
+        .search-box-wrapper { display: none; max-width: 650px; margin: 0 auto 25px auto; animation: slideDown 0.3s ease; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .search-input { width: 100%; box-sizing: border-box; padding: 16px; border-radius: 16px; border: 2px solid #3182ce; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); outline: none; font-family: 'Inter'; font-weight: 500; }
 
@@ -134,7 +128,7 @@
             <button id="logout-btn" class="logout-btn">Αποσύνδεση</button>
         </div>
         
-        <div class="top-actions">
+        <div class="controls-wrapper">
             <div class="worker-bar">
                 <div class="worker-inner">
                     <label for="worker-name">👤 Εργαζόμενος:</label>
@@ -165,14 +159,14 @@
                 <div id="electrical-container" class="inventory-section"></div>
             </details>
         </div>
-        <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos</div>
     </div>
 
     <div id="toast" class="toast">Επιτυχής Αφαίρεση!</div>
+    <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, setDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
@@ -188,16 +182,17 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
+        // Ενεργοποίηση Offline Λειτουργίας
+        enableIndexedDbPersistence(db).catch((err) => { console.warn("Offline persistence issue:", err); });
+
         const loginScreen = document.getElementById('login-screen');
         const mainApp = document.getElementById('main-app');
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const errorMsg = document.getElementById('login-error');
-        
-        // Στοιχεία Αναζήτησης
+        const searchInput = document.getElementById('search-input');
         const searchToggleBtn = document.getElementById('search-toggle-btn');
         const searchBoxWrapper = document.getElementById('search-box-wrapper');
-        const searchInput = document.getElementById('search-input');
 
         const cleaningContainer = document.getElementById('cleaning-container');
         const electricalContainer = document.getElementById('electrical-container');
@@ -242,41 +237,27 @@
         });
         newWorkerInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); newWorkerInput.blur(); } });
 
-        // Άνοιγμα / Κλείσιμο Αναζήτησης
         searchToggleBtn.addEventListener('click', () => {
             if (searchBoxWrapper.style.display === 'none' || searchBoxWrapper.style.display === '') {
-                searchBoxWrapper.style.display = 'block';
-                searchToggleBtn.classList.add('active');
-                searchInput.focus();
+                searchBoxWrapper.style.display = 'block'; searchToggleBtn.classList.add('active'); searchInput.focus();
             } else {
-                searchBoxWrapper.style.display = 'none';
-                searchToggleBtn.classList.remove('active');
-                searchInput.value = ''; // Καθαρισμός αν την κλείσει
-                applySearchFilter();
+                searchBoxWrapper.style.display = 'none'; searchToggleBtn.classList.remove('active'); searchInput.value = ''; applySearchFilter();
             }
         });
 
         searchInput.addEventListener('input', applySearchFilter);
 
-        // Η ΕΞΥΠΝΗ ΛΟΓΙΚΗ ΤΗΣ ΑΝΑΖΗΤΗΣΗΣ
         function applySearchFilter() {
             const term = searchInput.value.toLowerCase();
-            
-            // 1. Αρχικά κλείνουμε όλους τους φακέλους για καθαριότητα
             document.querySelectorAll('details').forEach(d => d.open = false);
-
             document.querySelectorAll('.item-card').forEach(card => {
                 const text = card.textContent.toLowerCase();
                 if (text.includes(term)) {
                     card.style.display = 'flex';
-                    
-                    // 2. Αν έχουμε γράψει κάτι (και το βρήκε), ανοίγουμε ΜΟΝΟ τους φακέλους αυτού του προϊόντος
                     if (term !== "") {
                         let parent = card.parentElement;
                         while (parent && parent.id !== 'main-app') {
-                            if (parent.tagName === 'DETAILS') {
-                                parent.open = true;
-                            }
+                            if (parent.tagName === 'DETAILS') { parent.open = true; }
                             parent = parent.parentElement;
                         }
                     }
@@ -284,6 +265,19 @@
                     card.style.display = 'none';
                 }
             });
+        }
+
+        // ΟΜΑΛΟΣ ΚΑΘΑΡΙΣΜΟΣ ΟΘΟΝΗΣ ΑΝΤΙ ΓΙΑ RELOAD
+        function resetTabletUI() {
+            document.querySelectorAll('details').forEach(d => d.open = false);
+            workerSelect.selectedIndex = 0;
+            newWorkerInput.style.display = 'none';
+            newWorkerInput.value = '';
+            searchInput.value = '';
+            searchBoxWrapper.style.display = 'none';
+            searchToggleBtn.classList.remove('active');
+            applySearchFilter();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function loadData() {
@@ -340,11 +334,12 @@
                             const warningIcon = isLowStock && !isOutOfStock ? '⚠️' : '';
 
                             const card = document.createElement('div'); card.className = 'item-card';
+                            // ΠΡΟΣΤΑΣΙΑ ΕΙΣΑΓΩΓΗΣ (oninput) ΜΟΝΟ ΓΙΑ ΨΗΦΙΑ
                             card.innerHTML = `
                                 <div class="item-name"><span>${item.name}</span>${item.code ? `<span style="font-size: 12px; font-weight: 400; color: #718096; margin-top: 4px;">Κωδ: ${item.code}</span>` : ''}</div>
                                 <div class="item-stock" style="color: ${stockColor}">${item.stock} ${warningIcon}</div>
                                 <div class="action-area">
-                                    <input type="number" id="input-${item.id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" ${isOutOfStock ? 'disabled' : ''}>
+                                    <input type="number" id="input-${item.id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')" ${isOutOfStock ? 'disabled' : ''}>
                                     <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Αφαίρεση'}</button>
                                 </div>
                             `;
@@ -370,6 +365,9 @@
 
                                         if (qty > item.stock) { alert(`Υπάρχουν μόνο ${item.stock} τεμάχια.`); return; }
 
+                                        inputField.blur();
+                                        if(document.activeElement) document.activeElement.blur();
+
                                         await updateDoc(doc(db, "items", item.id), { stock: increment(-qty) });
 
                                         let logParts = [];
@@ -386,7 +384,7 @@
                                         showToast(`✅ Αφαιρέθηκαν ${qty}x ${item.name}`);
                                         inputField.value = '';
                                         
-                                        setTimeout(() => { location.reload(); }, 2500);
+                                        setTimeout(() => { resetTabletUI(); }, 2500);
                                     });
                                 }
                             }, 0);
