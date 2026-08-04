@@ -54,9 +54,17 @@
         summary.sub-child-summary::after { content: '▼'; font-size: 10px; }
 
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
+        
+        /* ΚΑΡΤΑ ΜΕ ΥΠΟΣΤΗΡΙΞΗ ΕΙΚΟΝΑΣ */
         .item-card { background: #0f172a; padding: 20px 15px; border-radius: 12px; display: flex; flex-direction: column; text-align: center; border: 1px solid #334155; height: 100%; box-sizing: border-box; }
-        .item-name { font-size: 16px; font-weight: 600; color: #e2e8f0; min-height: 45px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; word-break: break-word; margin-bottom: 5px; }
-        .item-stock { font-size: 36px; margin: 10px 0; font-weight: 700; transition: color 0.3s; }
+        .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .product-img { width: 50px; height: 50px; object-fit: contain; border-radius: 6px; border: 1px solid #334155; background: #1e293b; }
+        .no-img { width: 50px; height: 50px; border-radius: 6px; border: 1px dashed #475569; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #1e293b; color: #64748b; }
+        
+        .item-name { font-size: 15px; font-weight: 600; color: #e2e8f0; display: flex; flex-direction: column; align-items: flex-start; text-align: left; line-height: 1.2; word-break: break-word; flex: 1; }
+        .item-code { font-size: 11px; font-weight: 500; color: #94a3b8; margin-top: 4px; }
+        .item-stock { font-size: 34px; margin: 5px 0 10px 0; font-weight: 700; transition: color 0.3s; }
+        
         .input-row { margin-bottom: 10px; }
         .restock-input { width: 100%; box-sizing: border-box; padding: 10px; font-weight: 600; }
         .action-buttons { display: flex; gap: 8px; margin-bottom: 15px; margin-top: auto; }
@@ -66,7 +74,7 @@
 
         .btn-edit-group { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 0; filter: grayscale(0.2); transition: transform 0.1s; }
         .btn-edit-group:hover { transform: scale(1.2); filter: grayscale(0); }
-        .btn-edit-item { background: transparent; border: none; cursor: pointer; padding: 0; transition: transform 0.1s; }
+        .btn-edit-item { background: transparent; border: none; cursor: pointer; padding: 0; transition: transform 0.1s; display: inline-flex; align-items: center; justify-content: center; }
         .btn-edit-item:hover { transform: scale(1.2); }
 
         .admin-sections-wrapper { display: flex; flex-wrap: wrap; gap: 30px; max-width: 1400px; margin: 40px auto 0 auto; }
@@ -118,8 +126,11 @@
 
         <div class="admin-panel">
             <div class="input-group"><input type="text" id="new-name" placeholder="Όνομα είδους"></div>
-            <div class="input-group"><input type="text" id="new-code" placeholder="Κωδικός (Προαιρετικό)"></div>
+            <div class="input-group"><input type="text" id="new-code" placeholder="Κωδικός / Barcode"></div>
+            <!-- ΝΕΟ ΠΕΔΙΟ ΓΙΑ ΤΗΝ ΕΙΚΟΝΑ -->
+            <div class="input-group"><input type="url" id="new-image" placeholder="Link Εικόνας (Προαιρετικό)"></div>
             <div class="input-group"><input type="number" id="new-stock" placeholder="Αρχική Ποσ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+            
             <div class="input-group"><select id="new-category"><option value="cleaning">Καθαριστικά</option><option value="electrical">Ηλεκτρολογικά</option></select></div>
             <div class="input-group" id="group-cleaning-wrapper"><select id="subcategory-cleaning"><option value="" disabled selected>Επιλέξτε Ομάδα</option><option value="__NEW__">--- Νέα Ομάδα ---</option></select><input type="text" id="new-cleaning-text" placeholder="Όνομα νέας ομάδας" style="display: none; margin-top: 5px; width: 100%;"></div>
             <div class="input-group" id="group-electrical-wrapper" style="display: none;"><select id="subcategory-electrical"><option value="" disabled selected>Επιλέξτε Ομάδα</option><option value="__NEW__">--- Νέα Ομάδα ---</option></select><input type="text" id="new-electrical-text" placeholder="Όνομα νέας ομάδας" style="display: none; margin-top: 5px; width: 100%;"></div>
@@ -318,7 +329,7 @@
                 workers.sort((a, b) => a.name.localeCompare(b.name)).forEach(w => {
                     const chip = document.createElement('div'); chip.className = 'worker-chip';
                     chip.innerHTML = `<span>${w.name}</span><div class="worker-chip-btns"><button class="btn-edit-worker" title="Μετονομασία">✏️</button><button class="btn-del-worker" title="Διαγραφή">✕</button></div>`;
-                    chip.querySelector('.btn-edit-worker').addEventListener('click', async () => {
+                    chip.querySelector('.btn-edit-worker').addEventListener('click', () => {
                         let newName = prompt(`Νέο όνομα για "${w.name}":`, w.name);
                         if (newName && newName.trim() !== "") {
                             newName = newName.trim().toUpperCase();
@@ -328,7 +339,7 @@
                             }
                         }
                     });
-                    chip.querySelector('.btn-del-worker').addEventListener('click', async () => { if (confirm(`Διαγραφή "${w.name}";`)) { deleteDoc(doc(db, "workers", w.id)).catch(()=>{}); } });
+                    chip.querySelector('.btn-del-worker').addEventListener('click', () => { if (confirm(`Διαγραφή "${w.name}";`)) { deleteDoc(doc(db, "workers", w.id)).catch(()=>{}); } });
                     workersListContainer.appendChild(chip);
                 });
             });
@@ -379,14 +390,25 @@
                             const isLowStock = item.stock <= 5;
                             const stockColor = isLowStock && item.stock > 0 ? '#e53e3e' : '#38bdf8';
 
+                            // Δημιουργία Εικόνας
+                            const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
+                                ? `<img src="${item.imageUrl}" class="product-img" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
+                                : `<div class="no-img">📦</div>`;
+
                             const card = document.createElement('div'); card.className = 'item-card';
                             card.innerHTML = `
-                                <div class="item-name">
-                                    <div style="display:flex; align-items:center; justify-content:center; gap:6px; width:100%;">
-                                        <span>${item.name}</span><button class="btn-edit-item" id="edit-name-${item.id}" style="font-size:14px;" title="Μετονομασία Είδους">✏️</button>
+                                <div class="card-top">
+                                    <div style="position:relative;">
+                                        ${imageHtml}
+                                        <button class="btn-edit-item" id="edit-img-${item.id}" style="position:absolute; bottom:-5px; right:-5px; background:white; border-radius:50%; padding:2px; font-size:12px; border:1px solid #ccc; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Αλλαγή Εικόνας">🖼️</button>
                                     </div>
-                                    <div style="font-size: 12px; font-weight: 400; color: #94a3b8; margin-top: 4px; display:flex; align-items:center; justify-content:center; gap:5px;">
-                                        ${item.code ? `Κωδ: ${item.code}` : 'Χωρίς Κωδικό'}<button class="btn-edit-item" id="edit-code-${item.id}" style="font-size:12px;" title="Αλλαγή Κωδικού">✏️</button>
+                                    <div class="item-name">
+                                        <div style="display:flex; align-items:center; gap:6px;">
+                                            <span>${item.name}</span><button class="btn-edit-item" id="edit-name-${item.id}" style="font-size:14px;" title="Μετονομασία Είδους">✏️</button>
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:5px; margin-top:2px;">
+                                            <span class="item-code">${item.code ? `Κωδ: ${item.code}` : 'Χωρίς Κωδικό'}</span><button class="btn-edit-item" id="edit-code-${item.id}" style="font-size:12px;" title="Αλλαγή Κωδικού">✏️</button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="item-stock" style="color: ${stockColor}">${item.stock} ${isLowStock && item.stock>0 ? '⚠️' : ''}</div>
@@ -396,6 +418,7 @@
                             `;
                             grid.appendChild(card);
                             setTimeout(() => {
+                                document.getElementById(`edit-img-${item.id}`).addEventListener('click', () => { let newImg = prompt(`Νέο Link Εικόνας (URL):`, item.imageUrl || ""); if (newImg !== null) { updateDoc(doc(db, "items", item.id), { imageUrl: newImg.trim() }).catch(()=>{}); } });
                                 document.getElementById(`edit-name-${item.id}`).addEventListener('click', () => { let newName = prompt(`Νέο όνομα για το είδος:`, item.name); if (newName !== null && newName.trim() !== "" && newName.trim() !== item.name) { updateDoc(doc(db, "items", item.id), { name: newName.trim() }).catch(()=>{}); } });
                                 document.getElementById(`edit-code-${item.id}`).addEventListener('click', () => { let newCode = prompt(`Νέος κωδικός για "${item.name}":`, item.code || ""); if (newCode !== null && newCode.trim() !== item.code) { updateDoc(doc(db, "items", item.id), { code: newCode.trim() }).catch(()=>{}); } });
                                 document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`add-${item.id}`).click(); } });
@@ -461,20 +484,22 @@
             });
         }
 
-        const addItemInputs = ['new-name', 'new-code', 'new-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
+        // ΠΡΟΣΘΗΚΗ ΕΙΔΟΥΣ ΜΕ ΤΟ ΝΕΟ ΠΕΔΙΟ EIKONAS
+        const addItemInputs = ['new-name', 'new-code', 'new-image', 'new-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
         addItemInputs.forEach(id => { const el = document.getElementById(id); if (el) { el.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById('add-item-btn').click(); } }); } });
 
         document.getElementById('add-item-btn').addEventListener('click', () => {
             let name = document.getElementById('new-name').value.trim(); if (!name) name = "Χωρίς Όνομα"; 
             let code = document.getElementById('new-code').value.trim();
+            let imageUrl = document.getElementById('new-image').value.trim();
             let stock = parseInt(document.getElementById('new-stock').value); if (isNaN(stock) || stock < 0) stock = 0; 
             const category = categorySelect.value || 'cleaning';
             const childcategory = childCategoryInput.value.trim() || 'Γενικά'; const subchildcategory = subChildCategoryInput.value.trim() || 'Γενικά';
             let subcategory = category === 'cleaning' ? (subcleaningSelect.value === '__NEW__' ? newCleaningText.value.trim() : subcleaningSelect.value) : (subelectricalSelect.value === '__NEW__' ? newElectricalText.value.trim() : subelectricalSelect.value);
             if (!subcategory || subcategory === "-- Επιλέξτε Όνομα --") subcategory = "Γενικά"; 
             
-            addDoc(collection(db, "items"), { name: name, code: code, stock: stock, category: category, subcategory: subcategory, childcategory: childcategory, subchildcategory: subchildcategory }).catch(()=>{});
-            document.getElementById('new-name').value = ''; document.getElementById('new-code').value = ''; document.getElementById('new-stock').value = '';
+            addDoc(collection(db, "items"), { name: name, code: code, imageUrl: imageUrl, stock: stock, category: category, subcategory: subcategory, childcategory: childcategory, subchildcategory: subchildcategory }).catch(()=>{});
+            document.getElementById('new-name').value = ''; document.getElementById('new-code').value = ''; document.getElementById('new-image').value = ''; document.getElementById('new-stock').value = '';
             childCategoryInput.value = ''; subChildCategoryInput.value = ''; subcleaningSelect.value = ''; newCleaningText.value = ''; newCleaningText.style.display = 'none';
             subelectricalSelect.value = ''; newElectricalText.value = ''; newElectricalText.style.display = 'none';
         });
