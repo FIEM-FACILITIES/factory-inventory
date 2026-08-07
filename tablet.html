@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Αποθήκη - Tablet</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Βιβλιοθήκη για το Barcode Scanner -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body { 
@@ -43,7 +42,6 @@
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .search-input { width: 100%; box-sizing: border-box; padding: 16px; border-radius: 16px; border: 2px solid #3182ce; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); outline: none; font-family: 'Inter'; font-weight: 500; }
 
-        /* ΣΤΥΛ ΓΙΑ ΤΟ MODAL ΤΗΣ ΚΑΜΕΡΑΣ */
         #barcode-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
         #reader-container { width: 90%; max-width: 500px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .btn-close-cam { margin-top: 20px; background: #ef4444; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; }
@@ -76,7 +74,6 @@
         
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        /* ΚΑΡΤΑ ΜΕ ΥΠΟΣΤΗΡΙΞΗ ΕΙΚΟΝΑΣ */
         .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
         .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .product-img { width: 60px; height: 60px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; }
@@ -92,6 +89,9 @@
         .take-btn:active:not(:disabled) { transform: scale(0.95); background-color: #276749; }
         .take-btn:disabled, .qty-input:disabled { background-color: #edf2f7; cursor: not-allowed; color: #a0aec0; }
         
+        .reason-input { width: 100%; padding: 8px; font-size: 13px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; margin-top: 8px; outline: none; font-family: 'Inter', sans-serif; }
+        .reason-input:focus { border-color: #3182ce; }
+
         .loading { font-size: 20px; color: #718096; width: 100%; text-align: center; font-weight: 600; }
         .creator-credit { text-align: center; margin-top: auto; padding-top: 40px; font-size: 13px; color: #a0aec0; font-weight: 500; width: 100%; }
 
@@ -163,7 +163,6 @@
         </div>
     </div>
 
-    <!-- MODAL ΓΙΑ ΤΗΝ ΚΑΜΕΡΑ -->
     <div id="barcode-modal">
         <h2 style="color:white; margin-bottom: 20px;">Σκανάρισμα Barcode</h2>
         <div id="reader-container">
@@ -247,17 +246,6 @@
         });
         newWorkerInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); newWorkerInput.blur(); } });
 
-        searchToggleBtn.addEventListener('click', () => {
-            if (searchBoxWrapper.style.display === 'none' || searchBoxWrapper.style.display === '') {
-                searchBoxWrapper.style.display = 'block'; searchToggleBtn.classList.add('active'); searchInput.focus();
-            } else {
-                searchBoxWrapper.style.display = 'none'; searchToggleBtn.classList.remove('active'); searchInput.value = ''; applySearchFilter();
-            }
-        });
-
-        searchInput.addEventListener('input', applySearchFilter);
-
-        // --- ΛΟΓΙΚΗ ΓΙΑ TO BARCODE SCANNER ---
         let html5QrcodeScanner;
         document.getElementById('camera-btn').addEventListener('click', () => {
             document.getElementById('barcode-modal').style.display = 'flex';
@@ -268,7 +256,6 @@
         });
 
         function onScanSuccess(decodedText, decodedResult) {
-            // Βρέθηκε κωδικός!
             html5QrcodeScanner.clear();
             document.getElementById('barcode-modal').style.display = 'none';
             searchInput.value = decodedText;
@@ -277,16 +264,36 @@
             applySearchFilter();
         }
 
-        function onScanFailure(error) { /* Αγνοούμε τα errors καθώς ψάχνει διαρκώς */ }
+        function onScanFailure(error) { }
 
         document.getElementById('close-camera-btn').addEventListener('click', () => {
             if (html5QrcodeScanner) { html5QrcodeScanner.clear(); }
             document.getElementById('barcode-modal').style.display = 'none';
         });
 
+        searchToggleBtn.addEventListener('click', () => {
+            if (searchBoxWrapper.style.display === 'none' || searchBoxWrapper.style.display === '') {
+                searchBoxWrapper.style.display = 'block'; searchToggleBtn.classList.add('active'); searchInput.focus();
+            } else {
+                searchBoxWrapper.style.display = 'none'; searchToggleBtn.classList.remove('active'); searchInput.value = ''; applySearchFilter();
+            }
+        });
+
+        searchInput.addEventListener('input', applySearchFilter);
+
         function applySearchFilter() {
             const term = searchInput.value.toLowerCase();
-            document.querySelectorAll('details').forEach(d => d.open = false);
+            
+            // 1. Επαναφορά όλων των φακέλων σε κλειστή/ορατή κατάσταση
+            document.querySelectorAll('details').forEach(d => { 
+                d.open = false; 
+                d.style.display = 'block'; 
+            });
+            
+            const divider = document.querySelector('.divider');
+            if(divider) divider.style.display = 'block';
+
+            // 2. Φιλτράρισμα προϊόντων
             document.querySelectorAll('.item-card').forEach(card => {
                 const text = card.textContent.toLowerCase();
                 if (text.includes(term)) {
@@ -302,12 +309,31 @@
                     card.style.display = 'none';
                 }
             });
+
+            // 3. ΑΠΟΚΡΥΨΗ ΑΔΕΙΩΝ ΦΑΚΕΛΩΝ (Η μαγεία που φέρνει το προϊόν πάνω-πάνω)
+            if (term !== "") {
+                document.querySelectorAll('details').forEach(d => {
+                    const hasVisibleItems = Array.from(d.querySelectorAll('.item-card')).some(card => card.style.display === 'flex');
+                    if (!hasVisibleItems) { d.style.display = 'none'; }
+                });
+                
+                const mainCleaning = document.getElementById('main-cleaning');
+                const mainElectrical = document.getElementById('main-electrical');
+                if (divider && mainCleaning && mainElectrical) {
+                    if (mainCleaning.style.display === 'none' || mainElectrical.style.display === 'none') {
+                        divider.style.display = 'none';
+                    }
+                }
+            }
         }
 
         function resetTabletUI() {
             document.querySelectorAll('details').forEach(d => d.open = false);
             workerSelect.selectedIndex = 0; newWorkerInput.style.display = 'none'; newWorkerInput.value = '';
             searchInput.value = ''; searchBoxWrapper.style.display = 'none'; searchToggleBtn.classList.remove('active');
+            
+            document.querySelectorAll('.reason-input').forEach(inp => inp.value = '');
+            
             applySearchFilter(); window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -364,7 +390,6 @@
                             const stockColor = isLowStock && !isOutOfStock ? '#e53e3e' : '#3182ce';
                             const warningIcon = isLowStock && !isOutOfStock ? '⚠️' : '';
                             
-                            // Προσθήκη Εικόνας ή Placeholder
                             const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
                                 ? `<img src="${item.imageUrl}" class="product-img" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
                                 : `<div class="no-img">📦</div>`;
@@ -383,12 +408,16 @@
                                     <input type="number" id="input-${item.id}" class="qty-input" placeholder="Τεμ." min="1" max="${item.stock}" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')" ${isOutOfStock ? 'disabled' : ''}>
                                     <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Αφαίρεση'}</button>
                                 </div>
+                                <input type="text" id="reason-${item.id}" class="reason-input" placeholder="Αιτιολογία (προαιρετικό)..." ${isOutOfStock ? 'disabled' : ''}>
                             `;
                             grid.appendChild(card);
                             
                             setTimeout(() => {
                                 if (!isOutOfStock) {
                                     document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => {
+                                        if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`btn-${item.id}`).click(); }
+                                    });
+                                    document.getElementById(`reason-${item.id}`).addEventListener('keypress', (e) => {
                                         if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`btn-${item.id}`).click(); }
                                     });
 
@@ -402,11 +431,14 @@
                                         }
 
                                         const inputField = document.getElementById(`input-${item.id}`);
+                                        const reasonField = document.getElementById(`reason-${item.id}`);
                                         let qty = parseInt(inputField.value); if (isNaN(qty) || qty <= 0) qty = 1;
+                                        let reasonText = reasonField.value.trim();
 
                                         if (qty > item.stock) { alert(`Υπάρχουν μόνο ${item.stock} τεμάχια.`); return; }
 
                                         inputField.blur();
+                                        reasonField.blur();
                                         if(document.activeElement) document.activeElement.blur();
 
                                         updateDoc(doc(db, "items", item.id), { stock: increment(-qty) }).catch(()=>{});
@@ -417,13 +449,18 @@
                                         let logSuffix = logParts.length > 0 ? ` (${logParts.join(' - ')})` : '';
                                         
                                         addDoc(collection(db, "history"), {
-                                            worker: worker, item: `${item.subcategory}: ${item.name}${logSuffix}`,
+                                            worker: worker, 
+                                            item: `${item.subcategory}: ${item.name}${logSuffix}`,
                                             itemId: item.id,
-                                            quantity: qty, timestamp: new Date().toLocaleString('el-GR'), createdAt: Date.now()
+                                            quantity: qty, 
+                                            reason: reasonText,
+                                            timestamp: new Date().toLocaleString('el-GR'), 
+                                            createdAt: Date.now()
                                         }).catch(()=>{});
 
                                         showToast(`✅ Αφαιρέθηκαν ${qty}x ${item.name}`);
                                         inputField.value = '';
+                                        reasonField.value = '';
                                         
                                         setTimeout(() => { resetTabletUI(); }, 2500);
                                     });

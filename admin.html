@@ -17,15 +17,21 @@
         .error-msg { color: #ef4444; font-size: 14px; display: none; font-weight: 600; }
 
         #main-app { display: none; flex-grow: 1; width: 100%; }
-        .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 20px auto; }
-        h1 { color: #38bdf8; font-size: 34px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 20px auto; flex-wrap: wrap; gap: 15px;}
+        h1 { color: #38bdf8; font-size: 34px; margin: 0; font-weight: 700; letter-spacing: -0.5px; flex: 1; min-width: 300px;}
         .logout-btn { background: transparent; border: 2px solid #ef4444; color: #ef4444; padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; }
 
-        .admin-panel { background: #1e293b; padding: 25px; border-radius: 16px; max-width: 1250px; margin: 0 auto 30px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; align-items: flex-start; border: 1px solid #334155; }
+        /* Μπάρα Αναζήτησης Admin */
+        .admin-search-wrapper { max-width: 800px; margin: 0 auto 25px auto; width: 100%; }
+        .admin-search-input { width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; border: 2px solid #334155; font-size: 18px; background: #1e293b; color: white; outline: none; font-family: 'Inter'; transition: border-color 0.3s; }
+        .admin-search-input:focus { border-color: #38bdf8; }
+
+        .admin-panel { background: #1e293b; padding: 25px; border-radius: 16px; max-width: 1300px; margin: 0 auto 30px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; align-items: flex-start; border: 1px solid #334155; }
         .input-group { display: flex; flex-direction: column; gap: 5px; align-items: center; }
-        input, select { padding: 12px; border-radius: 8px; border: 1px solid #334155; font-size: 15px; text-align: center; background: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.3s; box-sizing: border-box; min-width: 160px; }
+        input, select { padding: 12px; border-radius: 8px; border: 1px solid #334155; font-size: 14px; text-align: center; background: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.3s; box-sizing: border-box; min-width: 150px; }
         input:focus, select:focus { border-color: #38bdf8; }
         select { appearance: none; padding-right: 30px; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.3c0%204.9%201.8%209.2%205.4%2012.8l133.7%20133.7c3.6%203.6%207.9%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 12px auto; cursor: pointer; }
+        input::-webkit-calendar-picker-indicator { opacity: 1; cursor: pointer; }
         .btn-add { background: #38bdf8; color: #0f172a; border: none; padding: 12px 25px; font-weight: 700; font-size: 16px; border-radius: 8px; cursor: pointer; margin-top: 2px; }
 
         .columns-wrapper { display: flex; flex-direction: row; gap: 40px; justify-content: center; max-width: 1400px; margin: 0 auto; align-items: stretch; }
@@ -55,19 +61,24 @@
 
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        /* ΚΑΡΤΑ ΜΕ ΥΠΟΣΤΗΡΙΞΗ ΕΙΚΟΝΑΣ */
-        .item-card { background: #0f172a; padding: 20px 15px; border-radius: 12px; display: flex; flex-direction: column; text-align: center; border: 1px solid #334155; height: 100%; box-sizing: border-box; }
-        .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .item-card { background: #0f172a; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; text-align: center; border: 1px solid #334155; height: 100%; box-sizing: border-box; }
+        .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
         .product-img { width: 50px; height: 50px; object-fit: contain; border-radius: 6px; border: 1px solid #334155; background: #1e293b; }
         .no-img { width: 50px; height: 50px; border-radius: 6px; border: 1px dashed #475569; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #1e293b; color: #64748b; }
         
         .item-name { font-size: 15px; font-weight: 600; color: #e2e8f0; display: flex; flex-direction: column; align-items: flex-start; text-align: left; line-height: 1.2; word-break: break-word; flex: 1; }
         .item-code { font-size: 11px; font-weight: 500; color: #94a3b8; margin-top: 4px; }
-        .item-stock { font-size: 34px; margin: 5px 0 10px 0; font-weight: 700; transition: color 0.3s; }
         
+        .item-suppliers { font-size: 11px; color: #f59e0b; margin-top: 6px; display: flex; flex-direction: column; gap: 4px; font-weight: 600; text-align: left; width: 100%; }
+        .supplier-row { display: flex; align-items: center; gap: 4px; }
+        
+        .item-stock { font-size: 32px; margin: 5px 0; font-weight: 700; transition: color 0.3s; display: flex; justify-content: center; align-items: center; gap: 6px;}
+        .item-unit { font-size: 16px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; gap: 4px;}
+        .item-limit { font-size: 12px; color: #ef4444; margin-bottom: 10px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 4px;}
+
         .input-row { margin-bottom: 10px; }
         .restock-input { width: 100%; box-sizing: border-box; padding: 10px; font-weight: 600; }
-        .action-buttons { display: flex; gap: 8px; margin-bottom: 15px; margin-top: auto; }
+        .action-buttons { display: flex; gap: 8px; margin-bottom: 10px; margin-top: auto; }
         .btn-add-stock { flex: 1; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-sub-stock { flex: 1; background: #f59e0b; color: #0f172a; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-delete { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; }
@@ -77,6 +88,17 @@
         .btn-edit-item { background: transparent; border: none; cursor: pointer; padding: 0; transition: transform 0.1s; display: inline-flex; align-items: center; justify-content: center; }
         .btn-edit-item:hover { transform: scale(1.2); }
 
+        #order-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .order-content { background: #1e293b; width: 100%; max-width: 800px; max-height: 85vh; border-radius: 16px; padding: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); overflow-y: auto; border: 1px solid #334155; text-align: left;}
+        .supplier-block { margin-bottom: 20px; background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid #334155; }
+        .supplier-title { color: #f59e0b; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+        .order-item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #334155; font-size: 15px; }
+        .order-item-name { color: #e2e8f0; font-weight: 600; flex: 1; }
+        .order-item-details { color: #94a3b8; font-size: 13px; margin-left: 10px; }
+        .order-item-stock { color: #ef4444; font-weight: 700; }
+        
+        .btn-close-modal { margin-top: 20px; background: #ef4444; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; display: block; margin-left: auto; margin-right: auto; }
+
         .admin-sections-wrapper { display: flex; flex-wrap: wrap; gap: 30px; max-width: 1400px; margin: 40px auto 0 auto; }
         .section-box { flex: 1; min-width: 350px; background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; text-align: left; }
         .workers-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; max-height: 200px; overflow-y: auto; }
@@ -84,8 +106,9 @@
         .worker-chip-btns { display: flex; gap: 6px; align-items: center; }
         .btn-edit-worker { background: none; border: none; color: #38bdf8; cursor: pointer; font-size: 14px; padding: 0; }
         .btn-del-worker { background: none; border: none; color: #ef4444; cursor: pointer; font-weight: bold; font-size: 16px; padding: 0; }
-        .history-box { max-height: 200px; overflow-y: auto; margin-top: 15px; }
-        .history-item { padding: 8px 0; border-bottom: 1px solid #334155; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .history-box { max-height: 250px; overflow-y: auto; margin-top: 15px; }
+        .history-item { padding: 10px 0; border-bottom: 1px solid #334155; font-size: 14px; display: flex; justify-content: space-between; align-items: flex-start; }
         .history-worker { color: #38bdf8; font-weight: 700; }
         .history-time { color: #94a3b8; font-size: 12px; }
 
@@ -98,7 +121,7 @@
             .columns-wrapper { flex-direction: column; }
             .divider { width: 100%; height: 2px; background: linear-gradient(to right, transparent, #334155, transparent); margin: 15px 0; }
             .admin-sections-wrapper { flex-direction: column; }
-            .header-container { flex-direction: column; gap: 15px; }
+            .header-container { flex-direction: column; justify-content: center; }
         }
     </style>
 </head>
@@ -117,25 +140,64 @@
 
     <div id="main-app">
         <div class="header-container">
-            <div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button id="low-stock-btn" style="background:#ef4444; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 15px;">⚠️ Είδη σε Έλλειψη</button>
+                <button id="order-list-btn" style="background:#f59e0b; color:#0f172a; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 15px;">🛒 Λίστα Παραγγελιών</button>
             </div>
-            <h1>Πίνακας Ελέγχου Αποθήκης</h1>
-            <button id="logout-btn" class="logout-btn">Αποσύνδεση</button>
+            <h1>Πίνακας Ελέγχου</h1>
+            <div style="display: flex; align-items: center;">
+                <button id="logout-btn" class="logout-btn">Αποσύνδεση</button>
+            </div>
+        </div>
+
+        <div class="admin-search-wrapper">
+            <input type="text" id="admin-search-input" class="admin-search-input" placeholder="🔍 Αναζήτηση (Προϊόν, Προμηθευτής, Κατηγορία, Κωδικός)...">
         </div>
 
         <div class="admin-panel">
             <div class="input-group"><input type="text" id="new-name" placeholder="Όνομα είδους"></div>
             <div class="input-group"><input type="text" id="new-code" placeholder="Κωδικός / Barcode"></div>
-            <!-- ΝΕΟ ΠΕΔΙΟ ΓΙΑ ΤΗΝ ΕΙΚΟΝΑ -->
             <div class="input-group"><input type="url" id="new-image" placeholder="Link Εικόνας (Προαιρετικό)"></div>
+            
+            <datalist id="supplier-list"></datalist>
+            <div class="input-group"><input type="text" id="new-supplier" list="supplier-list" placeholder="1ος Προμηθευτής (Προαιρετικό)"></div>
+            <div class="input-group"><input type="text" id="new-supplier2" list="supplier-list" placeholder="2ος Προμηθευτής (Προαιρετικό)"></div>
+
             <div class="input-group"><input type="number" id="new-stock" placeholder="Αρχική Ποσ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
             
+            <div class="input-group">
+                <select id="new-unit">
+                    <option value="τμχ">Τεμάχια (τμχ)</option>
+                    <option value="Λίτρα">Λίτρα (L)</option>
+                    <option value="ml">ml</option>
+                    <option value="Κιλά">Κιλά (kg)</option>
+                    <option value="Γραμ.">Γραμμάρια (g)</option>
+                    <option value="Συσκ.">Συσκευασίες</option>
+                    <option value="Μεζούρες">Μεζούρες</option>
+                </select>
+            </div>
+
+            <div class="input-group"><input type="number" id="new-min-stock" placeholder="Όριο Έλλειψης (πχ 5)" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+
             <div class="input-group"><select id="new-category"><option value="cleaning">Καθαριστικά</option><option value="electrical">Ηλεκτρολογικά</option></select></div>
-            <div class="input-group" id="group-cleaning-wrapper"><select id="subcategory-cleaning"><option value="" disabled selected>Επιλέξτε Ομάδα</option><option value="__NEW__">--- Νέα Ομάδα ---</option></select><input type="text" id="new-cleaning-text" placeholder="Όνομα νέας ομάδας" style="display: none; margin-top: 5px; width: 100%;"></div>
-            <div class="input-group" id="group-electrical-wrapper" style="display: none;"><select id="subcategory-electrical"><option value="" disabled selected>Επιλέξτε Ομάδα</option><option value="__NEW__">--- Νέα Ομάδα ---</option></select><input type="text" id="new-electrical-text" placeholder="Όνομα νέας ομάδας" style="display: none; margin-top: 5px; width: 100%;"></div>
-            <div class="input-group"><input type="text" id="new-childcategory" placeholder="Χρώμα (πχ. Μαύρα)"></div>
-            <div class="input-group"><input type="text" id="new-subchildcategory" placeholder="Νούμερο (πχ. Small)"></div>
+            <div class="input-group" id="group-cleaning-wrapper">
+                <select id="subcategory-cleaning"><option value="" disabled selected>Επιλέξτε Ομάδα</option><option value="__NEW__">--- Νέα Ομάδα ---</option></select>
+                <input type="text" id="new-cleaning-text" placeholder="Όνομα νέας ομάδας" style="display: none; margin-top: 5px; width: 100%;">
+            </div>
+            <div class="input-group" id="group-electrical-wrapper" style="display: none;">
+                <select id="subcategory-electrical"><option value="" disabled selected>Επιλέξτε Ομάδα</option><option value="__NEW__">--- Νέα Ομάδα ---</option></select>
+                <input type="text" id="new-electrical-text" placeholder="Όνομα νέας ομάδας" style="display: none; margin-top: 5px; width: 100%;">
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="new-childcategory" list="child-list" placeholder="1η Υποκατηγορία (πχ. Βούρτσες)">
+                <datalist id="child-list"></datalist>
+            </div>
+            <div class="input-group">
+                <input type="text" id="new-subchildcategory" list="subchild-list" placeholder="2η Υποκατηγορία (πχ. Small)">
+                <datalist id="subchild-list"></datalist>
+            </div>
+            
             <button class="btn-add" id="add-item-btn">Καταχώρηση</button>
         </div>
 
@@ -182,6 +244,14 @@
         <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos</div>
     </div>
 
+    <div id="order-modal">
+        <div class="order-content">
+            <h2 style="color: white; margin-top: 0; text-align: center; margin-bottom: 25px;">Λίστα Παραγγελιών ανά Προμηθευτή</h2>
+            <div id="order-list-container"></div>
+            <button id="close-order-btn" class="btn-close-modal">Κλείσιμο</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, deleteDoc, setDoc, getDocs, query, orderBy, limit, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -220,13 +290,12 @@
         const newCleaningText = document.getElementById('new-cleaning-text');
         const subelectricalSelect = document.getElementById('subcategory-electrical');
         const newElectricalText = document.getElementById('new-electrical-text');
-        const childCategoryInput = document.getElementById('new-childcategory');
-        const subChildCategoryInput = document.getElementById('new-subchildcategory');
         const workerInputName = document.getElementById('worker-input-name');
         const addWorkerBtn = document.getElementById('add-worker-btn');
         
         let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory;
         let lowStockMode = false; 
+        let globalItemsData = []; 
 
         const handleLoginEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); loginBtn.click(); } };
         document.getElementById('login-email').addEventListener('keypress', handleLoginEnter);
@@ -253,20 +322,109 @@
             lowStockMode = !lowStockMode;
             e.target.style.background = lowStockMode ? '#b91c1c' : '#ef4444';
             e.target.textContent = lowStockMode ? 'Όλα τα είδη' : '⚠️ Είδη σε Έλλειψη';
-            applyLowStockFilter();
+            applyAdminSearch(); 
         });
 
-        function applyLowStockFilter() {
+        document.getElementById('admin-search-input').addEventListener('input', applyAdminSearch);
+
+        // --- Η ΝΕΑ ΕΞΥΠΝΗ ΛΟΓΙΚΗ ΑΝΑΖΗΤΗΣΗΣ ΠΟΥ ΕΞΑΦΑΝΙΖΕΙ ΤΟΥΣ ΑΔΕΙΟΥΣ ΦΑΚΕΛΟΥΣ ---
+        function applyAdminSearch() {
+            const term = document.getElementById('admin-search-input').value.toLowerCase();
+            
+            // 1. Επαναφορά όλων σε κλειστή/ορατή κατάσταση
+            document.querySelectorAll('details').forEach(d => { 
+                d.open = false; 
+                d.style.display = 'block'; 
+            });
+            const divider = document.querySelector('.divider');
+            if(divider) divider.style.display = 'block';
+
+            // 2. Φιλτράρισμα καρτών
             document.querySelectorAll('.item-card').forEach(card => {
-                if (lowStockMode) {
-                    const stock = parseInt(card.querySelector('.item-stock').textContent);
-                    card.style.display = stock <= 5 ? 'flex' : 'none';
-                } else {
+                const searchStr = card.dataset.search.toLowerCase();
+                const stock = parseInt(card.dataset.stock);
+                const limit = parseInt(card.dataset.limit);
+                
+                let matchesSearch = searchStr.includes(term);
+                let matchesLowStock = lowStockMode ? (stock <= limit) : true;
+
+                if (matchesSearch && matchesLowStock) {
                     card.style.display = 'flex';
+                    if (term !== "" || lowStockMode) {
+                        let parent = card.parentElement;
+                        while (parent && parent.id !== 'main-app') {
+                            if (parent.tagName === 'DETAILS') { parent.open = true; }
+                            parent = parent.parentElement;
+                        }
+                    }
+                } else {
+                    card.style.display = 'none';
                 }
             });
-            if (lowStockMode) document.querySelectorAll('details').forEach(d => d.open = true);
+
+            // 3. Απόκρυψη Άδειων Φακέλων (αν ψάχνουμε κάτι)
+            if (term !== "" || lowStockMode) {
+                document.querySelectorAll('details').forEach(d => {
+                    const hasVisibleItems = Array.from(d.querySelectorAll('.item-card')).some(card => card.style.display === 'flex');
+                    if (!hasVisibleItems) { d.style.display = 'none'; }
+                });
+                
+                const mainCleaning = document.getElementById('main-cleaning');
+                const mainElectrical = document.getElementById('main-electrical');
+                if (divider && mainCleaning && mainElectrical) {
+                    if (mainCleaning.style.display === 'none' || mainElectrical.style.display === 'none') {
+                        divider.style.display = 'none';
+                    }
+                }
+            }
         }
+
+        document.getElementById('order-list-btn').addEventListener('click', () => {
+            const container = document.getElementById('order-list-container');
+            container.innerHTML = '';
+            
+            const suppliersDict = {};
+            globalItemsData.forEach(item => {
+                const limit = item.minStock !== undefined ? parseInt(item.minStock) : 5;
+                if (item.stock <= limit) {
+                    const sup1 = (item.supplier && item.supplier.trim() !== "") ? item.supplier.trim() : 'Χωρίς Ορισμένο Προμηθευτή';
+                    if (!suppliersDict[sup1]) suppliersDict[sup1] = [];
+                    suppliersDict[sup1].push(item);
+
+                    if (item.supplier2 && item.supplier2.trim() !== "") {
+                        const sup2 = item.supplier2.trim();
+                        if (!suppliersDict[sup2]) suppliersDict[sup2] = [];
+                        suppliersDict[sup2].push(item);
+                    }
+                }
+            });
+
+            if (Object.keys(suppliersDict).length === 0) {
+                container.innerHTML = '<div style="color: #94a3b8; text-align:center;">Δεν υπάρχουν είδη σε έλλειψη! 🎉</div>';
+            } else {
+                Object.keys(suppliersDict).sort().forEach(sup => {
+                    const block = document.createElement('div');
+                    block.className = 'supplier-block';
+                    let html = `<div class="supplier-title">🛒 ${sup}</div>`;
+                    
+                    suppliersDict[sup].sort((a,b) => a.name.localeCompare(b.name)).forEach(item => {
+                        const limit = item.minStock !== undefined ? item.minStock : 5;
+                        const unit = item.unit || 'τμχ';
+                        html += `
+                            <div class="order-item-row">
+                                <span class="order-item-name">${item.name} <span class="order-item-details">(${item.subcategory})</span></span>
+                                <span>Απόθεμα: <span class="order-item-stock">${item.stock} ${unit}</span> / Όριο: ${limit}</span>
+                            </div>
+                        `;
+                    });
+                    block.innerHTML = html;
+                    container.appendChild(block);
+                });
+            }
+            document.getElementById('order-modal').style.display = 'flex';
+        });
+
+        document.getElementById('close-order-btn').addEventListener('click', () => { document.getElementById('order-modal').style.display = 'none'; });
 
         categorySelect.addEventListener('change', function() {
             if (this.value === 'cleaning') { cleaningWrapper.style.display = 'flex'; electricalWrapper.style.display = 'none'; } 
@@ -300,12 +458,15 @@
                 const querySnapshot = await getDocs(collection(db, "history"));
                 if (querySnapshot.empty) { alert('Δεν υπάρχουν δεδομένα.'); return; }
                 
-                let csv = "Ημερομηνία,Εργαζόμενος,Προϊόν,Ποσότητα\n";
+                let csv = "Ημερομηνία,Εργαζόμενος,Προϊόν,Ποσότητα,Αιτιολογία\n";
                 const allLogs = [];
                 querySnapshot.forEach(doc => allLogs.push(doc.data()));
                 allLogs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 
-                allLogs.forEach(l => { csv += `"${l.timestamp}","${l.worker}","${l.item}","${l.quantity}"\n`; });
+                allLogs.forEach(l => { 
+                    let r = l.reason ? l.reason.replace(/"/g, '""') : "";
+                    csv += `"${l.timestamp}","${l.worker}","${l.item}","${l.quantity}","${r}"\n`; 
+                });
                 const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); 
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href = url; a.download = 'istoriko_apothikis.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -349,14 +510,29 @@
                 document.querySelectorAll('details[open]').forEach(d => { const summary = d.querySelector('summary'); if (summary) openStates.add(summary.textContent.trim()); });
 
                 cleaningContainer.innerHTML = ''; electricalContainer.innerHTML = '';
-                const cleaningSet = new Set(); const electricalSet = new Set();
+                globalItemsData = [];
+                
+                const cleaningSet = new Set(); 
+                const electricalSet = new Set();
+                const childSet = new Set();
+                const subchildSet = new Set();
+                const supplierSet = new Set();
+
                 snapshot.forEach(doc => {
                     const data = doc.data();
+                    data.id = doc.id;
+                    globalItemsData.push(data);
+
                     if (data.subcategory) {
                         if (data.category === 'electrical') electricalSet.add(data.subcategory.trim());
                         else cleaningSet.add(data.subcategory.trim());
                     }
+                    if (data.childcategory && data.childcategory !== 'Γενικά') childSet.add(data.childcategory.trim());
+                    if (data.subchildcategory && data.subchildcategory !== 'Γενικά') subchildSet.add(data.subchildcategory.trim());
+                    if (data.supplier && data.supplier.trim() !== '') supplierSet.add(data.supplier.trim());
+                    if (data.supplier2 && data.supplier2.trim() !== '') supplierSet.add(data.supplier2.trim());
                 });
+
                 const refreshDropdown = (selectEl, set) => {
                     const current = selectEl.value; const promptOpt = selectEl.options[0]; const newOpt = selectEl.options[selectEl.options.length - 1];
                     selectEl.innerHTML = ''; selectEl.appendChild(promptOpt);
@@ -366,20 +542,33 @@
                 };
                 refreshDropdown(subcleaningSelect, cleaningSet); refreshDropdown(subelectricalSelect, electricalSet);
 
+                const updateDatalist = (id, set) => {
+                    const dl = document.getElementById(id);
+                    if(dl) {
+                        dl.innerHTML = '';
+                        Array.from(set).sort().forEach(val => {
+                            const opt = document.createElement('option'); opt.value = val; dl.appendChild(opt);
+                        });
+                    }
+                };
+                updateDatalist('child-list', childSet);
+                updateDatalist('subchild-list', subchildSet);
+                updateDatalist('supplier-list', supplierSet);
+
                 const tree = { cleaning: { items: [], children: {} }, electrical: { items: [], children: {} } };
-                snapshot.forEach((docSnapshot) => {
-                    const item = docSnapshot.data(); const cat = item.category || 'cleaning';
+                globalItemsData.forEach((item) => {
+                    const cat = item.category || 'cleaning';
                     let sub = item.subcategory || 'Γενικά'; let child = item.childcategory || 'Γενικά'; let subchild = item.subchildcategory || 'Γενικά';
                     if (!tree[cat]) tree[cat] = { items: [], children: {} }; if (!tree[cat].children[sub]) tree[cat].children[sub] = { items: [], children: {} };
                     let subNode = tree[cat].children[sub];
-                    if (child === 'Γενικά' && subchild === 'Γενικά') { subNode.items.push({ id: docSnapshot.id, ...item }); } 
+                    if (child === 'Γενικά' && subchild === 'Γενικά') { subNode.items.push(item); } 
                     else if (child !== 'Γενικά' && subchild === 'Γενικά') {
-                        if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} }; subNode.children[child].items.push({ id: docSnapshot.id, ...item });
+                        if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} }; subNode.children[child].items.push(item);
                     } else if (child === 'Γενικά' && subchild !== 'Γενικά') {
-                        if (!subNode.children[subchild]) subNode.children[subchild] = { items: [], children: {} }; subNode.children[subchild].items.push({ id: docSnapshot.id, ...item });
+                        if (!subNode.children[subchild]) subNode.children[subchild] = { items: [], children: {} }; subNode.children[subchild].items.push(item);
                     } else {
                         if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} }; let childNode = subNode.children[child];
-                        if (!childNode.children[subchild]) childNode.children[subchild] = { items: [], children: {} }; childNode.children[subchild].items.push({ id: docSnapshot.id, ...item });
+                        if (!childNode.children[subchild]) childNode.children[subchild] = { items: [], children: {} }; childNode.children[subchild].items.push(item);
                     }
                 });
 
@@ -387,15 +576,22 @@
                     if (node.items && node.items.length > 0) {
                         const grid = document.createElement('div'); grid.className = 'sub-inventory-section';
                         node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
-                            const isLowStock = item.stock <= 5;
+                            const minStock = item.minStock !== undefined ? parseInt(item.minStock) : 5;
+                            const unit = item.unit || 'τμχ';
+                            const isLowStock = item.stock <= minStock;
                             const stockColor = isLowStock && item.stock > 0 ? '#e53e3e' : '#38bdf8';
 
-                            // Δημιουργία Εικόνας
                             const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
                                 ? `<img src="${item.imageUrl}" class="product-img" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
                                 : `<div class="no-img">📦</div>`;
 
+                            const searchString = `${item.name} ${item.code || ''} ${item.supplier || ''} ${item.supplier2 || ''} ${item.subcategory} ${item.childcategory} ${item.subchildcategory}`;
+
                             const card = document.createElement('div'); card.className = 'item-card';
+                            card.dataset.search = searchString;
+                            card.dataset.stock = item.stock;
+                            card.dataset.limit = minStock;
+
                             card.innerHTML = `
                                 <div class="card-top">
                                     <div style="position:relative;">
@@ -409,18 +605,34 @@
                                         <div style="display:flex; align-items:center; gap:5px; margin-top:2px;">
                                             <span class="item-code">${item.code ? `Κωδ: ${item.code}` : 'Χωρίς Κωδικό'}</span><button class="btn-edit-item" id="edit-code-${item.id}" style="font-size:12px;" title="Αλλαγή Κωδικού">✏️</button>
                                         </div>
+                                        <div class="item-suppliers">
+                                            <div class="supplier-row">🚚 1ος: ${item.supplier || '-'} <button class="btn-edit-item" id="edit-sup-${item.id}" title="Αλλαγή 1ου Προμηθευτή">✏️</button></div>
+                                            <div class="supplier-row">🚚 2ος: ${item.supplier2 || '-'} <button class="btn-edit-item" id="edit-sup2-${item.id}" title="Αλλαγή 2ου Προμηθευτή">✏️</button></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="item-stock" style="color: ${stockColor}">${item.stock} ${isLowStock && item.stock>0 ? '⚠️' : ''}</div>
-                                <div class="input-row"><input type="number" id="input-${item.id}" class="restock-input" placeholder="Ποσότητα" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+                                
+                                <div class="item-stock" style="color: ${stockColor}">
+                                    ${item.stock} <span class="item-unit">${unit} <button class="btn-edit-item" id="edit-unit-${item.id}" style="font-size:12px;" title="Αλλαγή Μονάδας">✏️</button></span> 
+                                </div>
+                                <div class="item-limit">
+                                    Όριο Έλλειψης: ${minStock} <button class="btn-edit-item" id="edit-min-${item.id}" style="font-size:12px;" title="Αλλαγή Ορίου">✏️</button>
+                                </div>
+
+                                <div class="input-row"><input type="number" id="input-${item.id}" class="restock-input" placeholder="Ποσότητα προσ/αφαίρ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
                                 <div class="action-buttons"><button class="btn-add-stock" id="add-${item.id}">+</button><button class="btn-sub-stock" id="sub-${item.id}">-</button></div>
                                 <button class="btn-delete" id="del-${item.id}">Διαγραφή</button>
                             `;
                             grid.appendChild(card);
                             setTimeout(() => {
-                                document.getElementById(`edit-img-${item.id}`).addEventListener('click', () => { let newImg = prompt(`Νέο Link Εικόνας (URL):`, item.imageUrl || ""); if (newImg !== null) { updateDoc(doc(db, "items", item.id), { imageUrl: newImg.trim() }).catch(()=>{}); } });
-                                document.getElementById(`edit-name-${item.id}`).addEventListener('click', () => { let newName = prompt(`Νέο όνομα για το είδος:`, item.name); if (newName !== null && newName.trim() !== "" && newName.trim() !== item.name) { updateDoc(doc(db, "items", item.id), { name: newName.trim() }).catch(()=>{}); } });
-                                document.getElementById(`edit-code-${item.id}`).addEventListener('click', () => { let newCode = prompt(`Νέος κωδικός για "${item.name}":`, item.code || ""); if (newCode !== null && newCode.trim() !== item.code) { updateDoc(doc(db, "items", item.id), { code: newCode.trim() }).catch(()=>{}); } });
+                                document.getElementById(`edit-img-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο Link Εικόνας (URL):`, item.imageUrl || ""); if (val !== null) { updateDoc(doc(db, "items", item.id), { imageUrl: val.trim() }).catch(()=>{}); } });
+                                document.getElementById(`edit-name-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο όνομα για το είδος:`, item.name); if (val !== null && val.trim() !== "" && val.trim() !== item.name) { updateDoc(doc(db, "items", item.id), { name: val.trim() }).catch(()=>{}); } });
+                                document.getElementById(`edit-code-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέος κωδικός για "${item.name}":`, item.code || ""); if (val !== null && val.trim() !== item.code) { updateDoc(doc(db, "items", item.id), { code: val.trim() }).catch(()=>{}); } });
+                                document.getElementById(`edit-sup-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέος 1ος Προμηθευτής:`, item.supplier || ""); if (val !== null) { updateDoc(doc(db, "items", item.id), { supplier: val.trim() }).catch(()=>{}); } });
+                                document.getElementById(`edit-sup2-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέος 2ος Προμηθευτής:`, item.supplier2 || ""); if (val !== null) { updateDoc(doc(db, "items", item.id), { supplier2: val.trim() }).catch(()=>{}); } });
+                                document.getElementById(`edit-unit-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέα Μονάδα Μέτρησης (π.χ. τμχ, Λίτρα, Κιλά):`, item.unit || "τμχ"); if (val !== null && val.trim() !== "") { updateDoc(doc(db, "items", item.id), { unit: val.trim() }).catch(()=>{}); } });
+                                document.getElementById(`edit-min-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο Όριο Έλλειψης (Αριθμός):`, minStock); if (val !== null && !isNaN(parseInt(val))) { updateDoc(doc(db, "items", item.id), { minStock: parseInt(val) }).catch(()=>{}); } });
+
                                 document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`add-${item.id}`).click(); } });
                                 document.getElementById(`add-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; updateDoc(doc(db, "items", item.id), { stock: increment(val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
                                 document.getElementById(`sub-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; if (val > item.stock) { alert('Δεν υπάρχει τόσο απόθεμα!'); return; } updateDoc(doc(db, "items", item.id), { stock: increment(-val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
@@ -452,7 +664,7 @@
                 renderCategory(cleaningContainer, tree.cleaning); renderCategory(electricalContainer, tree.electrical);
 
                 document.querySelectorAll('details').forEach(d => { const summary = d.querySelector('summary'); if (summary && openStates.has(summary.textContent.trim())) { d.open = true; } });
-                applyLowStockFilter();
+                applyAdminSearch(); 
             });
 
             const historyQuery = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(100));
@@ -465,16 +677,22 @@
                 
                 logs.forEach(log => {
                     const div = document.createElement('div'); div.className = 'history-item';
+                    
+                    let reasonHtml = log.reason ? `<div style="font-size: 13px; color: #facc15; margin-top: 4px;">📝 ${log.reason}</div>` : '';
+
                     div.innerHTML = `
-                        <div><span class="history-worker">${log.worker}</span> <span>αφαίρεσε <b>${log.quantity} τμχ</b> από <b>${log.item}</b></span></div>
-                        <div style="display:flex; align-items:center;">
+                        <div style="text-align: left; flex: 1; padding-right: 10px;">
+                            <div><span class="history-worker">${log.worker}</span> <span>αφαίρεσε <b>${log.quantity}</b> από <b>${log.item}</b></span></div>
+                            ${reasonHtml}
+                        </div>
+                        <div style="display:flex; align-items:center; flex-shrink: 0;">
                             <span class="history-time">${log.timestamp}</span>
                             <button class="btn-undo" title="Ακύρωση αυτής της κίνησης">↩️ Αναίρεση</button>
                         </div>
                     `;
                     div.querySelector('.btn-undo').addEventListener('click', () => {
                         if (!log.itemId) { alert("Αυτή είναι παλιά εγγραφή και δεν μπορεί να αναιρεθεί αυτόματα."); return; }
-                        if (confirm(`Θέλετε να ακυρώσετε την αφαίρεση και να επιστραφούν τα ${log.quantity} τεμάχια στο απόθεμα;`)) {
+                        if (confirm(`Θέλετε να ακυρώσετε την αφαίρεση και να επιστραφούν τα ${log.quantity} στη βάση;`)) {
                             updateDoc(doc(db, "items", log.itemId), { stock: increment(log.quantity) }).catch(()=>{});
                             deleteDoc(doc(db, "history", log.id)).catch(()=>{});
                         }
@@ -484,24 +702,40 @@
             });
         }
 
-        // ΠΡΟΣΘΗΚΗ ΕΙΔΟΥΣ ΜΕ ΤΟ ΝΕΟ ΠΕΔΙΟ EIKONAS
-        const addItemInputs = ['new-name', 'new-code', 'new-image', 'new-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
+        const addItemInputs = ['new-name', 'new-code', 'new-image', 'new-supplier', 'new-supplier2', 'new-stock', 'new-min-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
         addItemInputs.forEach(id => { const el = document.getElementById(id); if (el) { el.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById('add-item-btn').click(); } }); } });
 
         document.getElementById('add-item-btn').addEventListener('click', () => {
             let name = document.getElementById('new-name').value.trim(); if (!name) name = "Χωρίς Όνομα"; 
             let code = document.getElementById('new-code').value.trim();
             let imageUrl = document.getElementById('new-image').value.trim();
+            
+            let supplier = document.getElementById('new-supplier').value.trim();
+            let supplier2 = document.getElementById('new-supplier2').value.trim();
+            
             let stock = parseInt(document.getElementById('new-stock').value); if (isNaN(stock) || stock < 0) stock = 0; 
+            let unit = document.getElementById('new-unit').value || "τμχ";
+            let minStock = parseInt(document.getElementById('new-min-stock').value); if (isNaN(minStock) || minStock < 0) minStock = 5; 
+
             const category = categorySelect.value || 'cleaning';
-            const childcategory = childCategoryInput.value.trim() || 'Γενικά'; const subchildcategory = subChildCategoryInput.value.trim() || 'Γενικά';
-            let subcategory = category === 'cleaning' ? (subcleaningSelect.value === '__NEW__' ? newCleaningText.value.trim() : subcleaningSelect.value) : (subelectricalSelect.value === '__NEW__' ? newElectricalText.value.trim() : subelectricalSelect.value);
+            const childcategory = document.getElementById('new-childcategory').value.trim() || 'Γενικά'; 
+            const subchildcategory = document.getElementById('new-subchildcategory').value.trim() || 'Γενικά';
+            let subcategory = category === 'cleaning' ? (subcleaningSelect.value === '__NEW__' ? document.getElementById('new-cleaning-text').value.trim() : subcleaningSelect.value) : (subelectricalSelect.value === '__NEW__' ? document.getElementById('new-electrical-text').value.trim() : subelectricalSelect.value);
             if (!subcategory || subcategory === "-- Επιλέξτε Όνομα --") subcategory = "Γενικά"; 
             
-            addDoc(collection(db, "items"), { name: name, code: code, imageUrl: imageUrl, stock: stock, category: category, subcategory: subcategory, childcategory: childcategory, subchildcategory: subchildcategory }).catch(()=>{});
-            document.getElementById('new-name').value = ''; document.getElementById('new-code').value = ''; document.getElementById('new-image').value = ''; document.getElementById('new-stock').value = '';
-            childCategoryInput.value = ''; subChildCategoryInput.value = ''; subcleaningSelect.value = ''; newCleaningText.value = ''; newCleaningText.style.display = 'none';
-            subelectricalSelect.value = ''; newElectricalText.value = ''; newElectricalText.style.display = 'none';
+            addDoc(collection(db, "items"), { 
+                name: name, code: code, imageUrl: imageUrl, 
+                supplier: supplier, supplier2: supplier2, 
+                stock: stock, unit: unit, minStock: minStock,
+                category: category, subcategory: subcategory, childcategory: childcategory, subchildcategory: subchildcategory 
+            }).catch(()=>{});
+            
+            document.getElementById('new-name').value = ''; document.getElementById('new-code').value = ''; document.getElementById('new-image').value = ''; 
+            document.getElementById('new-supplier').value = ''; document.getElementById('new-supplier2').value = '';
+            document.getElementById('new-stock').value = ''; document.getElementById('new-min-stock').value = '';
+            document.getElementById('new-childcategory').value = ''; document.getElementById('new-subchildcategory').value = ''; 
+            subcleaningSelect.value = ''; document.getElementById('new-cleaning-text').value = ''; document.getElementById('new-cleaning-text').style.display = 'none';
+            subelectricalSelect.value = ''; document.getElementById('new-electrical-text').value = ''; document.getElementById('new-electrical-text').style.display = 'none';
         });
     </script>
 </body>
