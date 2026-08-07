@@ -46,6 +46,11 @@
         #reader-container { width: 90%; max-width: 500px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .btn-close-cam { margin-top: 20px; background: #ef4444; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; }
 
+        /* MODAL ΕΙΚΟΝΑΣ */
+        #image-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        #enlarged-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .btn-close-image { margin-top: 20px; background: #ef4444; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; }
+
         .columns-wrapper { display: flex; flex-direction: row; gap: 40px; justify-content: center; max-width: 1400px; margin: 0 auto; align-items: stretch; }
         .divider { width: 4px; background: linear-gradient(to bottom, transparent, #475569, transparent); border-radius: 5px; }
         
@@ -76,7 +81,7 @@
         
         .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
         .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
-        .product-img { width: 60px; height: 60px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; }
+        .product-img { width: 60px; height: 60px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; cursor: zoom-in; }
         .no-img { width: 60px; height: 60px; border-radius: 8px; border: 1px dashed #cbd5e0; display: flex; align-items: center; justify-content: center; font-size: 24px; background: #f8fafc; color: #a0aec0; }
         
         .item-name { font-size: 15px; font-weight: 700; color: #2d3748; display: flex; flex-direction: column; align-items: flex-start; text-align: left; line-height: 1.2; word-break: break-word; flex: 1; }
@@ -163,12 +168,19 @@
         </div>
     </div>
 
+    <!-- MODAL ΓΙΑ SCANNER -->
     <div id="barcode-modal">
         <h2 style="color:white; margin-bottom: 20px;">Σκανάρισμα Barcode</h2>
         <div id="reader-container">
             <div id="reader"></div>
         </div>
         <button id="close-camera-btn" class="btn-close-cam">Ακύρωση</button>
+    </div>
+
+    <!-- MODAL ΓΙΑ ΜΕΓΕΘΥΝΣΗ ΕΙΚΟΝΑΣ -->
+    <div id="image-modal">
+        <img id="enlarged-img" src="" alt="Προϊόν">
+        <button id="close-image-btn" class="btn-close-image">Κλείσιμο</button>
     </div>
 
     <div id="toast" class="toast">Επιτυχής Αφαίρεση!</div>
@@ -210,6 +222,28 @@
         const newWorkerInput = document.getElementById('new-worker-input');
         let unsubscribeWorkers = null;
         let unsubscribeItems = null;
+
+        // Συναρτήσεις για τη μεγέθυνση της εικόνας
+        const imageModal = document.getElementById('image-modal');
+        const enlargedImg = document.getElementById('enlarged-img');
+        const closeImageBtn = document.getElementById('close-image-btn');
+
+        function openImageModal(url) {
+            enlargedImg.src = url;
+            imageModal.style.display = 'flex';
+        }
+
+        closeImageBtn.addEventListener('click', () => {
+            imageModal.style.display = 'none';
+            enlargedImg.src = '';
+        });
+
+        imageModal.addEventListener('click', (e) => {
+            if (e.target === imageModal) {
+                imageModal.style.display = 'none';
+                enlargedImg.src = '';
+            }
+        });
 
         function showToast(message) {
             const toast = document.getElementById("toast");
@@ -281,22 +315,20 @@
 
         searchInput.addEventListener('input', applySearchFilter);
 
+        // --- Η ΝΕΑ ΕΞΥΠΝΗ ΛΟΓΙΚΗ ΑΝΑΖΗΤΗΣΗΣ (ΟΠΩΣ ΣΤΟ ADMIN) ---
         function applySearchFilter() {
             const term = searchInput.value.toLowerCase();
             
-            // 1. Επαναφορά όλων των φακέλων σε κλειστή/ορατή κατάσταση
             document.querySelectorAll('details').forEach(d => { 
                 d.open = false; 
                 d.style.display = 'block'; 
             });
-            
             const divider = document.querySelector('.divider');
             if(divider) divider.style.display = 'block';
 
-            // 2. Φιλτράρισμα προϊόντων
             document.querySelectorAll('.item-card').forEach(card => {
-                const text = card.textContent.toLowerCase();
-                if (text.includes(term)) {
+                const searchStr = card.dataset.search.toLowerCase();
+                if (searchStr.includes(term)) {
                     card.style.display = 'flex';
                     if (term !== "") {
                         let parent = card.parentElement;
@@ -310,7 +342,6 @@
                 }
             });
 
-            // 3. ΑΠΟΚΡΥΨΗ ΑΔΕΙΩΝ ΦΑΚΕΛΩΝ (Η μαγεία που φέρνει το προϊόν πάνω-πάνω)
             if (term !== "") {
                 document.querySelectorAll('details').forEach(d => {
                     const hasVisibleItems = Array.from(d.querySelectorAll('.item-card')).some(card => card.style.display === 'flex');
@@ -361,23 +392,25 @@
                 const tree = { cleaning: { items: [], children: {} }, electrical: { items: [], children: {} } };
                 
                 snapshot.forEach((docSnapshot) => {
-                    const item = docSnapshot.data(); const cat = item.category || 'cleaning';
+                    const item = docSnapshot.data(); 
+                    item.id = docSnapshot.id;
+                    const cat = item.category || 'cleaning';
                     let sub = item.subcategory || 'Γενικά'; let child = item.childcategory || 'Γενικά'; let subchild = item.subchildcategory || 'Γενικά';
                     if (!tree[cat]) tree[cat] = { items: [], children: {} };
                     if (!tree[cat].children[sub]) tree[cat].children[sub] = { items: [], children: {} };
                     let subNode = tree[cat].children[sub];
-                    if (child === 'Γενικά' && subchild === 'Γενικά') { subNode.items.push({ id: docSnapshot.id, ...item }); } 
+                    if (child === 'Γενικά' && subchild === 'Γενικά') { subNode.items.push(item); } 
                     else if (child !== 'Γενικά' && subchild === 'Γενικά') {
                         if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
-                        subNode.children[child].items.push({ id: docSnapshot.id, ...item });
+                        subNode.children[child].items.push(item);
                     } else if (child === 'Γενικά' && subchild !== 'Γενικά') {
                         if (!subNode.children[subchild]) subNode.children[subchild] = { items: [], children: {} };
-                        subNode.children[subchild].items.push({ id: docSnapshot.id, ...item });
+                        subNode.children[subchild].items.push(item);
                     } else {
                         if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
                         let childNode = subNode.children[child];
                         if (!childNode.children[subchild]) childNode.children[subchild] = { items: [], children: {} };
-                        childNode.children[subchild].items.push({ id: docSnapshot.id, ...item });
+                        childNode.children[subchild].items.push(item);
                     }
                 });
 
@@ -386,15 +419,20 @@
                         const grid = document.createElement('div'); grid.className = 'sub-inventory-section';
                         node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
                             const isOutOfStock = item.stock <= 0;
-                            const isLowStock = item.stock <= 5;
+                            const minStock = item.minStock !== undefined ? parseInt(item.minStock) : 5;
+                            const isLowStock = item.stock <= minStock;
                             const stockColor = isLowStock && !isOutOfStock ? '#e53e3e' : '#3182ce';
                             const warningIcon = isLowStock && !isOutOfStock ? '⚠️' : '';
                             
                             const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
-                                ? `<img src="${item.imageUrl}" class="product-img" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
+                                ? `<img src="${item.imageUrl}" class="product-img" id="img-${item.id}" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
                                 : `<div class="no-img">📦</div>`;
 
+                            const searchString = `${item.name} ${item.code || ''} ${item.subcategory} ${item.childcategory} ${item.subchildcategory}`;
+
                             const card = document.createElement('div'); card.className = 'item-card';
+                            card.dataset.search = searchString;
+                            
                             card.innerHTML = `
                                 <div class="card-top">
                                     ${imageHtml}
@@ -413,6 +451,12 @@
                             grid.appendChild(card);
                             
                             setTimeout(() => {
+                                // Event Listener για τη μεγέθυνση εικόνας
+                                if (item.imageUrl && item.imageUrl.trim() !== "") {
+                                    const imgEl = document.getElementById(`img-${item.id}`);
+                                    if(imgEl) imgEl.addEventListener('click', () => openImageModal(item.imageUrl));
+                                }
+
                                 if (!isOutOfStock) {
                                     document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => {
                                         if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`btn-${item.id}`).click(); }
@@ -435,7 +479,7 @@
                                         let qty = parseInt(inputField.value); if (isNaN(qty) || qty <= 0) qty = 1;
                                         let reasonText = reasonField.value.trim();
 
-                                        if (qty > item.stock) { alert(`Υπάρχουν μόνο ${item.stock} τεμάχια.`); return; }
+                                        if (qty > item.stock) { alert(`Υπάρχουν μόνο ${item.stock} στη βάση.`); return; }
 
                                         inputField.blur();
                                         reasonField.blur();
