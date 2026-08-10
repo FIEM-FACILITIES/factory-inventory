@@ -73,7 +73,7 @@
         
         .item-stock { font-size: 32px; margin: 5px 0; font-weight: 700; transition: color 0.3s; display: flex; justify-content: center; align-items: center; gap: 6px;}
         .item-unit { font-size: 16px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; gap: 4px;}
-        .item-limit { font-size: 12px; color: #ef4444; margin-bottom: 10px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 4px;}
+        .item-limit { font-size: 12px; color: #ef4444; margin-bottom: 10px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 4px; flex-wrap: wrap;}
 
         .input-row { margin-bottom: 10px; }
         .restock-input { width: 100%; box-sizing: border-box; padding: 10px; font-weight: 600; }
@@ -162,14 +162,16 @@
             <div class="input-group"><input type="url" id="new-image" placeholder="Link Εικόνας (Προαιρετικό)"></div>
             
             <datalist id="supplier-list"></datalist>
-            <div class="input-group"><input type="text" id="new-supplier" list="supplier-list" placeholder="1ος Προμηθευτής (Προαιρετικό)"></div>
-            <div class="input-group"><input type="text" id="new-supplier2" list="supplier-list" placeholder="2ος Προμηθευτής (Προαιρετικό)"></div>
+            <div class="input-group"><input type="text" id="new-supplier" list="supplier-list" placeholder="1ος Προμηθευτής"></div>
+            <div class="input-group"><input type="text" id="new-supplier2" list="supplier-list" placeholder="2ος Προμηθευτής"></div>
 
             <div class="input-group"><input type="number" id="new-stock" placeholder="Αρχική Ποσ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
             
             <div class="input-group">
                 <select id="new-unit">
                     <option value="τμχ">Τεμάχια (τμχ)</option>
+                    <option value="Πακέτα">Πακέτα</option>
+                    <option value="Ζευγάρια">Ζευγάρια</option>
                     <option value="Λίτρα">Λίτρα (L)</option>
                     <option value="ml">ml</option>
                     <option value="Κιλά">Κιλά (kg)</option>
@@ -178,6 +180,9 @@
                     <option value="Μεζούρες">Μεζούρες</option>
                 </select>
             </div>
+            
+            <!-- ΠΕΔΙΟ ΓΙΑ ΤΙΣ ΚΟΥΤΕΣ -->
+            <div class="input-group"><input type="number" id="new-box-multiplier" placeholder="Τμχ/Πακέτα ανά Κούτα" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
 
             <div class="input-group"><input type="number" id="new-min-stock" placeholder="Όριο Έλλειψης (πχ 5)" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
 
@@ -246,7 +251,6 @@
         <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos</div>
     </div>
 
-    <!-- MODAL ΠΑΡΑΓΓΕΛΙΩΝ -->
     <div id="order-modal">
         <div class="order-content">
             <h2 style="color: white; margin-top: 0; text-align: center; margin-bottom: 25px;">Λίστα Παραγγελιών ανά Προμηθευτή</h2>
@@ -492,7 +496,9 @@
                 
                 allLogs.forEach(l => { 
                     let r = l.reason ? l.reason.replace(/"/g, '""') : "";
-                    csv += `"${l.timestamp}","${l.worker}","${l.item}","${l.quantity}","${r}"\n`; 
+                    
+                    let qText = l.quantityText ? l.quantityText : `${l.quantity}`;
+                    csv += `"${l.timestamp}","${l.worker}","${l.item}","${qText}","${r}"\n`; 
                 });
                 const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); 
                 const url = URL.createObjectURL(blob);
@@ -606,7 +612,6 @@
                         node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
                             const minStock = item.minStock !== undefined ? parseInt(item.minStock) : 5;
                             const unit = item.unit || 'τμχ';
-                            
                             const isLowStock = item.stock <= minStock;
                             const stockColor = isLowStock && item.stock > 0 ? '#e53e3e' : '#38bdf8';
 
@@ -646,7 +651,8 @@
                                     ${item.stock} <span class="item-unit">${unit} <button class="btn-edit-item" id="edit-unit-${item.id}" style="font-size:12px;" title="Αλλαγή Μονάδας">✏️</button></span> 
                                 </div>
                                 <div class="item-limit">
-                                    Όριο Έλλειψης: ${minStock} <button class="btn-edit-item" id="edit-min-${item.id}" style="font-size:12px;" title="Αλλαγή Ορίου">✏️</button>
+                                    Όριο: ${minStock} <button class="btn-edit-item" id="edit-min-${item.id}" style="font-size:12px;" title="Αλλαγή Ορίου">✏️</button>
+                                    | Κούτα: ${item.boxMultiplier > 1 ? item.boxMultiplier + ' ' + unit : '-'} <button class="btn-edit-item" id="edit-box-${item.id}" style="font-size:12px;" title="Αλλαγή Τεμαχίων ανά Κούτα">✏️</button>
                                 </div>
 
                                 <div class="input-row"><input type="number" id="input-${item.id}" class="restock-input" placeholder="Ποσότητα προσ/αφαίρ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
@@ -655,7 +661,6 @@
                             `;
                             grid.appendChild(card);
                             setTimeout(() => {
-                                // Event Listener για τη μεγέθυνση εικόνας
                                 if (item.imageUrl && item.imageUrl.trim() !== "") {
                                     const imgEl = document.getElementById(`img-${item.id}`);
                                     if(imgEl) imgEl.addEventListener('click', () => openImageModal(item.imageUrl));
@@ -670,6 +675,7 @@
                                 
                                 document.getElementById(`edit-unit-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέα Μονάδα Μέτρησης (π.χ. τμχ, Λίτρα, Κιλά):`, item.unit || "τμχ"); if (val !== null && val.trim() !== "") { updateDoc(doc(db, "items", item.id), { unit: val.trim() }).catch(()=>{}); } });
                                 document.getElementById(`edit-min-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο Όριο Έλλειψης (Αριθμός):`, minStock); if (val !== null && !isNaN(parseInt(val))) { updateDoc(doc(db, "items", item.id), { minStock: parseInt(val) }).catch(()=>{}); } });
+                                document.getElementById(`edit-box-${item.id}`).addEventListener('click', () => { let val = prompt(`Πόσα ${unit} περιέχει μία Κούτα; (Γράψε αριθμό ή 0 αν δεν έχει κούτα):`, item.boxMultiplier || ""); if (val !== null && !isNaN(parseInt(val))) { updateDoc(doc(db, "items", item.id), { boxMultiplier: parseInt(val) }).catch(()=>{}); } });
 
                                 document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`add-${item.id}`).click(); } });
                                 document.getElementById(`add-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; updateDoc(doc(db, "items", item.id), { stock: increment(val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
@@ -717,10 +723,11 @@
                     const div = document.createElement('div'); div.className = 'history-item';
                     
                     let reasonHtml = log.reason ? `<div style="font-size: 13px; color: #facc15; margin-top: 4px;">📝 ${log.reason}</div>` : '';
+                    let qtyDisplay = log.quantityText ? log.quantityText : `${log.quantity}`;
 
                     div.innerHTML = `
                         <div style="text-align: left; flex: 1; padding-right: 10px;">
-                            <div><span class="history-worker">${log.worker}</span> <span>αφαίρεσε <b>${log.quantity}</b> από <b>${log.item}</b></span></div>
+                            <div><span class="history-worker">${log.worker}</span> <span>αφαίρεσε <b>${qtyDisplay}</b> από <b>${log.item}</b></span></div>
                             ${reasonHtml}
                         </div>
                         <div style="display:flex; align-items:center; flex-shrink: 0;">
@@ -740,7 +747,7 @@
             });
         }
 
-        const addItemInputs = ['new-name', 'new-code', 'new-image', 'new-supplier', 'new-supplier2', 'new-stock', 'new-min-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
+        const addItemInputs = ['new-name', 'new-code', 'new-image', 'new-supplier', 'new-supplier2', 'new-stock', 'new-box-multiplier', 'new-min-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
         addItemInputs.forEach(id => { const el = document.getElementById(id); if (el) { el.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById('add-item-btn').click(); } }); } });
 
         document.getElementById('add-item-btn').addEventListener('click', () => {
@@ -752,6 +759,8 @@
             let supplier2 = document.getElementById('new-supplier2').value.trim();
             
             let stock = parseInt(document.getElementById('new-stock').value); if (isNaN(stock) || stock < 0) stock = 0; 
+            let boxMultiplier = parseInt(document.getElementById('new-box-multiplier').value); if (isNaN(boxMultiplier) || boxMultiplier <= 0) boxMultiplier = 0; 
+            
             let unit = document.getElementById('new-unit').value || "τμχ";
             let minStock = parseInt(document.getElementById('new-min-stock').value); if (isNaN(minStock) || minStock < 0) minStock = 5; 
 
@@ -764,13 +773,13 @@
             addDoc(collection(db, "items"), { 
                 name: name, code: code, imageUrl: imageUrl, 
                 supplier: supplier, supplier2: supplier2, 
-                stock: stock, unit: unit, minStock: minStock,
+                stock: stock, unit: unit, minStock: minStock, boxMultiplier: boxMultiplier,
                 category: category, subcategory: subcategory, childcategory: childcategory, subchildcategory: subchildcategory 
             }).catch(()=>{});
             
             document.getElementById('new-name').value = ''; document.getElementById('new-code').value = ''; document.getElementById('new-image').value = ''; 
             document.getElementById('new-supplier').value = ''; document.getElementById('new-supplier2').value = '';
-            document.getElementById('new-stock').value = ''; document.getElementById('new-min-stock').value = '';
+            document.getElementById('new-stock').value = ''; document.getElementById('new-min-stock').value = ''; document.getElementById('new-box-multiplier').value = '';
             document.getElementById('new-childcategory').value = ''; document.getElementById('new-subchildcategory').value = ''; 
             subcleaningSelect.value = ''; document.getElementById('new-cleaning-text').value = ''; document.getElementById('new-cleaning-text').style.display = 'none';
             subelectricalSelect.value = ''; document.getElementById('new-electrical-text').value = ''; document.getElementById('new-electrical-text').style.display = 'none';
