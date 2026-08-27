@@ -78,17 +78,21 @@
         
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
+        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; position: relative; }
         .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .product-img { width: 60px; height: 60px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; cursor: zoom-in; flex-shrink:0; }
         .no-img { width: 60px; height: 60px; border-radius: 8px; border: 1px dashed #cbd5e0; display: flex; align-items: center; justify-content: center; font-size: 24px; background: #f8fafc; color: #a0aec0; flex-shrink:0; }
         
         .item-name { font-size: 15px; font-weight: 700; color: #2d3748; display: flex; flex-direction: column; align-items: flex-start; text-align: left; line-height: 1.2; word-break: break-word; flex: 1; }
         .item-code { font-size: 12px; font-weight: 500; color: #718096; margin-top: 4px; }
-        .item-stock { font-size: 36px; margin: 5px 0 10px 0; font-weight: 700; transition: color 0.3s; }
+        
+        .item-stock { font-size: 36px; margin: 5px 0 10px 0; font-weight: 700; transition: color 0.3s; display: flex; justify-content: center; align-items: baseline; gap: 4px;}
         
         .action-area { display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; }
-        .qty-input { width: 100%; padding: 10px; font-size: 15px; text-align: center; border: 2px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; outline: none; font-weight: 600; font-family: 'Inter'; }
+        .qty-row { display: flex; gap: 5px; width: 100%; }
+        .qty-input { padding: 10px; font-size: 14px; text-align: center; border: 2px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; outline: none; font-weight: 600; font-family: 'Inter'; }
+        
+        .unit-box { flex: 1.5; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #718096; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-weight: 600; }
         
         .btn-row { display: flex; gap: 6px; width: 100%; margin-top: 4px; }
         .take-btn { flex: 1; background-color: #38a169; color: white; border: none; padding: 10px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: 600; }
@@ -219,8 +223,14 @@
         const loadingMsg = document.getElementById('loading-msg');
         const workerSelect = document.getElementById('worker-name');
         const newWorkerInput = document.getElementById('new-worker-input');
+        
         let unsubscribeWorkers = null;
         let unsubscribeItems = null;
+        let unsubscribeSorting = null;
+
+        let globalItemsData = [];
+        let groupOrders = {};
+        let isItemsLoaded = false;
 
         const imageModal = document.getElementById('image-modal');
         const enlargedImg = document.getElementById('enlarged-img');
@@ -268,7 +278,7 @@
             } else {
                 loginScreen.style.display = 'flex'; mainApp.style.display = 'none';
                 document.getElementById('login-password').value = ''; errorMsg.style.display = 'none';
-                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems();
+                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeSorting) unsubscribeSorting();
             }
         });
 
@@ -295,9 +305,7 @@
             searchToggleBtn.classList.add('active');
             applySearchFilter();
         }
-
         function onScanFailure(error) { }
-
         document.getElementById('close-camera-btn').addEventListener('click', () => {
             if (html5QrcodeScanner) { html5QrcodeScanner.clear(); }
             document.getElementById('barcode-modal').style.display = 'none';
@@ -315,31 +323,29 @@
 
         function applySearchFilter() {
             const term = searchInput.value.toLowerCase();
-            
-            document.querySelectorAll('details').forEach(d => { 
-                d.open = false; 
-                d.style.display = 'block'; 
-            });
             const divider = document.querySelector('.divider');
             if(divider) divider.style.display = 'block';
 
-            document.querySelectorAll('.item-card').forEach(card => {
-                const searchStr = card.dataset.search.toLowerCase();
-                if (searchStr.includes(term)) {
-                    card.style.display = 'flex';
-                    if (term !== "") {
+            if (term === "") {
+                document.querySelectorAll('details').forEach(d => { d.style.display = 'block'; });
+                document.querySelectorAll('.item-card').forEach(card => { card.style.display = 'flex'; });
+            } else {
+                document.querySelectorAll('details').forEach(d => { d.open = false; d.style.display = 'block'; });
+                
+                document.querySelectorAll('.item-card').forEach(card => {
+                    const searchStr = card.dataset.search.toLowerCase();
+                    if (searchStr.includes(term)) {
+                        card.style.display = 'flex';
                         let parent = card.parentElement;
                         while (parent && parent.id !== 'main-app') {
                             if (parent.tagName === 'DETAILS') { parent.open = true; }
                             parent = parent.parentElement;
                         }
+                    } else {
+                        card.style.display = 'none';
                     }
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+                });
 
-            if (term !== "") {
                 document.querySelectorAll('details').forEach(d => {
                     const hasVisibleItems = Array.from(d.querySelectorAll('.item-card')).some(card => card.style.display === 'flex');
                     if (!hasVisibleItems) { d.style.display = 'none'; }
@@ -365,6 +371,217 @@
             applySearchFilter(); window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function renderEverything() {
+            if(!isItemsLoaded) return;
+            
+            const openStates = new Set();
+            document.querySelectorAll('details[open]').forEach(d => {
+                const summary = d.querySelector('summary');
+                if (summary) openStates.add(summary.textContent.trim());
+            });
+
+            cleaningContainer.innerHTML = ''; electricalContainer.innerHTML = ''; loadingMsg.style.display = 'none';
+            const tree = { cleaning: { items: [], children: {} }, electrical: { items: [], children: {} } };
+            
+            globalItemsData.forEach((item) => {
+                const cat = item.category || 'cleaning';
+                let sub = item.subcategory || 'Γενικά'; let child = item.childcategory || 'Γενικά'; let subchild = item.subchildcategory || 'Γενικά';
+                if (!tree[cat]) tree[cat] = { items: [], children: {} };
+                if (!tree[cat].children[sub]) tree[cat].children[sub] = { items: [], children: {} };
+                let subNode = tree[cat].children[sub];
+                if (child === 'Γενικά' && subchild === 'Γενικά') { subNode.items.push(item); } 
+                else if (child !== 'Γενικά' && subchild === 'Γενικά') {
+                    if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
+                    subNode.children[child].items.push(item);
+                } else if (child === 'Γενικά' && subchild !== 'Γενικά') {
+                    if (!subNode.children[subchild]) subNode.children[subchild] = { items: [], children: {} };
+                    subNode.children[subchild].items.push(item);
+                } else {
+                    if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
+                    let childNode = subNode.children[child];
+                    if (!childNode.children[subchild]) childNode.children[subchild] = { items: [], children: {} };
+                    childNode.children[subchild].items.push(item);
+                }
+            });
+
+            const renderNode = (container, node, levelClass, summaryClass) => {
+                if (node.items && node.items.length > 0) {
+                    const grid = document.createElement('div'); grid.className = 'sub-inventory-section';
+                    
+                    const sortedItems = node.items.sort((a,b) => {
+                        let oa = a.order !== undefined ? a.order : 99999;
+                        let ob = b.order !== undefined ? b.order : 99999;
+                        return oa - ob || a.name.localeCompare(b.name);
+                    });
+
+                    sortedItems.forEach(item => {
+                        const isOutOfStock = item.stock <= 0;
+                        const minStock = item.minStock !== undefined ? parseInt(item.minStock) : 5;
+                        const isLowStock = item.stock <= minStock;
+                        const stockColor = isLowStock && !isOutOfStock ? '#e53e3e' : '#3182ce';
+                        const warningIcon = isLowStock && !isOutOfStock ? '⚠️' : '';
+                        const unit = item.unit || 'τμχ';
+                        
+                        const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
+                            ? `<img src="${item.imageUrl}" class="product-img" id="img-${item.id}" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
+                            : `<div class="no-img">📦</div>`;
+
+                        const searchString = `${item.name} ${item.code || ''} ${item.subcategory} ${item.childcategory} ${item.subchildcategory}`;
+
+                        let boxMult = item.boxMultiplier && item.boxMultiplier > 1 ? parseInt(item.boxMultiplier) : 0;
+                        
+                        let buttonsHtml = '';
+                        if (boxMult > 0) {
+                            buttonsHtml = `
+                                <button class="take-btn" id="btn-unit-${item.id}" ${isOutOfStock ? 'disabled' : ''}>Πήρα ${unit}</button>
+                                <button class="take-btn" id="btn-box-${item.id}" style="background-color: #3182ce;" ${isOutOfStock ? 'disabled' : ''}>Πήρα Κούτα</button>
+                            `;
+                        } else {
+                            buttonsHtml = `
+                                <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Πήρα ' + unit}</button>
+                            `;
+                        }
+
+                        const card = document.createElement('div'); card.className = 'item-card';
+                        card.dataset.search = searchString;
+                        card.innerHTML = `
+                            <div class="card-top">
+                                ${imageHtml}
+                                <div class="item-name">
+                                    <span>${item.name}</span>
+                                    ${item.code ? `<span class="item-code">Κωδ: ${item.code}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="item-stock" style="color: ${stockColor}">
+                                ${item.stock} <span style="font-size: 16px; color: #718096; font-weight: 500; margin-left: 4px;">${unit}</span> ${warningIcon}
+                            </div>
+                            
+                            <div class="action-area">
+                                <input type="number" id="input-${item.id}" class="qty-input" placeholder="Ποσότητα..." min="1" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')" ${isOutOfStock ? 'disabled' : ''}>
+                                <div class="btn-row">
+                                    ${buttonsHtml}
+                                </div>
+                            </div>
+                            <input type="text" id="reason-${item.id}" class="reason-input" placeholder="Αιτιολογία (προαιρετικό)..." ${isOutOfStock ? 'disabled' : ''}>
+                        `;
+                        grid.appendChild(card);
+                        
+                        setTimeout(() => {
+                            if (item.imageUrl && item.imageUrl.trim() !== "") {
+                                const imgEl = document.getElementById(`img-${item.id}`);
+                                if(imgEl) imgEl.addEventListener('click', () => openImageModal(item.imageUrl));
+                            }
+
+                            const inputField = document.getElementById(`input-${item.id}`);
+                            const reasonField = document.getElementById(`reason-${item.id}`);
+
+                            const handleTake = (isBox) => {
+                                let worker = workerSelect.value;
+                                if (!worker || worker === "-- Επιλέξτε Όνομα --") { alert("⚠️ Παρακαλώ επιλέξτε το όνομά σας!"); workerSelect.focus(); return; } 
+                                if (worker === '__NEW_WORKER__') {
+                                    worker = newWorkerInput.value.trim().toUpperCase();
+                                    if (!worker) { alert("⚠️ Πληκτρολογήστε το όνομά σας!"); newWorkerInput.focus(); return; }
+                                    setDoc(doc(db, "workers", worker), { name: worker }).catch(()=>{});
+                                }
+
+                                let inputVal = parseInt(inputField.value); if (isNaN(inputVal) || inputVal <= 0) inputVal = 1;
+                                let reasonText = reasonField.value.trim();
+
+                                let multiplier = isBox ? boxMult : 1;
+                                let totalToRemove = inputVal * multiplier;
+
+                                if (totalToRemove > item.stock) { alert(`Υπάρχουν μόνο ${item.stock} συνολικά στη βάση. Δεν επαρκούν!`); return; }
+
+                                inputField.blur(); reasonField.blur();
+                                if(document.activeElement) document.activeElement.blur();
+
+                                updateDoc(doc(db, "items", item.id), { stock: increment(-totalToRemove) }).catch(()=>{});
+
+                                let logParts = [];
+                                if(item.childcategory && item.childcategory !== 'Γενικά') logParts.push(item.childcategory);
+                                if(item.subchildcategory && item.subchildcategory !== 'Γενικά') logParts.push(item.subchildcategory);
+                                let logSuffix = logParts.length > 0 ? ` (${logParts.join(' - ')})` : '';
+                                
+                                let historyQtyText = isBox 
+                                    ? `${inputVal} Κούτες (${totalToRemove} ${unit})` 
+                                    : `${totalToRemove} ${unit}`;
+
+                                addDoc(collection(db, "history"), {
+                                    worker: worker, 
+                                    item: `${item.subcategory}: ${item.name}${logSuffix}`,
+                                    itemId: item.id,
+                                    quantity: totalToRemove, 
+                                    quantityText: historyQtyText,
+                                    reason: reasonText,
+                                    timestamp: new Date().toLocaleString('el-GR'), 
+                                    createdAt: Date.now()
+                                }).catch(()=>{});
+
+                                showToast(`✅ Αφαιρέθηκαν ${historyQtyText}`);
+                                inputField.value = ''; reasonField.value = '';
+                                setTimeout(() => { resetTabletUI(); }, 2500);
+                            };
+
+                            if (!isOutOfStock) {
+                                if (boxMult > 0) {
+                                    document.getElementById(`btn-unit-${item.id}`).addEventListener('click', () => handleTake(false));
+                                    document.getElementById(`btn-box-${item.id}`).addEventListener('click', () => handleTake(true));
+                                    
+                                    inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleTake(false); } });
+                                    reasonField.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleTake(false); } });
+                                } else {
+                                    document.getElementById(`btn-${item.id}`).addEventListener('click', () => handleTake(false));
+                                    inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleTake(false); } });
+                                    reasonField.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleTake(false); } });
+                                }
+                            }
+                        }, 0);
+                    });
+                    container.appendChild(grid);
+                }
+                if (node.children) {
+                    const sortedKeys = Object.keys(node.children).sort((a,b) => {
+                        let oa = groupOrders[a] !== undefined ? groupOrders[a] : 99999;
+                        let ob = groupOrders[b] !== undefined ? groupOrders[b] : 99999;
+                        return oa - ob || a.localeCompare(b);
+                    });
+
+                    sortedKeys.forEach(childKey => {
+                        const details = document.createElement('details'); details.className = levelClass;
+                        details.innerHTML = `<summary class="${summaryClass}">${childKey}</summary><div class="node-container" style="padding-top: 8px; padding-bottom: 5px;"></div>`;
+                        renderNode(details.querySelector('.node-container'), node.children[childKey], 'sub-child-details', 'sub-child-summary');
+                        container.appendChild(details);
+                    });
+                }
+            };
+
+            const renderCategory = (container, catData) => {
+                if(!catData || !catData.children) return;
+                
+                const sortedKeys = Object.keys(catData.children).sort((a,b) => {
+                    let oa = groupOrders[a] !== undefined ? groupOrders[a] : 99999;
+                    let ob = groupOrders[b] !== undefined ? groupOrders[b] : 99999;
+                    return oa - ob || a.localeCompare(b);
+                });
+
+                sortedKeys.forEach(subKey => {
+                    const details = document.createElement('details'); details.className = 'sub-details';
+                    details.innerHTML = `<summary class="sub-summary">${subKey}</summary><div class="node-container" style="padding-top: 10px;"></div>`;
+                    renderNode(details.querySelector('.node-container'), catData.children[subKey], 'child-details', 'child-summary');
+                    container.appendChild(details);
+                });
+            };
+
+            renderCategory(cleaningContainer, tree.cleaning); renderCategory(electricalContainer, tree.electrical);
+
+            document.querySelectorAll('details').forEach(d => {
+                const summary = d.querySelector('summary');
+                if (summary && openStates.has(summary.textContent.trim())) { d.open = true; }
+            });
+
+            applySearchFilter();
+        }
+
         function loadData() {
             unsubscribeWorkers = onSnapshot(collection(db, "workers"), (snapshot) => {
                 const currentSelection = workerSelect.value; const defaultOpt = workerSelect.options[0];
@@ -378,195 +595,16 @@
                 if (currentSelection && currentSelection !== "__NEW_WORKER__" && Array.from(workerSelect.options).some(o => o.value === currentSelection)) { workerSelect.value = currentSelection; }
             });
 
+            unsubscribeSorting = onSnapshot(doc(db, "settings", "sorting"), (snap) => {
+                groupOrders = snap.exists() ? (snap.data().groupOrders || {}) : {};
+                if(isItemsLoaded) renderEverything();
+            });
+
             unsubscribeItems = onSnapshot(collection(db, "items"), (snapshot) => {
-                const openStates = new Set();
-                document.querySelectorAll('details[open]').forEach(d => {
-                    const summary = d.querySelector('summary');
-                    if (summary) openStates.add(summary.textContent.trim());
-                });
-
-                cleaningContainer.innerHTML = ''; electricalContainer.innerHTML = ''; loadingMsg.style.display = 'none';
-                const tree = { cleaning: { items: [], children: {} }, electrical: { items: [], children: {} } };
-                
-                snapshot.forEach((docSnapshot) => {
-                    const item = docSnapshot.data(); 
-                    item.id = docSnapshot.id;
-                    const cat = item.category || 'cleaning';
-                    let sub = item.subcategory || 'Γενικά'; let child = item.childcategory || 'Γενικά'; let subchild = item.subchildcategory || 'Γενικά';
-                    if (!tree[cat]) tree[cat] = { items: [], children: {} };
-                    if (!tree[cat].children[sub]) tree[cat].children[sub] = { items: [], children: {} };
-                    let subNode = tree[cat].children[sub];
-                    if (child === 'Γενικά' && subchild === 'Γενικά') { subNode.items.push(item); } 
-                    else if (child !== 'Γενικά' && subchild === 'Γενικά') {
-                        if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
-                        subNode.children[child].items.push(item);
-                    } else if (child === 'Γενικά' && subchild !== 'Γενικά') {
-                        if (!subNode.children[subchild]) subNode.children[subchild] = { items: [], children: {} };
-                        subNode.children[subchild].items.push(item);
-                    } else {
-                        if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
-                        let childNode = subNode.children[child];
-                        if (!childNode.children[subchild]) childNode.children[subchild] = { items: [], children: {} };
-                        childNode.children[subchild].items.push(item);
-                    }
-                });
-
-                const renderNode = (container, node, levelClass, summaryClass) => {
-                    if (node.items && node.items.length > 0) {
-                        const grid = document.createElement('div'); grid.className = 'sub-inventory-section';
-                        node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
-                            const isOutOfStock = item.stock <= 0;
-                            const minStock = item.minStock !== undefined ? parseInt(item.minStock) : 5;
-                            const isLowStock = item.stock <= minStock;
-                            const stockColor = isLowStock && !isOutOfStock ? '#e53e3e' : '#3182ce';
-                            const warningIcon = isLowStock && !isOutOfStock ? '⚠️' : '';
-                            const unit = item.unit || 'τμχ';
-                            
-                            const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
-                                ? `<img src="${item.imageUrl}" class="product-img" id="img-${item.id}" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
-                                : `<div class="no-img">📦</div>`;
-
-                            const searchString = `${item.name} ${item.code || ''} ${item.subcategory} ${item.childcategory} ${item.subchildcategory}`;
-
-                            let boxMult = item.boxMultiplier && item.boxMultiplier > 1 ? parseInt(item.boxMultiplier) : 0;
-                            
-                            // ΑΝ ΕΧΕΙ ΚΟΥΤΑ, ΒΓΑΖΕΙ 2 ΚΟΥΜΠΙΑ. ΑΝ ΟΧΙ, ΒΓΑΖΕΙ 1 ΚΟΥΜΠΙ
-                            let buttonsHtml = '';
-                            if (boxMult > 0) {
-                                buttonsHtml = `
-                                    <button class="take-btn" id="btn-unit-${item.id}" ${isOutOfStock ? 'disabled' : ''}>Πήρα ${unit}</button>
-                                    <button class="take-btn" id="btn-box-${item.id}" style="background-color: #3182ce;" ${isOutOfStock ? 'disabled' : ''}>Πήρα Κούτα</button>
-                                `;
-                            } else {
-                                buttonsHtml = `
-                                    <button class="take-btn" id="btn-${item.id}" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Τελείωσε' : 'Αφαίρεση'}</button>
-                                `;
-                            }
-
-                            const card = document.createElement('div'); card.className = 'item-card';
-                            card.dataset.search = searchString;
-                            card.innerHTML = `
-                                <div class="card-top">
-                                    ${imageHtml}
-                                    <div class="item-name">
-                                        <span>${item.name}</span>
-                                        ${item.code ? `<span class="item-code">Κωδ: ${item.code}</span>` : ''}
-                                    </div>
-                                </div>
-                                <div class="item-stock" style="color: ${stockColor}">${item.stock} ${warningIcon}</div>
-                                
-                                <div class="action-area">
-                                    <input type="number" id="input-${item.id}" class="qty-input" placeholder="Ποσότητα..." min="1" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')" ${isOutOfStock ? 'disabled' : ''}>
-                                    <div class="btn-row">
-                                        ${buttonsHtml}
-                                    </div>
-                                </div>
-                                <input type="text" id="reason-${item.id}" class="reason-input" placeholder="Αιτιολογία (προαιρετικό)..." ${isOutOfStock ? 'disabled' : ''}>
-                            `;
-                            grid.appendChild(card);
-                            
-                            setTimeout(() => {
-                                if (item.imageUrl && item.imageUrl.trim() !== "") {
-                                    const imgEl = document.getElementById(`img-${item.id}`);
-                                    if(imgEl) imgEl.addEventListener('click', () => openImageModal(item.imageUrl));
-                                }
-
-                                const inputField = document.getElementById(`input-${item.id}`);
-                                const reasonField = document.getElementById(`reason-${item.id}`);
-
-                                const handleTake = (isBox) => {
-                                    let worker = workerSelect.value;
-                                    if (!worker || worker === "-- Επιλέξτε Όνομα --") { alert("⚠️ Παρακαλώ επιλέξτε το όνομά σας!"); workerSelect.focus(); return; } 
-                                    if (worker === '__NEW_WORKER__') {
-                                        worker = newWorkerInput.value.trim().toUpperCase();
-                                        if (!worker) { alert("⚠️ Πληκτρολογήστε το όνομά σας!"); newWorkerInput.focus(); return; }
-                                        setDoc(doc(db, "workers", worker), { name: worker }).catch(()=>{});
-                                    }
-
-                                    let inputVal = parseInt(inputField.value); if (isNaN(inputVal) || inputVal <= 0) inputVal = 1;
-                                    let reasonText = reasonField.value.trim();
-
-                                    let multiplier = isBox ? boxMult : 1;
-                                    let totalToRemove = inputVal * multiplier;
-
-                                    if (totalToRemove > item.stock) { alert(`Υπάρχουν μόνο ${item.stock} συνολικά στη βάση. Δεν επαρκούν!`); return; }
-
-                                    inputField.blur(); reasonField.blur();
-                                    if(document.activeElement) document.activeElement.blur();
-
-                                    updateDoc(doc(db, "items", item.id), { stock: increment(-totalToRemove) }).catch(()=>{});
-
-                                    let logParts = [];
-                                    if(item.childcategory && item.childcategory !== 'Γενικά') logParts.push(item.childcategory);
-                                    if(item.subchildcategory && item.subchildcategory !== 'Γενικά') logParts.push(item.subchildcategory);
-                                    let logSuffix = logParts.length > 0 ? ` (${logParts.join(' - ')})` : '';
-                                    
-                                    let historyQtyText = isBox 
-                                        ? `${inputVal} Κούτες (${totalToRemove} ${unit})` 
-                                        : `${totalToRemove} ${unit}`;
-
-                                    addDoc(collection(db, "history"), {
-                                        worker: worker, 
-                                        item: `${item.subcategory}: ${item.name}${logSuffix}`,
-                                        itemId: item.id,
-                                        quantity: totalToRemove, 
-                                        quantityText: historyQtyText,
-                                        reason: reasonText,
-                                        timestamp: new Date().toLocaleString('el-GR'), 
-                                        createdAt: Date.now()
-                                    }).catch(()=>{});
-
-                                    showToast(`✅ Αφαιρέθηκαν ${historyQtyText}`);
-                                    inputField.value = ''; reasonField.value = '';
-                                    setTimeout(() => { resetTabletUI(); }, 2500);
-                                };
-
-                                if (!isOutOfStock) {
-                                    if (boxMult > 0) {
-                                        document.getElementById(`btn-unit-${item.id}`).addEventListener('click', () => handleTake(false));
-                                        document.getElementById(`btn-box-${item.id}`).addEventListener('click', () => handleTake(true));
-                                        
-                                        // Στο Enter θα παίρνει by default την απλή μονάδα για αποφυγή λαθών
-                                        inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleTake(false); } });
-                                        reasonField.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleTake(false); } });
-                                    } else {
-                                        document.getElementById(`btn-${item.id}`).addEventListener('click', () => handleTake(false));
-                                        inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleTake(false); } });
-                                        reasonField.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleTake(false); } });
-                                    }
-                                }
-                            }, 0);
-                        });
-                        container.appendChild(grid);
-                    }
-                    if (node.children) {
-                        Object.keys(node.children).sort().forEach(childKey => {
-                            const details = document.createElement('details'); details.className = levelClass;
-                            details.innerHTML = `<summary class="${summaryClass}">${childKey}</summary><div class="node-container" style="padding-top: 8px; padding-bottom: 5px;"></div>`;
-                            renderNode(details.querySelector('.node-container'), node.children[childKey], 'sub-child-details', 'sub-child-summary');
-                            container.appendChild(details);
-                        });
-                    }
-                };
-
-                const renderCategory = (container, catData) => {
-                    if(!catData || !catData.children) return;
-                    Object.keys(catData.children).sort().forEach(subKey => {
-                        const details = document.createElement('details'); details.className = 'sub-details';
-                        details.innerHTML = `<summary class="sub-summary">${subKey}</summary><div class="node-container" style="padding-top: 10px;"></div>`;
-                        renderNode(details.querySelector('.node-container'), catData.children[subKey], 'child-details', 'child-summary');
-                        container.appendChild(details);
-                    });
-                };
-
-                renderCategory(cleaningContainer, tree.cleaning); renderCategory(electricalContainer, tree.electrical);
-
-                document.querySelectorAll('details').forEach(d => {
-                    const summary = d.querySelector('summary');
-                    if (summary && openStates.has(summary.textContent.trim())) { d.open = true; }
-                });
-
-                applySearchFilter();
+                globalItemsData = [];
+                snapshot.forEach(doc => { let d = doc.data(); d.id = doc.id; globalItemsData.push(d); });
+                isItemsLoaded = true;
+                renderEverything();
             });
         }
     </script>
