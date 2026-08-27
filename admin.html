@@ -60,7 +60,7 @@
 
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        .item-card { background: #0f172a; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; text-align: center; border: 1px solid #334155; height: 100%; box-sizing: border-box; }
+        .item-card { background: #0f172a; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; text-align: center; border: 1px solid #334155; height: 100%; box-sizing: border-box; position: relative; }
         .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
         .product-img { width: 50px; height: 50px; object-fit: contain; border-radius: 6px; border: 1px solid #334155; background: #1e293b; cursor: zoom-in; }
         .no-img { width: 50px; height: 50px; border-radius: 6px; border: 1px dashed #475569; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #1e293b; color: #64748b; }
@@ -82,7 +82,7 @@
         .btn-sub-stock { flex: 1; background: #f59e0b; color: #0f172a; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-delete { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
-        .btn-edit-group { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 0; filter: grayscale(0.2); transition: transform 0.1s; }
+        .btn-edit-group { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 0 4px; filter: grayscale(0.2); transition: transform 0.1s; }
         .btn-edit-group:hover { transform: scale(1.2); filter: grayscale(0); }
         .btn-edit-item { background: transparent; border: none; cursor: pointer; padding: 0; transition: transform 0.1s; display: inline-flex; align-items: center; justify-content: center; }
         .btn-edit-item:hover { transform: scale(1.2); }
@@ -167,18 +167,9 @@
 
             <div class="input-group"><input type="number" id="new-stock" placeholder="Αρχική Ποσ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
             
+            <datalist id="unit-list"></datalist>
             <div class="input-group">
-                <select id="new-unit">
-                    <option value="τμχ">Τεμάχια (τμχ)</option>
-                    <option value="Πακέτα">Πακέτα</option>
-                    <option value="Ζευγάρια">Ζευγάρια</option>
-                    <option value="Λίτρα">Λίτρα (L)</option>
-                    <option value="ml">ml</option>
-                    <option value="Κιλά">Κιλά (kg)</option>
-                    <option value="Γραμ.">Γραμμάρια (g)</option>
-                    <option value="Συσκ.">Συσκευασίες</option>
-                    <option value="Μεζούρες">Μεζούρες</option>
-                </select>
+                <input type="text" id="new-unit" list="unit-list" placeholder="Μονάδα (π.χ. τμχ, Κούτες)">
             </div>
             
             <!-- ΠΕΔΙΟ ΓΙΑ ΤΙΣ ΚΟΥΤΕΣ -->
@@ -309,8 +300,8 @@
         let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory;
         let lowStockMode = false; 
         let globalItemsData = []; 
+        let isItemsLoaded = false;
 
-        // Συναρτήσεις για τη μεγέθυνση της εικόνας
         const imageModal = document.getElementById('image-modal');
         const enlargedImg = document.getElementById('enlarged-img');
         const closeImageBtn = document.getElementById('close-image-btn');
@@ -364,37 +355,35 @@
 
         function applyAdminSearch() {
             const term = document.getElementById('admin-search-input').value.toLowerCase();
-            
-            document.querySelectorAll('details').forEach(d => { 
-                d.open = false; 
-                d.style.display = 'block'; 
-            });
             const divider = document.querySelector('.divider');
             if(divider) divider.style.display = 'block';
 
-            document.querySelectorAll('.item-card').forEach(card => {
-                const searchStr = card.dataset.search.toLowerCase();
-                const stock = parseInt(card.dataset.stock);
-                const limit = parseInt(card.dataset.limit);
+            if (term === "" && !lowStockMode) {
+                document.querySelectorAll('details').forEach(d => { d.style.display = 'block'; });
+                document.querySelectorAll('.item-card').forEach(card => { card.style.display = 'flex'; });
+            } else {
+                document.querySelectorAll('details').forEach(d => { d.open = false; d.style.display = 'block'; });
                 
-                let matchesSearch = searchStr.includes(term);
-                let matchesLowStock = lowStockMode ? (stock <= limit) : true;
+                document.querySelectorAll('.item-card').forEach(card => {
+                    const searchStr = card.dataset.search.toLowerCase();
+                    const stock = parseInt(card.dataset.stock);
+                    const limit = parseInt(card.dataset.limit);
+                    
+                    let matchesSearch = searchStr.includes(term);
+                    let matchesLowStock = lowStockMode ? (stock <= limit) : true;
 
-                if (matchesSearch && matchesLowStock) {
-                    card.style.display = 'flex';
-                    if (term !== "" || lowStockMode) {
+                    if (matchesSearch && matchesLowStock) {
+                        card.style.display = 'flex';
                         let parent = card.parentElement;
                         while (parent && parent.id !== 'main-app') {
                             if (parent.tagName === 'DETAILS') { parent.open = true; }
                             parent = parent.parentElement;
                         }
+                    } else {
+                        card.style.display = 'none';
                     }
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+                });
 
-            if (term !== "" || lowStockMode) {
                 document.querySelectorAll('details').forEach(d => {
                     const hasVisibleItems = Array.from(d.querySelectorAll('.item-card')).some(card => card.style.display === 'flex');
                     if (!hasVisibleItems) { d.style.display = 'none'; }
@@ -496,7 +485,6 @@
                 
                 allLogs.forEach(l => { 
                     let r = l.reason ? l.reason.replace(/"/g, '""') : "";
-                    
                     let qText = l.quantityText ? l.quantityText : `${l.quantity}`;
                     csv += `"${l.timestamp}","${l.worker}","${l.item}","${qText}","${r}"\n`; 
                 });
@@ -506,65 +494,204 @@
             } catch(e) { alert("Σφάλμα κατά την εξαγωγή του ιστορικού."); }
         });
 
-        function loadData() {
-            function getAllItemIds(node) {
-                let ids = [];
-                if (node.items && node.items.length > 0) ids = ids.concat(node.items.map(i => i.id));
-                if (node.children) Object.values(node.children).forEach(childNode => { ids = ids.concat(getAllItemIds(childNode)); });
-                return ids;
-            }
+        function renderEverything() {
+            if(!isItemsLoaded) return;
+            
+            const openStates = new Set();
+            document.querySelectorAll('details[open]').forEach(d => {
+                const summary = d.querySelector('summary');
+                if (summary) openStates.add(summary.textContent.trim());
+            });
 
-            unsubscribeWorkers = onSnapshot(collection(db, "workers"), (snapshot) => {
-                workersListContainer.innerHTML = ''; const workers = [];
-                snapshot.forEach(docSnap => { workers.push({ id: docSnap.id, name: docSnap.data().name }); });
-                document.getElementById('worker-count').textContent = `(${workers.length})`;
+            cleaningContainer.innerHTML = ''; electricalContainer.innerHTML = '';
+            const tree = { cleaning: { items: [], children: {} }, electrical: { items: [], children: {} } };
+            
+            globalItemsData.forEach((item) => {
+                const cat = item.category || 'cleaning';
+                let sub = item.subcategory || 'Γενικά'; let child = item.childcategory || 'Γενικά'; let subchild = item.subchildcategory || 'Γενικά';
+                if (!tree[cat]) tree[cat] = { items: [], children: {} };
+                if (!tree[cat].children[sub]) tree[cat].children[sub] = { items: [], children: {} };
+                let subNode = tree[cat].children[sub];
+                if (child === 'Γενικά' && subchild === 'Γενικά') { subNode.items.push(item); } 
+                else if (child !== 'Γενικά' && subchild === 'Γενικά') {
+                    if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
+                    subNode.children[child].items.push(item);
+                } else if (child === 'Γενικά' && subchild !== 'Γενικά') {
+                    if (!subNode.children[subchild]) subNode.children[subchild] = { items: [], children: {} };
+                    subNode.children[subchild].items.push(item);
+                } else {
+                    if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} };
+                    let childNode = subNode.children[child];
+                    if (!childNode.children[subchild]) childNode.children[subchild] = { items: [], children: {} };
+                    childNode.children[subchild].items.push(item);
+                }
+            });
 
-                if (workers.length === 0) { workersListContainer.innerHTML = '<div style="color: #94a3b8; font-size: 14px;">Δεν υπάρχουν εργαζόμενοι.</div>'; return; }
-                workers.sort((a, b) => a.name.localeCompare(b.name)).forEach(w => {
-                    const chip = document.createElement('div'); chip.className = 'worker-chip';
-                    chip.innerHTML = `<span>${w.name}</span><div class="worker-chip-btns"><button class="btn-edit-worker" title="Μετονομασία">✏️</button><button class="btn-del-worker" title="Διαγραφή">✕</button></div>`;
-                    chip.querySelector('.btn-edit-worker').addEventListener('click', () => {
-                        let newName = prompt(`Νέο όνομα για "${w.name}":`, w.name);
-                        if (newName && newName.trim() !== "") {
-                            newName = newName.trim().toUpperCase();
-                            if (newName !== w.name) { 
-                                setDoc(doc(db, "workers", newName), { name: newName }).catch(()=>{});
-                                deleteDoc(doc(db, "workers", w.id)).catch(()=>{});
+            const renderNode = (container, node, levelClass, summaryClass, levelIndex) => {
+                if (node.items && node.items.length > 0) {
+                    const grid = document.createElement('div'); grid.className = 'sub-inventory-section';
+                    
+                    node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach((item, index) => {
+                        const minStock = item.minStock !== undefined ? parseInt(item.minStock) : 5;
+                        const unit = item.unit || 'τμχ';
+                        const isLowStock = item.stock <= minStock;
+                        const stockColor = isLowStock && item.stock > 0 ? '#e53e3e' : '#38bdf8';
+
+                        const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
+                            ? `<img src="${item.imageUrl}" class="product-img" id="img-${item.id}" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
+                            : `<div class="no-img">📦</div>`;
+
+                        const searchString = `${item.name} ${item.code || ''} ${item.supplier || ''} ${item.supplier2 || ''} ${item.subcategory} ${item.childcategory} ${item.subchildcategory}`;
+
+                        const card = document.createElement('div'); card.className = 'item-card';
+                        card.dataset.search = searchString;
+                        card.dataset.stock = item.stock;
+                        card.dataset.limit = minStock;
+
+                        card.innerHTML = `
+                            <div class="card-top">
+                                <div style="position:relative; margin-left: 10px;">
+                                    ${imageHtml}
+                                    <button class="btn-edit-item" id="edit-img-${item.id}" style="position:absolute; bottom:-5px; right:-5px; background:white; border-radius:50%; padding:2px; font-size:12px; border:1px solid #ccc; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Αλλαγή Εικόνας">🖼️</button>
+                                </div>
+                                <div class="item-name">
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <span>${item.name}</span><button class="btn-edit-item" id="edit-name-${item.id}" style="font-size:14px;" title="Μετονομασία Είδους">✏️</button>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:5px; margin-top:2px;">
+                                        <span class="item-code">${item.code ? `Κωδ: ${item.code}` : 'Χωρίς Κωδικό'}</span><button class="btn-edit-item" id="edit-code-${item.id}" style="font-size:12px;" title="Αλλαγή Κωδικού">✏️</button>
+                                    </div>
+                                    
+                                    <div class="item-suppliers">
+                                        <div class="supplier-row">🚚 1ος: ${item.supplier || '-'} <button class="btn-edit-item" id="edit-sup-${item.id}" title="Αλλαγή 1ου Προμηθευτή">✏️</button></div>
+                                        <div class="supplier-row">🚚 2ος: ${item.supplier2 || '-'} <button class="btn-edit-item" id="edit-sup2-${item.id}" title="Αλλαγή 2ου Προμηθευτή">✏️</button></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="item-stock" style="color: ${stockColor}">
+                                ${item.stock} <span class="item-unit">${unit} <button class="btn-edit-item" id="edit-unit-${item.id}" style="font-size:12px;" title="Αλλαγή Μονάδας">✏️</button></span> 
+                            </div>
+                            <div class="item-limit">
+                                Όριο: ${minStock} <button class="btn-edit-item" id="edit-min-${item.id}" style="font-size:12px;" title="Αλλαγή Ορίου">✏️</button>
+                                | Κούτα: ${item.boxMultiplier > 1 ? item.boxMultiplier + ' ' + unit : '-'} <button class="btn-edit-item" id="edit-box-${item.id}" style="font-size:12px;" title="Αλλαγή Τεμαχίων ανά Κούτα">✏️</button>
+                            </div>
+
+                            <div class="input-row"><input type="number" id="input-${item.id}" class="restock-input" placeholder="Ποσότητα προσ/αφαίρ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+                            <div class="action-buttons"><button class="btn-add-stock" id="add-${item.id}">+</button><button class="btn-sub-stock" id="sub-${item.id}">-</button></div>
+                            <button class="btn-delete" id="del-${item.id}">Διαγραφή</button>
+                        `;
+                        grid.appendChild(card);
+                        setTimeout(() => {
+                            if (item.imageUrl && item.imageUrl.trim() !== "") {
+                                const imgEl = document.getElementById(`img-${item.id}`);
+                                if(imgEl) imgEl.addEventListener('click', () => openImageModal(item.imageUrl));
                             }
-                        }
+
+                            document.getElementById(`edit-img-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο Link Εικόνας (URL):`, item.imageUrl || ""); if (val !== null) { updateDoc(doc(db, "items", item.id), { imageUrl: val.trim() }).catch(()=>{}); } });
+                            document.getElementById(`edit-name-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο όνομα για το είδος:`, item.name); if (val !== null && val.trim() !== "" && val.trim() !== item.name) { updateDoc(doc(db, "items", item.id), { name: val.trim() }).catch(()=>{}); } });
+                            document.getElementById(`edit-code-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέος κωδικός για "${item.name}":`, item.code || ""); if (val !== null && val.trim() !== item.code) { updateDoc(doc(db, "items", item.id), { code: val.trim() }).catch(()=>{}); } });
+                            
+                            document.getElementById(`edit-sup-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέος 1ος Προμηθευτής:`, item.supplier || ""); if (val !== null) { updateDoc(doc(db, "items", item.id), { supplier: val.trim() }).catch(()=>{}); } });
+                            document.getElementById(`edit-sup2-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέος 2ος Προμηθευτής:`, item.supplier2 || ""); if (val !== null) { updateDoc(doc(db, "items", item.id), { supplier2: val.trim() }).catch(()=>{}); } });
+                            
+                            document.getElementById(`edit-unit-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέα Μονάδα Μέτρησης (π.χ. τμχ, Λίτρα, Κιλά):`, item.unit || "τμχ"); if (val !== null && val.trim() !== "") { updateDoc(doc(db, "items", item.id), { unit: val.trim() }).catch(()=>{}); } });
+                            document.getElementById(`edit-min-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο Όριο Έλλειψης (Αριθμός):`, minStock); if (val !== null && !isNaN(parseInt(val))) { updateDoc(doc(db, "items", item.id), { minStock: parseInt(val) }).catch(()=>{}); } });
+                            document.getElementById(`edit-box-${item.id}`).addEventListener('click', () => { let val = prompt(`Πόσα ${unit} περιέχει μία Κούτα; (Γράψε αριθμό ή 0 αν δεν έχει κούτα):`, item.boxMultiplier || ""); if (val !== null && !isNaN(parseInt(val))) { updateDoc(doc(db, "items", item.id), { boxMultiplier: parseInt(val) }).catch(()=>{}); } });
+
+                            document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`add-${item.id}`).click(); } });
+                            document.getElementById(`add-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; updateDoc(doc(db, "items", item.id), { stock: increment(val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
+                            document.getElementById(`sub-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; if (val > item.stock) { alert('Δεν υπάρχει τόσο απόθεμα!'); return; } updateDoc(doc(db, "items", item.id), { stock: increment(-val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
+                            document.getElementById(`del-${item.id}`).addEventListener('click', () => { if (confirm(`Διαγραφή του είδους "${item.name}";`)) { deleteDoc(doc(db, "items", item.id)).catch(()=>{}); } });
+                        }, 0);
                     });
-                    chip.querySelector('.btn-del-worker').addEventListener('click', () => { if (confirm(`Διαγραφή "${w.name}";`)) { deleteDoc(doc(db, "workers", w.id)).catch(()=>{}); } });
-                    workersListContainer.appendChild(chip);
+                    container.appendChild(grid);
+                }
+                if (node.children) {
+                    Object.keys(node.children).sort().forEach((childKey, index) => {
+                        const details = document.createElement('details'); details.className = levelClass;
+                        details.innerHTML = `
+                            <summary class="${summaryClass}">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span>${childKey}</span>
+                                    <button class="btn-edit-group" id="edit-grp-${childKey}" title="Μετονομασία Υποομάδας">✏️</button>
+                                </div>
+                            </summary>
+                            <div class="node-container" style="padding-top: 8px; padding-bottom: 5px;"></div>
+                        `;
+                        setTimeout(() => {
+                            document.getElementById(`edit-grp-${childKey}`).addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); let newName = prompt(`Μετονομασία υποομάδας "${childKey}":`, childKey); if (newName !== null && newName.trim() !== "" && newName.trim() !== childKey) { const finalName = newName.trim(); const ids = getAllItemIds(node.children[childKey]); const fieldToUpdate = levelIndex === 1 ? 'childcategory' : 'subchildcategory'; ids.forEach(id => updateDoc(doc(db, "items", id), { [fieldToUpdate]: finalName }).catch(()=>{})); } });
+                        }, 0);
+
+                        renderNode(details.querySelector('.node-container'), node.children[childKey], 'sub-child-details', 'sub-child-summary', levelIndex + 1); 
+                        container.appendChild(details);
+                    });
+                }
+            };
+
+            const renderCategory = (container, catData) => {
+                if(!catData || !catData.children) return;
+                
+                Object.keys(catData.children).sort().forEach((subKey, index) => {
+                    const details = document.createElement('details'); details.className = 'sub-details';
+                    details.innerHTML = `
+                        <summary class="sub-summary">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span>${subKey}</span>
+                                <button class="btn-edit-group" id="edit-cat-${subKey}" title="Μετονομασία Ομάδας">✏️</button>
+                            </div>
+                        </summary>
+                        <div class="node-container" style="padding-top: 10px;"></div>
+                    `;
+                    
+                    setTimeout(() => {
+                        document.getElementById(`edit-cat-${subKey}`).addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); let newName = prompt(`Μετονομασία Ομάδας "${subKey}":`, subKey); if (newName !== null && newName.trim() !== "" && newName.trim() !== subKey) { const finalName = newName.trim(); const ids = getAllItemIds(catData.children[subKey]); ids.forEach(id => updateDoc(doc(db, "items", id), { subcategory: finalName }).catch(()=>{})); } });
+                    }, 0);
+
+                    renderNode(details.querySelector('.node-container'), catData.children[subKey], 'child-details', 'child-summary', 1); 
+                    container.appendChild(details);
                 });
+            };
+            
+            renderCategory(cleaningContainer, tree.cleaning); renderCategory(electricalContainer, tree.electrical);
+
+            document.querySelectorAll('details').forEach(d => {
+                const summary = d.querySelector('summary');
+                if (summary && openStates.has(summary.textContent.trim())) { d.open = true; }
+            });
+
+            applyAdminSearch(); 
+        }
+
+        function loadData() {
+            unsubscribeWorkers = onSnapshot(collection(db, "workers"), (snapshot) => {
+                const currentSelection = workerSelect.value; const defaultOpt = workerSelect.options[0];
+                workerSelect.innerHTML = ''; workerSelect.appendChild(defaultOpt);
+                const workers = []; snapshot.forEach(docSnap => { workers.push({ id: docSnap.id, name: docSnap.data().name }); });
+                workers.sort((a, b) => a.name.localeCompare(b.name)).forEach(w => {
+                    const opt = document.createElement('option'); opt.value = w.name; opt.textContent = w.name; workerSelect.appendChild(opt);
+                });
+                const newOpt = document.createElement('option'); newOpt.value = "__NEW_WORKER__"; newOpt.textContent = "➕ Άλλος / Νέος Εργαζόμενος";
+                workerSelect.appendChild(newOpt);
+                if (currentSelection && currentSelection !== "__NEW_WORKER__" && Array.from(workerSelect.options).some(o => o.value === currentSelection)) { workerSelect.value = currentSelection; }
             });
 
             unsubscribeItems = onSnapshot(collection(db, "items"), (snapshot) => {
-                const openStates = new Set();
-                document.querySelectorAll('details[open]').forEach(d => { const summary = d.querySelector('summary'); if (summary) openStates.add(summary.textContent.trim()); });
-
-                cleaningContainer.innerHTML = ''; electricalContainer.innerHTML = '';
                 globalItemsData = [];
-                
-                const cleaningSet = new Set(); 
-                const electricalSet = new Set();
-                const childSet = new Set();
-                const subchildSet = new Set();
+                const cleaningSet = new Set(); const electricalSet = new Set();
+                const childSet = new Set(); const subchildSet = new Set();
                 const supplierSet = new Set();
+                
+                const unitSet = new Set(['τμχ', 'Πακέτα', 'Ζευγάρια', 'Λίτρα', 'ml', 'Κιλά', 'Γραμ.', 'Συσκ.', 'Μεζούρες', 'Κούτες']);
 
                 snapshot.forEach(doc => {
-                    const data = doc.data();
-                    data.id = doc.id;
-                    globalItemsData.push(data);
-
-                    if (data.subcategory) {
-                        if (data.category === 'electrical') electricalSet.add(data.subcategory.trim());
-                        else cleaningSet.add(data.subcategory.trim());
-                    }
+                    const data = doc.data(); data.id = doc.id; globalItemsData.push(data);
+                    if (data.subcategory) { if (data.category === 'electrical') electricalSet.add(data.subcategory.trim()); else cleaningSet.add(data.subcategory.trim()); }
                     if (data.childcategory && data.childcategory !== 'Γενικά') childSet.add(data.childcategory.trim());
                     if (data.subchildcategory && data.subchildcategory !== 'Γενικά') subchildSet.add(data.subchildcategory.trim());
-                    
                     if (data.supplier && data.supplier.trim() !== '') supplierSet.add(data.supplier.trim());
                     if (data.supplier2 && data.supplier2.trim() !== '') supplierSet.add(data.supplier2.trim());
+                    if (data.unit && data.unit.trim() !== '') unitSet.add(data.unit.trim());
                 });
 
                 const refreshDropdown = (selectEl, set) => {
@@ -578,150 +705,22 @@
 
                 const updateDatalist = (id, set) => {
                     const dl = document.getElementById(id);
-                    if(dl) {
-                        dl.innerHTML = '';
-                        Array.from(set).sort().forEach(val => {
-                            const opt = document.createElement('option'); opt.value = val; dl.appendChild(opt);
-                        });
-                    }
+                    if(dl) { dl.innerHTML = ''; Array.from(set).sort().forEach(val => { const opt = document.createElement('option'); opt.value = val; dl.appendChild(opt); }); }
                 };
-                updateDatalist('child-list', childSet);
-                updateDatalist('subchild-list', subchildSet);
-                updateDatalist('supplier-list', supplierSet);
+                updateDatalist('child-list', childSet); updateDatalist('subchild-list', subchildSet); updateDatalist('supplier-list', supplierSet); updateDatalist('unit-list', unitSet);
 
-                const tree = { cleaning: { items: [], children: {} }, electrical: { items: [], children: {} } };
-                globalItemsData.forEach((item) => {
-                    const cat = item.category || 'cleaning';
-                    let sub = item.subcategory || 'Γενικά'; let child = item.childcategory || 'Γενικά'; let subchild = item.subchildcategory || 'Γενικά';
-                    if (!tree[cat]) tree[cat] = { items: [], children: {} }; if (!tree[cat].children[sub]) tree[cat].children[sub] = { items: [], children: {} };
-                    let subNode = tree[cat].children[sub];
-                    if (child === 'Γενικά' && subchild === 'Γενικά') { subNode.items.push(item); } 
-                    else if (child !== 'Γενικά' && subchild === 'Γενικά') {
-                        if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} }; subNode.children[child].items.push(item);
-                    } else if (child === 'Γενικά' && subchild !== 'Γενικά') {
-                        if (!subNode.children[subchild]) subNode.children[subchild] = { items: [], children: {} }; subNode.children[subchild].items.push(item);
-                    } else {
-                        if (!subNode.children[child]) subNode.children[child] = { items: [], children: {} }; let childNode = subNode.children[child];
-                        if (!childNode.children[subchild]) childNode.children[subchild] = { items: [], children: {} }; childNode.children[subchild].items.push(item);
-                    }
-                });
-
-                const renderNode = (container, node, levelClass, summaryClass, levelIndex) => {
-                    if (node.items && node.items.length > 0) {
-                        const grid = document.createElement('div'); grid.className = 'sub-inventory-section';
-                        node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
-                            const minStock = item.minStock !== undefined ? parseInt(item.minStock) : 5;
-                            const unit = item.unit || 'τμχ';
-                            const isLowStock = item.stock <= minStock;
-                            const stockColor = isLowStock && item.stock > 0 ? '#e53e3e' : '#38bdf8';
-
-                            const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
-                                ? `<img src="${item.imageUrl}" class="product-img" id="img-${item.id}" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
-                                : `<div class="no-img">📦</div>`;
-
-                            const searchString = `${item.name} ${item.code || ''} ${item.supplier || ''} ${item.supplier2 || ''} ${item.subcategory} ${item.childcategory} ${item.subchildcategory}`;
-
-                            const card = document.createElement('div'); card.className = 'item-card';
-                            card.dataset.search = searchString;
-                            card.dataset.stock = item.stock;
-                            card.dataset.limit = minStock;
-
-                            card.innerHTML = `
-                                <div class="card-top">
-                                    <div style="position:relative;">
-                                        ${imageHtml}
-                                        <button class="btn-edit-item" id="edit-img-${item.id}" style="position:absolute; bottom:-5px; right:-5px; background:white; border-radius:50%; padding:2px; font-size:12px; border:1px solid #ccc; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Αλλαγή Εικόνας">🖼️</button>
-                                    </div>
-                                    <div class="item-name">
-                                        <div style="display:flex; align-items:center; gap:6px;">
-                                            <span>${item.name}</span><button class="btn-edit-item" id="edit-name-${item.id}" style="font-size:14px;" title="Μετονομασία Είδους">✏️</button>
-                                        </div>
-                                        <div style="display:flex; align-items:center; gap:5px; margin-top:2px;">
-                                            <span class="item-code">${item.code ? `Κωδ: ${item.code}` : 'Χωρίς Κωδικό'}</span><button class="btn-edit-item" id="edit-code-${item.id}" style="font-size:12px;" title="Αλλαγή Κωδικού">✏️</button>
-                                        </div>
-                                        
-                                        <div class="item-suppliers">
-                                            <div class="supplier-row">🚚 1ος: ${item.supplier || '-'} <button class="btn-edit-item" id="edit-sup-${item.id}" title="Αλλαγή 1ου Προμηθευτή">✏️</button></div>
-                                            <div class="supplier-row">🚚 2ος: ${item.supplier2 || '-'} <button class="btn-edit-item" id="edit-sup2-${item.id}" title="Αλλαγή 2ου Προμηθευτή">✏️</button></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="item-stock" style="color: ${stockColor}">
-                                    ${item.stock} <span class="item-unit">${unit} <button class="btn-edit-item" id="edit-unit-${item.id}" style="font-size:12px;" title="Αλλαγή Μονάδας">✏️</button></span> 
-                                </div>
-                                <div class="item-limit">
-                                    Όριο: ${minStock} <button class="btn-edit-item" id="edit-min-${item.id}" style="font-size:12px;" title="Αλλαγή Ορίου">✏️</button>
-                                    | Κούτα: ${item.boxMultiplier > 1 ? item.boxMultiplier + ' ' + unit : '-'} <button class="btn-edit-item" id="edit-box-${item.id}" style="font-size:12px;" title="Αλλαγή Τεμαχίων ανά Κούτα">✏️</button>
-                                </div>
-
-                                <div class="input-row"><input type="number" id="input-${item.id}" class="restock-input" placeholder="Ποσότητα προσ/αφαίρ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-                                <div class="action-buttons"><button class="btn-add-stock" id="add-${item.id}">+</button><button class="btn-sub-stock" id="sub-${item.id}">-</button></div>
-                                <button class="btn-delete" id="del-${item.id}">Διαγραφή</button>
-                            `;
-                            grid.appendChild(card);
-                            setTimeout(() => {
-                                if (item.imageUrl && item.imageUrl.trim() !== "") {
-                                    const imgEl = document.getElementById(`img-${item.id}`);
-                                    if(imgEl) imgEl.addEventListener('click', () => openImageModal(item.imageUrl));
-                                }
-
-                                document.getElementById(`edit-img-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο Link Εικόνας (URL):`, item.imageUrl || ""); if (val !== null) { updateDoc(doc(db, "items", item.id), { imageUrl: val.trim() }).catch(()=>{}); } });
-                                document.getElementById(`edit-name-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο όνομα για το είδος:`, item.name); if (val !== null && val.trim() !== "" && val.trim() !== item.name) { updateDoc(doc(db, "items", item.id), { name: val.trim() }).catch(()=>{}); } });
-                                document.getElementById(`edit-code-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέος κωδικός για "${item.name}":`, item.code || ""); if (val !== null && val.trim() !== item.code) { updateDoc(doc(db, "items", item.id), { code: val.trim() }).catch(()=>{}); } });
-                                
-                                document.getElementById(`edit-sup-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέος 1ος Προμηθευτής:`, item.supplier || ""); if (val !== null) { updateDoc(doc(db, "items", item.id), { supplier: val.trim() }).catch(()=>{}); } });
-                                document.getElementById(`edit-sup2-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέος 2ος Προμηθευτής:`, item.supplier2 || ""); if (val !== null) { updateDoc(doc(db, "items", item.id), { supplier2: val.trim() }).catch(()=>{}); } });
-                                
-                                document.getElementById(`edit-unit-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέα Μονάδα Μέτρησης (π.χ. τμχ, Λίτρα, Κιλά):`, item.unit || "τμχ"); if (val !== null && val.trim() !== "") { updateDoc(doc(db, "items", item.id), { unit: val.trim() }).catch(()=>{}); } });
-                                document.getElementById(`edit-min-${item.id}`).addEventListener('click', () => { let val = prompt(`Νέο Όριο Έλλειψης (Αριθμός):`, minStock); if (val !== null && !isNaN(parseInt(val))) { updateDoc(doc(db, "items", item.id), { minStock: parseInt(val) }).catch(()=>{}); } });
-                                document.getElementById(`edit-box-${item.id}`).addEventListener('click', () => { let val = prompt(`Πόσα ${unit} περιέχει μία Κούτα; (Γράψε αριθμό ή 0 αν δεν έχει κούτα):`, item.boxMultiplier || ""); if (val !== null && !isNaN(parseInt(val))) { updateDoc(doc(db, "items", item.id), { boxMultiplier: parseInt(val) }).catch(()=>{}); } });
-
-                                document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`add-${item.id}`).click(); } });
-                                document.getElementById(`add-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; updateDoc(doc(db, "items", item.id), { stock: increment(val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
-                                document.getElementById(`sub-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; if (val > item.stock) { alert('Δεν υπάρχει τόσο απόθεμα!'); return; } updateDoc(doc(db, "items", item.id), { stock: increment(-val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
-                                document.getElementById(`del-${item.id}`).addEventListener('click', () => { if (confirm(`Διαγραφή του είδους "${item.name}";`)) { deleteDoc(doc(db, "items", item.id)).catch(()=>{}); } });
-                            }, 0);
-                        });
-                        container.appendChild(grid);
-                    }
-                    if (node.children) {
-                        Object.keys(node.children).sort().forEach(childKey => {
-                            const childNode = node.children[childKey]; const details = document.createElement('details'); details.className = levelClass;
-                            details.innerHTML = `<summary class="${summaryClass}"><div style="display:flex; align-items:center; gap:8px;"><span>${childKey}</span><button class="btn-edit-group" title="Μετονομασία Υποομάδας">✏️</button></div></summary><div class="node-container" style="padding-top: 8px; padding-bottom: 5px;"></div>`;
-                            details.querySelector('.btn-edit-group').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); let newName = prompt(`Μετονομασία υποομάδας "${childKey}":`, childKey); if (newName !== null && newName.trim() !== "" && newName.trim() !== childKey) { const finalName = newName.trim(); const ids = getAllItemIds(childNode); const fieldToUpdate = levelIndex === 1 ? 'childcategory' : 'subchildcategory'; ids.forEach(id => updateDoc(doc(db, "items", id), { [fieldToUpdate]: finalName }).catch(()=>{})); } });
-                            renderNode(details.querySelector('.node-container'), childNode, 'sub-child-details', 'sub-child-summary', levelIndex + 1); container.appendChild(details);
-                        });
-                    }
-                };
-
-                const renderCategory = (container, catData) => {
-                    if(!catData || !catData.children) return;
-                    Object.keys(catData.children).sort().forEach(subKey => {
-                        const subNode = catData.children[subKey]; const details = document.createElement('details'); details.className = 'sub-details';
-                        details.innerHTML = `<summary class="sub-summary"><div style="display:flex; align-items:center; gap:8px;"><span>${subKey}</span><button class="btn-edit-group" title="Μετονομασία Ομάδας">✏️</button></div></summary><div class="node-container" style="padding-top: 10px;"></div>`;
-                        details.querySelector('.btn-edit-group').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); let newName = prompt(`Μετονομασία Ομάδας "${subKey}":`, subKey); if (newName !== null && newName.trim() !== "" && newName.trim() !== subKey) { const finalName = newName.trim(); const ids = getAllItemIds(subNode); ids.forEach(id => updateDoc(doc(db, "items", id), { subcategory: finalName }).catch(()=>{})); } });
-                        renderNode(details.querySelector('.node-container'), subNode, 'child-details', 'child-summary', 1); container.appendChild(details);
-                    });
-                };
-                
-                renderCategory(cleaningContainer, tree.cleaning); renderCategory(electricalContainer, tree.electrical);
-
-                document.querySelectorAll('details').forEach(d => { const summary = d.querySelector('summary'); if (summary && openStates.has(summary.textContent.trim())) { d.open = true; } });
-                applyAdminSearch(); 
+                isItemsLoaded = true;
+                renderEverything();
             });
 
             const historyQuery = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(100));
             unsubscribeHistory = onSnapshot(historyQuery, (snapshot) => {
                 historyContainer.innerHTML = '';
-                const logs = [];
-                snapshot.forEach(docSnap => { logs.push({ id: docSnap.id, ...docSnap.data() }); });
-                
+                const logs = []; snapshot.forEach(docSnap => { logs.push({ id: docSnap.id, ...docSnap.data() }); });
                 if (logs.length === 0) { historyContainer.innerHTML = '<div style="color: #94a3b8; font-size: 14px; text-align: center;">Δεν υπάρχουν καταγεγραμμένες κινήσεις ακόμα.</div>'; return; }
                 
                 logs.forEach(log => {
                     const div = document.createElement('div'); div.className = 'history-item';
-                    
                     let reasonHtml = log.reason ? `<div style="font-size: 13px; color: #facc15; margin-top: 4px;">📝 ${log.reason}</div>` : '';
                     let qtyDisplay = log.quantityText ? log.quantityText : `${log.quantity}`;
 
@@ -747,7 +746,7 @@
             });
         }
 
-        const addItemInputs = ['new-name', 'new-code', 'new-image', 'new-supplier', 'new-supplier2', 'new-stock', 'new-box-multiplier', 'new-min-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
+        const addItemInputs = ['new-name', 'new-code', 'new-image', 'new-supplier', 'new-supplier2', 'new-stock', 'new-unit', 'new-box-multiplier', 'new-min-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
         addItemInputs.forEach(id => { const el = document.getElementById(id); if (el) { el.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById('add-item-btn').click(); } }); } });
 
         document.getElementById('add-item-btn').addEventListener('click', () => {
@@ -761,7 +760,7 @@
             let stock = parseInt(document.getElementById('new-stock').value); if (isNaN(stock) || stock < 0) stock = 0; 
             let boxMultiplier = parseInt(document.getElementById('new-box-multiplier').value); if (isNaN(boxMultiplier) || boxMultiplier <= 0) boxMultiplier = 0; 
             
-            let unit = document.getElementById('new-unit').value || "τμχ";
+            let unit = document.getElementById('new-unit').value.trim() || "τμχ";
             let minStock = parseInt(document.getElementById('new-min-stock').value); if (isNaN(minStock) || minStock < 0) minStock = 5; 
 
             const category = categorySelect.value || 'cleaning';
@@ -780,7 +779,7 @@
             document.getElementById('new-name').value = ''; document.getElementById('new-code').value = ''; document.getElementById('new-image').value = ''; 
             document.getElementById('new-supplier').value = ''; document.getElementById('new-supplier2').value = '';
             document.getElementById('new-stock').value = ''; document.getElementById('new-min-stock').value = ''; document.getElementById('new-box-multiplier').value = '';
-            document.getElementById('new-childcategory').value = ''; document.getElementById('new-subchildcategory').value = ''; 
+            document.getElementById('new-unit').value = ''; document.getElementById('new-childcategory').value = ''; document.getElementById('new-subchildcategory').value = ''; 
             subcleaningSelect.value = ''; document.getElementById('new-cleaning-text').value = ''; document.getElementById('new-cleaning-text').style.display = 'none';
             subelectricalSelect.value = ''; document.getElementById('new-electrical-text').value = ''; document.getElementById('new-electrical-text').style.display = 'none';
         });

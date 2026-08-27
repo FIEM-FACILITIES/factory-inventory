@@ -78,14 +78,13 @@
         
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; position: relative; }
+        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
         .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .product-img { width: 60px; height: 60px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; cursor: zoom-in; flex-shrink:0; }
         .no-img { width: 60px; height: 60px; border-radius: 8px; border: 1px dashed #cbd5e0; display: flex; align-items: center; justify-content: center; font-size: 24px; background: #f8fafc; color: #a0aec0; flex-shrink:0; }
         
         .item-name { font-size: 15px; font-weight: 700; color: #2d3748; display: flex; flex-direction: column; align-items: flex-start; text-align: left; line-height: 1.2; word-break: break-word; flex: 1; }
         .item-code { font-size: 12px; font-weight: 500; color: #718096; margin-top: 4px; }
-        
         .item-stock { font-size: 36px; margin: 5px 0 10px 0; font-weight: 700; transition: color 0.3s; display: flex; justify-content: center; align-items: baseline; gap: 4px;}
         
         .action-area { display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 5px; }
@@ -226,10 +225,8 @@
         
         let unsubscribeWorkers = null;
         let unsubscribeItems = null;
-        let unsubscribeSorting = null;
 
         let globalItemsData = [];
-        let groupOrders = {};
         let isItemsLoaded = false;
 
         const imageModal = document.getElementById('image-modal');
@@ -278,7 +275,7 @@
             } else {
                 loginScreen.style.display = 'flex'; mainApp.style.display = 'none';
                 document.getElementById('login-password').value = ''; errorMsg.style.display = 'none';
-                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeSorting) unsubscribeSorting();
+                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems();
             }
         });
 
@@ -408,13 +405,7 @@
                 if (node.items && node.items.length > 0) {
                     const grid = document.createElement('div'); grid.className = 'sub-inventory-section';
                     
-                    const sortedItems = node.items.sort((a,b) => {
-                        let oa = a.order !== undefined ? a.order : 99999;
-                        let ob = b.order !== undefined ? b.order : 99999;
-                        return oa - ob || a.name.localeCompare(b.name);
-                    });
-
-                    sortedItems.forEach(item => {
+                    node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
                         const isOutOfStock = item.stock <= 0;
                         const minStock = item.minStock !== undefined ? parseInt(item.minStock) : 5;
                         const isLowStock = item.stock <= minStock;
@@ -540,13 +531,7 @@
                     container.appendChild(grid);
                 }
                 if (node.children) {
-                    const sortedKeys = Object.keys(node.children).sort((a,b) => {
-                        let oa = groupOrders[a] !== undefined ? groupOrders[a] : 99999;
-                        let ob = groupOrders[b] !== undefined ? groupOrders[b] : 99999;
-                        return oa - ob || a.localeCompare(b);
-                    });
-
-                    sortedKeys.forEach(childKey => {
+                    Object.keys(node.children).sort().forEach(childKey => {
                         const details = document.createElement('details'); details.className = levelClass;
                         details.innerHTML = `<summary class="${summaryClass}">${childKey}</summary><div class="node-container" style="padding-top: 8px; padding-bottom: 5px;"></div>`;
                         renderNode(details.querySelector('.node-container'), node.children[childKey], 'sub-child-details', 'sub-child-summary');
@@ -558,13 +543,7 @@
             const renderCategory = (container, catData) => {
                 if(!catData || !catData.children) return;
                 
-                const sortedKeys = Object.keys(catData.children).sort((a,b) => {
-                    let oa = groupOrders[a] !== undefined ? groupOrders[a] : 99999;
-                    let ob = groupOrders[b] !== undefined ? groupOrders[b] : 99999;
-                    return oa - ob || a.localeCompare(b);
-                });
-
-                sortedKeys.forEach(subKey => {
+                Object.keys(catData.children).sort().forEach(subKey => {
                     const details = document.createElement('details'); details.className = 'sub-details';
                     details.innerHTML = `<summary class="sub-summary">${subKey}</summary><div class="node-container" style="padding-top: 10px;"></div>`;
                     renderNode(details.querySelector('.node-container'), catData.children[subKey], 'child-details', 'child-summary');
@@ -593,11 +572,6 @@
                 const newOpt = document.createElement('option'); newOpt.value = "__NEW_WORKER__"; newOpt.textContent = "➕ Άλλος / Νέος Εργαζόμενος";
                 workerSelect.appendChild(newOpt);
                 if (currentSelection && currentSelection !== "__NEW_WORKER__" && Array.from(workerSelect.options).some(o => o.value === currentSelection)) { workerSelect.value = currentSelection; }
-            });
-
-            unsubscribeSorting = onSnapshot(doc(db, "settings", "sorting"), (snap) => {
-                groupOrders = snap.exists() ? (snap.data().groupOrders || {}) : {};
-                if(isItemsLoaded) renderEverything();
             });
 
             unsubscribeItems = onSnapshot(collection(db, "items"), (snapshot) => {
