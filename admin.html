@@ -82,14 +82,13 @@
         .btn-sub-stock { flex: 1; background: #f59e0b; color: #0f172a; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-delete { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
-        .btn-edit-group { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 0; filter: grayscale(0.2); transition: transform 0.1s; }
+        .btn-edit-group { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 0 4px; filter: grayscale(0.2); transition: transform 0.1s; }
         .btn-edit-group:hover { transform: scale(1.2); filter: grayscale(0); }
         .btn-edit-item { background: transparent; border: none; cursor: pointer; padding: 0; transition: transform 0.1s; display: inline-flex; align-items: center; justify-content: center; }
         .btn-edit-item:hover { transform: scale(1.2); }
 
         #order-modal, #image-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
         
-        /* ΝΕΟ ΣΤΥΛ ΓΙΑ ΤΗ ΛΙΣΤΑ ΠΑΡΑΓΓΕΛΙΩΝ (Σταθερό κουμπί, εσωτερικό scroll) */
         .order-content { background: #1e293b; width: 100%; max-width: 800px; max-height: 85vh; border-radius: 16px; padding: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid #334155; text-align: left; display: flex; flex-direction: column; position: relative; box-sizing: border-box; }
         #order-list-container { overflow-y: auto; flex: 1; padding-right: 5px; }
         .btn-close-modal { position: absolute; top: 20px; right: 20px; background: transparent; color: #ef4444; border: 2px solid #ef4444; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; z-index: 10; }
@@ -176,7 +175,6 @@
                 <input type="text" id="new-unit" list="unit-list" placeholder="Μονάδα (π.χ. τμχ, Κούτες)">
             </div>
             
-            <!-- ΠΕΔΙΟ ΓΙΑ ΤΙΣ ΚΟΥΤΕΣ -->
             <div class="input-group"><input type="number" id="new-box-multiplier" placeholder="Τμχ/Πακέτα ανά Κούτα" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
 
             <div class="input-group"><input type="number" id="new-min-stock" placeholder="Όριο Έλλειψης (πχ 5)" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
@@ -307,6 +305,14 @@
         let globalItemsData = []; 
         let isItemsLoaded = false;
 
+        // ΣΥΝΑΡΤΗΣΗ ΓΙΑ ΜΑΖΙΚΕΣ ΜΕΤΟΝΟΜΑΣΙΕΣ ΦΑΚΕΛΩΝ
+        function getAllItemIds(node) {
+            let ids = [];
+            if (node.items && node.items.length > 0) ids = ids.concat(node.items.map(i => i.id));
+            if (node.children) Object.values(node.children).forEach(childNode => { ids = ids.concat(getAllItemIds(childNode)); });
+            return ids;
+        }
+
         const imageModal = document.getElementById('image-modal');
         const enlargedImg = document.getElementById('enlarged-img');
         const closeImageBtn = document.getElementById('close-image-btn');
@@ -432,7 +438,7 @@
                     block.className = 'supplier-block';
                     let html = `<div class="supplier-title">🛒 ${sup}</div>`;
                     
-                    suppliersDict[sup].sort((a,b) => a.name.localeCompare(b.name)).forEach(item => {
+                    suppliersDict[sup].sort((a,b) => (a.name || '').localeCompare(b.name || '')).forEach(item => {
                         const limit = item.minStock !== undefined ? item.minStock : 5;
                         const unit = item.unit || 'τμχ';
                         html += `
@@ -532,11 +538,11 @@
                 }
             });
 
-            const renderNode = (container, node, levelClass, summaryClass) => {
+            const renderNode = (container, node, levelClass, summaryClass, levelIndex) => {
                 if (node.items && node.items.length > 0) {
                     const grid = document.createElement('div'); grid.className = 'sub-inventory-section';
                     
-                    node.items.sort((a, b) => a.name.localeCompare(b.name)).forEach((item) => {
+                    node.items.sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach((item) => {
                         const minStock = item.minStock !== undefined ? parseInt(item.minStock) : 5;
                         const unit = item.unit || 'τμχ';
                         const isLowStock = item.stock <= minStock;
@@ -614,18 +620,19 @@
                 }
                 if (node.children) {
                     Object.keys(node.children).sort().forEach((childKey) => {
+                        const uniqueGrpId = 'grp-' + Math.random().toString(36).substr(2, 9);
                         const details = document.createElement('details'); details.className = levelClass;
                         details.innerHTML = `
                             <summary class="${summaryClass}">
                                 <div style="display:flex; align-items:center; gap:8px;">
                                     <span>${childKey}</span>
-                                    <button class="btn-edit-group" id="edit-grp-${childKey}" title="Μετονομασία Υποομάδας">✏️</button>
+                                    <button class="btn-edit-group" id="${uniqueGrpId}" title="Μετονομασία Υποομάδας">✏️</button>
                                 </div>
                             </summary>
                             <div class="node-container" style="padding-top: 8px; padding-bottom: 5px;"></div>
                         `;
                         setTimeout(() => {
-                            document.getElementById(`edit-grp-${childKey}`).addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); let newName = prompt(`Μετονομασία υποομάδας "${childKey}":`, childKey); if (newName !== null && newName.trim() !== "" && newName.trim() !== childKey) { const finalName = newName.trim(); const ids = getAllItemIds(node.children[childKey]); const fieldToUpdate = levelIndex === 1 ? 'childcategory' : 'subchildcategory'; ids.forEach(id => updateDoc(doc(db, "items", id), { [fieldToUpdate]: finalName }).catch(()=>{})); } });
+                            document.getElementById(uniqueGrpId).addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); let newName = prompt(`Μετονομασία υποομάδας "${childKey}":`, childKey); if (newName !== null && newName.trim() !== "" && newName.trim() !== childKey) { const finalName = newName.trim(); const ids = getAllItemIds(node.children[childKey]); const fieldToUpdate = levelIndex === 1 ? 'childcategory' : 'subchildcategory'; ids.forEach(id => updateDoc(doc(db, "items", id), { [fieldToUpdate]: finalName }).catch(()=>{})); } });
                         }, 0);
 
                         renderNode(details.querySelector('.node-container'), node.children[childKey], 'sub-child-details', 'sub-child-summary', levelIndex + 1); 
@@ -638,19 +645,20 @@
                 if(!catData || !catData.children) return;
                 
                 Object.keys(catData.children).sort().forEach((subKey) => {
+                    const uniqueCatId = 'cat-' + Math.random().toString(36).substr(2, 9);
                     const details = document.createElement('details'); details.className = 'sub-details';
                     details.innerHTML = `
                         <summary class="sub-summary">
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <span>${subKey}</span>
-                                <button class="btn-edit-group" id="edit-cat-${subKey}" title="Μετονομασία Ομάδας">✏️</button>
+                                <button class="btn-edit-group" id="${uniqueCatId}" title="Μετονομασία Ομάδας">✏️</button>
                             </div>
                         </summary>
                         <div class="node-container" style="padding-top: 10px;"></div>
                     `;
                     
                     setTimeout(() => {
-                        document.getElementById(`edit-cat-${subKey}`).addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); let newName = prompt(`Μετονομασία Ομάδας "${subKey}":`, subKey); if (newName !== null && newName.trim() !== "" && newName.trim() !== subKey) { const finalName = newName.trim(); const ids = getAllItemIds(catData.children[subKey]); ids.forEach(id => updateDoc(doc(db, "items", id), { subcategory: finalName }).catch(()=>{})); } });
+                        document.getElementById(uniqueCatId).addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); let newName = prompt(`Μετονομασία Ομάδας "${subKey}":`, subKey); if (newName !== null && newName.trim() !== "" && newName.trim() !== subKey) { const finalName = newName.trim(); const ids = getAllItemIds(catData.children[subKey]); ids.forEach(id => updateDoc(doc(db, "items", id), { subcategory: finalName }).catch(()=>{})); } });
                     }, 0);
 
                     renderNode(details.querySelector('.node-container'), catData.children[subKey], 'child-details', 'child-summary', 1); 
@@ -670,15 +678,27 @@
 
         function loadData() {
             unsubscribeWorkers = onSnapshot(collection(db, "workers"), (snapshot) => {
-                const currentSelection = workerSelect.value; const defaultOpt = workerSelect.options[0];
-                workerSelect.innerHTML = ''; workerSelect.appendChild(defaultOpt);
-                const workers = []; snapshot.forEach(docSnap => { workers.push({ id: docSnap.id, name: docSnap.data().name }); });
-                workers.sort((a, b) => a.name.localeCompare(b.name)).forEach(w => {
-                    const opt = document.createElement('option'); opt.value = w.name; opt.textContent = w.name; workerSelect.appendChild(opt);
+                workersListContainer.innerHTML = ''; const workers = [];
+                snapshot.forEach(docSnap => { workers.push({ id: docSnap.id, name: docSnap.data().name }); });
+                document.getElementById('worker-count').textContent = `(${workers.length})`;
+
+                if (workers.length === 0) { workersListContainer.innerHTML = '<div style="color: #94a3b8; font-size: 14px;">Δεν υπάρχουν εργαζόμενοι.</div>'; return; }
+                workers.sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach(w => {
+                    const chip = document.createElement('div'); chip.className = 'worker-chip';
+                    chip.innerHTML = `<span>${w.name}</span><div class="worker-chip-btns"><button class="btn-edit-worker" title="Μετονομασία">✏️</button><button class="btn-del-worker" title="Διαγραφή">✕</button></div>`;
+                    chip.querySelector('.btn-edit-worker').addEventListener('click', () => {
+                        let newName = prompt(`Νέο όνομα για "${w.name}":`, w.name);
+                        if (newName && newName.trim() !== "") {
+                            newName = newName.trim().toUpperCase();
+                            if (newName !== w.name) { 
+                                setDoc(doc(db, "workers", newName), { name: newName }).catch(()=>{});
+                                deleteDoc(doc(db, "workers", w.id)).catch(()=>{});
+                            }
+                        }
+                    });
+                    chip.querySelector('.btn-del-worker').addEventListener('click', () => { if (confirm(`Διαγραφή "${w.name}";`)) { deleteDoc(doc(db, "workers", w.id)).catch(()=>{}); } });
+                    workersListContainer.appendChild(chip);
                 });
-                const newOpt = document.createElement('option'); newOpt.value = "__NEW_WORKER__"; newOpt.textContent = "➕ Άλλος / Νέος Εργαζόμενος";
-                workerSelect.appendChild(newOpt);
-                if (currentSelection && currentSelection !== "__NEW_WORKER__" && Array.from(workerSelect.options).some(o => o.value === currentSelection)) { workerSelect.value = currentSelection; }
             });
 
             unsubscribeItems = onSnapshot(collection(db, "items"), (snapshot) => {
