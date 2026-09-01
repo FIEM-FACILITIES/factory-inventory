@@ -60,7 +60,7 @@
 
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        .item-card { background: #0f172a; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; text-align: center; border: 1px solid #334155; height: 100%; box-sizing: border-box; position: relative; }
+        .item-card { background: #0f172a; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; text-align: center; border: 1px solid #334155; height: 100%; box-sizing: border-box; }
         .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
         .product-img { width: 50px; height: 50px; object-fit: contain; border-radius: 6px; border: 1px solid #334155; background: #1e293b; cursor: zoom-in; }
         .no-img { width: 50px; height: 50px; border-radius: 6px; border: 1px dashed #475569; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #1e293b; color: #64748b; }
@@ -82,7 +82,7 @@
         .btn-sub-stock { flex: 1; background: #f59e0b; color: #0f172a; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-delete { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
-        .btn-edit-group { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 0 4px; filter: grayscale(0.2); transition: transform 0.1s; }
+        .btn-edit-group { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 0; filter: grayscale(0.2); transition: transform 0.1s; }
         .btn-edit-group:hover { transform: scale(1.2); filter: grayscale(0); }
         .btn-edit-item { background: transparent; border: none; cursor: pointer; padding: 0; transition: transform 0.1s; display: inline-flex; align-items: center; justify-content: center; }
         .btn-edit-item:hover { transform: scale(1.2); }
@@ -550,7 +550,7 @@
 
                         card.innerHTML = `
                             <div class="card-top">
-                                <div style="position:relative; margin-left: 10px;">
+                                <div style="position:relative;">
                                     ${imageHtml}
                                     <button class="btn-edit-item" id="edit-img-${item.id}" style="position:absolute; bottom:-5px; right:-5px; background:white; border-radius:50%; padding:2px; font-size:12px; border:1px solid #ccc; box-shadow:0 2px 4px rgba(0,0,0,0.2);" title="Αλλαγή Εικόνας">🖼️</button>
                                 </div>
