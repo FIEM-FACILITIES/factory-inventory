@@ -665,15 +665,27 @@
 
         function loadData() {
             unsubscribeWorkers = onSnapshot(collection(db, "workers"), (snapshot) => {
-                const currentSelection = workerSelect.value; const defaultOpt = workerSelect.options[0];
-                workerSelect.innerHTML = ''; workerSelect.appendChild(defaultOpt);
-                const workers = []; snapshot.forEach(docSnap => { workers.push({ id: docSnap.id, name: docSnap.data().name }); });
+                workersListContainer.innerHTML = ''; const workers = [];
+                snapshot.forEach(docSnap => { workers.push({ id: docSnap.id, name: docSnap.data().name }); });
+                document.getElementById('worker-count').textContent = `(${workers.length})`;
+
+                if (workers.length === 0) { workersListContainer.innerHTML = '<div style="color: #94a3b8; font-size: 14px;">Δεν υπάρχουν εργαζόμενοι.</div>'; return; }
                 workers.sort((a, b) => a.name.localeCompare(b.name)).forEach(w => {
-                    const opt = document.createElement('option'); opt.value = w.name; opt.textContent = w.name; workerSelect.appendChild(opt);
+                    const chip = document.createElement('div'); chip.className = 'worker-chip';
+                    chip.innerHTML = `<span>${w.name}</span><div class="worker-chip-btns"><button class="btn-edit-worker" title="Μετονομασία">✏️</button><button class="btn-del-worker" title="Διαγραφή">✕</button></div>`;
+                    chip.querySelector('.btn-edit-worker').addEventListener('click', () => {
+                        let newName = prompt(`Νέο όνομα για "${w.name}":`, w.name);
+                        if (newName && newName.trim() !== "") {
+                            newName = newName.trim().toUpperCase();
+                            if (newName !== w.name) { 
+                                setDoc(doc(db, "workers", newName), { name: newName }).catch(()=>{});
+                                deleteDoc(doc(db, "workers", w.id)).catch(()=>{});
+                            }
+                        }
+                    });
+                    chip.querySelector('.btn-del-worker').addEventListener('click', () => { if (confirm(`Διαγραφή "${w.name}";`)) { deleteDoc(doc(db, "workers", w.id)).catch(()=>{}); } });
+                    workersListContainer.appendChild(chip);
                 });
-                const newOpt = document.createElement('option'); newOpt.value = "__NEW_WORKER__"; newOpt.textContent = "➕ Άλλος / Νέος Εργαζόμενος";
-                workerSelect.appendChild(newOpt);
-                if (currentSelection && currentSelection !== "__NEW_WORKER__" && Array.from(workerSelect.options).some(o => o.value === currentSelection)) { workerSelect.value = currentSelection; }
             });
 
             unsubscribeItems = onSnapshot(collection(db, "items"), (snapshot) => {
