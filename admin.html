@@ -808,6 +808,28 @@
             subcleaningSelect.value = ''; document.getElementById('new-cleaning-text').value = ''; document.getElementById('new-cleaning-text').style.display = 'none';
             subelectricalSelect.value = ''; document.getElementById('new-electrical-text').value = ''; document.getElementById('new-electrical-text').style.display = 'none';
         });
+        // --- ΠΡΟΣΩΡΙΝΟΣ ΚΩΔΙΚΑΣ ΑΥΤΟΜΑΤΗΣ ΕΝΗΜΕΡΩΣΗΣ BARCODES ---
+const newBarcodes = [
+    {id: "oMpKEj5scQ8XUu0xYOiO", code: "100101"}, {id: "DpaWNpZsappV1COx3Lyo", code: "100102"}, {id: "w0yyYiohXmTT1xhpc383", code: "100103"}, {id: "eEDJleOqGe9NcM31wpgO", code: "100104"}, {id: "PeLI1GCvu2RFQRsEh3io", code: "100105"}, {id: "CA5M7YFiaPvimLKDbTPO", code: "100106"}, {id: "hG7hg5PrAzmNB2X9FhQY", code: "100107"}, {id: "zu0QccplcCODswphxbns", code: "100108"}, {id: "QneUyBUaTB8R0rO9zib6", code: "100109"}, {id: "zUgWHRBkoTSqDFrlEhtO", code: "100110"},
+    {id: "O4CEqqGYLUUk0Ttba1vi", code: "100111"}, {id: "yOlBEbLrCwXfBbwHBxb9", code: "100112"}, {id: "sezx6M4caZEWoZAS4GcG", code: "100113"}, {id: "peMmrz7hTclEHIfoTY1r", code: "100114"}, {id: "HhHafnLFHV4qFI5F86ak", code: "100115"}, {id: "Bpb7nLIJgSaQDVTyYQjD", code: "100116"}, {id: "imDNUmW7STRloOTTPOxA", code: "100117"}, {id: "UfuNUPluemQktAg7Msof", code: "100118"}, {id: "LnAi4C9fE2DHVLkDHidn", code: "100119"}, {id: "3y2ZvbKOw3Gl2og2GWsE", code: "100120"},
+    {id: "dKLecBfkXZAID97MjZnX", code: "100121"}, {id: "y0m069979Li9v1GxShXf", code: "100122"}, {id: "jMFamQIct5RrZrGqfMzo", code: "100123"}, {id: "6yKCiFPCvyiwfzbfmLsC", code: "100124"}, {id: "R08GhFB5wvCb4ezFM8tT", code: "100125"}, {id: "T5ZHZi76dBi06FG1l8Bs", code: "100126"}, {id: "WkamiEfK29UjJtKKA4Q6", code: "100127"}, {id: "g7v35mD0I5PFJtgw7ot3", code: "100128"}, {id: "5wzaOE8nlP2cONjCrarw", code: "100129"}, {id: "GMifp6yaBe1PphTto7Dw", code: "100130"},
+    {id: "rrJSVwg90HfSEHUixvgW", code: "100131"}, {id: "TgLcql71tH2dnFTlsvjz", code: "100132"}, {id: "Fa7hXKM2xkKtinzy0HrE", code: "100133"}, {id: "3A2LYRVsOiQvowtV2XWo", code: "100134"}, {id: "nPUB2ODDfi4q1BGVwez0", code: "100135"}, {id: "DztoamSKMXZ9sKelxZF5", code: "100136"}, {id: "Y21XxFm2Bm9wDLeCx476", code: "100137"}, {id: "EnQ1gPxAF8o8bbtV41vB", code: "100138"}, {id: "bKzyq2oCM86wJzoYChCG", code: "100139"}, {id: "Ui7hvpF6jzFST6FlGHsr", code: "100140"},
+    {id: "ur5PhdH7Pr7VihEom6eD", code: "100141"}, {id: "Kt4esTZ64YAFVMn1838t", code: "100142"}, {id: "uJDnOnJtNBQWNev8Bm1A", code: "100143"}, {id: "idFXQATRbM1ibdw5qPIG", code: "100144"}, {id: "RVXZPn0NGtKg19lNhiWj", code: "100145"}, {id: "xZRMDGqTBhgFXdGGH6SQ", code: "100146"}, {id: "jkQNKmTP95KSqOhU5XAG", code: "100147"}, {id: "6UM9zETn1kCucDXLcCFB", code: "100148"}, {id: "f35URAQTmcjiyaEXjG1X", code: "100149"}, {id: "HUeooSOpMVZVjPADbtFr", code: "100150"},
+    {id: "fGwq5vTVtedWN2ZJS6yS", code: "100151"}, {id: "H61ZM0llIJFdtNytkeuO", code: "100152"}, {id: "crzeyJQ44WwQvej52hBW", code: "100153"}, {id: "iHgAQj0bOaXplSOUI92K", code: "100154"}, {id: "5G5nFpEFl9KC4xV1E9b8", code: "100155"}, {id: "OkcAqX4vzsqMfoi9Wzyu", code: "100156"}, {id: "lCNxawm3gfEyqLR3vWse", code: "100157"}, {id: "rYZPHRxeQexcHQ1vb9HL", code: "100158"}, {id: "2kpAijBeqbO0mpfkPxc0", code: "100159"}, {id: "oSwEeGTFM5BmXJYpThDU", code: "100160"},
+    {id: "YGPzTh1cXNA74p65wi7m", code: "100161"}, {id: "ELOb6GXdYlwrvmDhA2p1", code: "100162"}, {id: "63xaP1mBMnjNOvZZ4Jff", code: "100163"}, {id: "nwz1cQOy2yTulQuM1bf9", code: "100164"}, {id: "z1chFhnfcRQsKQXj89Ot", code: "100165"}, {id: "WepFLvki6zYij9f5uwjU", code: "100166"}, {id: "DHpMulkAsiODVUhduS6v", code: "100167"}, {id: "k6pSSodd719rzFUboFHG", code: "100168"}, {id: "hgeOdGBwfxhC31IvzTs0", code: "100169"}, {id: "bg4c7qI7rxVJ1DwZCUJ7", code: "100170"},
+    {id: "YHKO3jTpIA0UpdiK0NAe", code: "100171"}, {id: "US01zE1LPEJtWhiSiZ3h", code: "100172"}, {id: "vSAnc9YMnupu5q622m6S", code: "100173"}, {id: "KrTVtIAscsV4P2LEnPDn", code: "100174"}, {id: "XDCvkTgT4PqjFjk6qCYd", code: "100175"}, {id: "isL9vvofAFkUErtO5dEc", code: "100176"}, {id: "dBWNbMZdWJ6GsOhROT4h", code: "100177"}, {id: "V3cKrS0pv2hdGBglDSnI", code: "100178"}, {id: "KK5VIctfQcplAAdLcNV8", code: "100179"}, {id: "xd67gVArGDximjKJaCmH", code: "100180"},
+    {id: "SB9OSErUQoYUHPnUGFAl", code: "100181"}, {id: "ENHWg7y3jgewqWY6kab9", code: "100182"}, {id: "M8UMflZmzdgVr7GNPOcz", code: "100183"}, {id: "JGqwPC7wsaO8nCQ5mumi", code: "100184"}, {id: "6wzt2X06xIJBouxtPglS", code: "100185"}, {id: "KkJNhrERREtQ26LB5lyL", code: "100186"}, {id: "Rr6VekLx50gQQOk4W4xB", code: "100187"}, {id: "ADRGYHr3UY4VDaNDiGJj", code: "100188"}, {id: "ctwsE7Gtje7UcKH6egIW", code: "100189"}, {id: "SkaHnFjDdB6QUc1R1vZ5", code: "100190"},
+    {id: "7obC6sSCmfduulSvHLJX", code: "100191"}, {id: "2LIpYxYZOt423hGb7tMD", code: "100192"}, {id: "d38OnStglHD99JoqaQQu", code: "100193"}, {id: "lteQUdhA4s7zCuLfCkGy", code: "100194"}, {id: "CcysqHS2bQV7F9WfeIbD", code: "100195"}
+];
+setTimeout(() => {
+    if (confirm("Να περαστούν αυτόματα 95 νέα Barcodes στη βάση δεδομένων σου;")) {
+        newBarcodes.forEach(b => {
+            updateDoc(doc(db, "items", b.id), { code: b.code }).catch(err => console.error(err));
+        });
+        alert("✅ Τα Barcodes αποθηκεύτηκαν επιτυχώς! Διέγραψε τώρα αυτόν τον κώδικα (από το // --- μέχρι το -------------------) και κάνε Save.");
+    }
+}, 2500);
+// -------------------------------------------------------------
     </script>
 </body>
 </html>
