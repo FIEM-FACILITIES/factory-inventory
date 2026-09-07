@@ -359,6 +359,9 @@
             lowStockMode = !lowStockMode;
             e.target.style.background = lowStockMode ? '#b91c1c' : '#ef4444';
             e.target.textContent = lowStockMode ? 'Όλα τα είδη' : '⚠️ Είδη σε Έλλειψη';
+            if (!lowStockMode) {
+                document.querySelectorAll('details').forEach(d => { d.open = false; });
+            }
             applyAdminSearch(); 
         });
 
@@ -370,7 +373,7 @@
             if(divider) divider.style.display = 'block';
 
             if (term === "" && !lowStockMode) {
-                document.querySelectorAll('details').forEach(d => { d.open = false; d.style.display = 'block'; });
+                document.querySelectorAll('details').forEach(d => { d.style.display = 'block'; });
                 document.querySelectorAll('.item-card').forEach(card => { card.style.display = 'flex'; });
             } else {
                 document.querySelectorAll('details').forEach(d => { d.open = false; d.style.display = 'block'; });

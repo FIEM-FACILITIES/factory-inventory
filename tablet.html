@@ -450,7 +450,7 @@
                                         ${item.code ? `<span class="item-code">Κωδ: ${item.code}</span>` : ''}
                                     </div>
                                 </div>
-                                <div class="item-stock" style="color: ${stockColor}">${item.stock} ${warningIcon}</div>
+                                <div class="item-stock" style="color: ${stockColor}">${item.stock} ${unit} ${warningIcon}</div>
                                 
                                 <div class="action-area">
                                     <input type="number" id="input-${item.id}" class="qty-input" placeholder="Ποσότητα..." min="1" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')" ${isOutOfStock ? 'disabled' : ''}>
