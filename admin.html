@@ -338,7 +338,42 @@
         document.getElementById('login-email').addEventListener('keypress', handleLoginEnter);
         document.getElementById('login-password').addEventListener('keypress', handleLoginEnter);
 
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+                gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+                oscillator.start();
+                oscillator.stop(ctx.currentTime + 0.6);
+            } catch (e) {}
+        }
+
+        function showTakeNotification(log) {
+            playNotificationSound();
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const qty = log.quantityText || log.quantity;
+                const notif = new Notification('📦 Αφαίρεση Υλικού', {
+                    body: `${log.worker} πήρε: ${qty}\n${log.item}`,
+                    tag: 'stock-take-' + Date.now()
+                });
+                setTimeout(() => notif.close(), 8000);
+            }
+        }
+
         loginBtn.addEventListener('click', () => {
+            requestNotificationPermission();
             signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).catch(() => {
                 errorMsg.style.display = 'block';
             });
@@ -742,7 +777,16 @@
             });
 
             const historyQuery = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(100));
+            let historyInitialLoadDone = false;
             unsubscribeHistory = onSnapshot(historyQuery, (snapshot) => {
+                if (historyInitialLoadDone) {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            showTakeNotification(change.doc.data());
+                        }
+                    });
+                }
+                historyInitialLoadDone = true;
                 historyContainer.innerHTML = '';
                 const logs = []; snapshot.forEach(docSnap => { logs.push({ id: docSnap.id, ...docSnap.data() }); });
                 if (logs.length === 0) { historyContainer.innerHTML = '<div style="color: #94a3b8; font-size: 14px; text-align: center;">Δεν υπάρχουν καταγεγραμμένες κινήσεις ακόμα.</div>'; return; }
