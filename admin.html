@@ -105,7 +105,7 @@
         #enlarged-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .btn-close-image { margin-top: 20px; background: #ef4444; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; }
 
-        .admin-sections-wrapper { display: flex; flex-wrap: wrap; gap: 30px; max-width: 1400px; margin: 40px auto 0 auto; }
+        .admin-sections-wrapper { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; max-width: 1400px; margin: 40px auto 0 auto; }
         .section-box { flex: 1; min-width: 350px; background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; text-align: left; }
         .workers-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; max-height: 200px; overflow-y: auto; }
         .worker-chip { background: #0f172a; border: 1px solid #334155; padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; }
@@ -126,7 +126,7 @@
         @media (max-width: 850px) {
             .columns-wrapper { flex-direction: column; }
             .divider { width: 100%; height: 2px; background: linear-gradient(to right, transparent, #334155, transparent); margin: 15px 0; }
-            .admin-sections-wrapper { flex-direction: column; }
+            .admin-sections-wrapper { grid-template-columns: 1fr; }
             .header-container { grid-template-columns: 1fr; justify-items: center; text-align: center; }
         }
     </style>
@@ -216,14 +216,34 @@
         </div>
 
         <div class="admin-sections-wrapper">
-            <div class="section-box" style="flex-basis: 100%;">
+            <div class="section-box">
                 <h2 style="color: #38bdf8; font-size: 20px; margin-top: 0; margin-bottom: 15px;">
-                    📊 Κατανάλωση ανά Προϊόν (Τελευταίες 30 Ημέρες)
+                    📊 Κατανάλωση ανά Προϊόν (30 Ημέρες)
                 </h2>
-                <div style="position: relative; height: 320px;">
+                <div style="position: relative; height: 260px;">
                     <canvas id="consumption-chart"></canvas>
                 </div>
                 <div id="consumption-chart-empty" style="display:none; color: #94a3b8; text-align:center; padding: 40px 0;">Δεν υπάρχουν κινήσεις τις τελευταίες 30 ημέρες.</div>
+            </div>
+
+            <div class="section-box">
+                <h2 style="color: #38bdf8; font-size: 20px; margin-top: 0; margin-bottom: 15px;">
+                    ⚡ Γρήγορα Στατιστικά
+                </h2>
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 14px 18px; border-radius: 10px; border: 1px solid #334155;">
+                        <span style="color: #94a3b8; font-size: 14px;">📦 Αφαιρέσεις Σήμερα</span>
+                        <span id="stat-today-count" style="color: #38bdf8; font-size: 22px; font-weight: 700;">0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 14px 18px; border-radius: 10px; border: 1px solid #334155;">
+                        <span style="color: #94a3b8; font-size: 14px;">🏆 Πιο Ενεργός Σήμερα</span>
+                        <span id="stat-top-worker" style="color: #38bdf8; font-size: 18px; font-weight: 700;">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 14px 18px; border-radius: 10px; border: 1px solid #334155;">
+                        <span style="color: #94a3b8; font-size: 14px;">🗂️ Σύνολο Προϊόντων</span>
+                        <span id="stat-total-products" style="color: #38bdf8; font-size: 22px; font-weight: 700;">0</span>
+                    </div>
+                </div>
             </div>
 
             <div class="section-box">
@@ -312,7 +332,7 @@
         const workerInputName = document.getElementById('worker-input-name');
         const addWorkerBtn = document.getElementById('add-worker-btn');
         
-        let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory, unsubscribeConsumption;
+        let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory, unsubscribeConsumption, unsubscribeTodayStats;
         let consumptionChartInstance = null;
         let lowStockMode = false; 
         let globalItemsData = []; 
@@ -399,7 +419,7 @@
             } else {
                 loginScreen.style.display = 'flex'; mainApp.style.display = 'none';
                 document.getElementById('login-password').value = ''; errorMsg.style.display = 'none';
-                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeHistory) unsubscribeHistory(); if(unsubscribeConsumption) unsubscribeConsumption();
+                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeHistory) unsubscribeHistory(); if(unsubscribeConsumption) unsubscribeConsumption(); if(unsubscribeTodayStats) unsubscribeTodayStats();
             }
         });
 
@@ -794,6 +814,7 @@
                 updateDatalist('child-list', childSet); updateDatalist('subchild-list', subchildSet); updateDatalist('supplier-list', supplierSet); updateDatalist('unit-list', unitSet);
 
                 isItemsLoaded = true;
+                document.getElementById('stat-total-products').textContent = globalItemsData.length;
                 renderEverything();
             });
 
@@ -851,6 +872,21 @@
 
                 const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 10);
                 renderConsumptionChart(sorted);
+            });
+
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+            const todayQuery = query(collection(db, "history"), where("createdAt", ">=", startOfToday.getTime()));
+            unsubscribeTodayStats = onSnapshot(todayQuery, (snapshot) => {
+                const workerCounts = {};
+                snapshot.forEach(docSnap => {
+                    const w = docSnap.data().worker || 'Άγνωστος';
+                    workerCounts[w] = (workerCounts[w] || 0) + 1;
+                });
+                document.getElementById('stat-today-count').textContent = snapshot.size;
+
+                const topEntry = Object.entries(workerCounts).sort((a, b) => b[1] - a[1])[0];
+                document.getElementById('stat-top-worker').textContent = topEntry ? `${topEntry[0]} (${topEntry[1]})` : '-';
             });
         }
 
