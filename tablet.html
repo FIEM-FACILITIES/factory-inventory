@@ -78,22 +78,7 @@
         
         .sub-inventory-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; padding-top: 15px; padding-bottom: 5px; }
         
-        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
-
-        .item-card.scanned-highlight {
-            transform: scale(1.3);
-            border: 4px solid #3182ce;
-            box-shadow: 0 12px 30px rgba(49, 130, 206, 0.4);
-            z-index: 50;
-            position: relative;
-            background-color: #ebf8ff;
-        }
-        .scanned-highlight .item-name span { font-size: 20px; }
-        .scanned-highlight .item-code { font-size: 15px; }
-        .scanned-highlight .item-stock { font-size: 46px; }
-        .scanned-highlight .qty-input { font-size: 18px; padding: 14px; }
-        .scanned-highlight .take-btn { font-size: 17px; padding: 14px; }
-        .scanned-highlight .reason-input { font-size: 15px; padding: 12px; }
+        .item-card { background-color: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
         .card-top { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .product-img { width: 60px; height: 60px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; cursor: zoom-in; flex-shrink:0; }
         .no-img { width: 60px; height: 60px; border-radius: 8px; border: 1px dashed #cbd5e0; display: flex; align-items: center; justify-content: center; font-size: 24px; background: #f8fafc; color: #a0aec0; flex-shrink:0; }
@@ -311,12 +296,25 @@
             });
         });
 
-        function clearScanHighlight() {
-            document.querySelectorAll('.item-card.scanned-highlight').forEach(c => c.classList.remove('scanned-highlight'));
+        function playScanBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(1200, ctx.currentTime);
+                gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                oscillator.start();
+                oscillator.stop(ctx.currentTime + 0.15);
+            } catch (e) {}
         }
 
         function onScanSuccess(decodedText, decodedResult) {
             if (html5QrCode && isCameraActive) {
+                playScanBeep();
                 html5QrCode.stop().then(() => {
                     isCameraActive = false;
                     document.getElementById('barcode-modal').style.display = 'none';
@@ -324,9 +322,7 @@
                     searchBoxWrapper.style.display = 'block';
                     searchToggleBtn.classList.add('active');
                     applySearchFilter();
-                    clearScanHighlight();
                     document.querySelectorAll(`.item-card[data-code="${CSS.escape(decodedText)}"]`).forEach(c => {
-                        c.classList.add('scanned-highlight');
                         c.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     });
                 }).catch(() => {});
@@ -352,11 +348,11 @@
             if (searchBoxWrapper.style.display === 'none' || searchBoxWrapper.style.display === '') {
                 searchBoxWrapper.style.display = 'block'; searchToggleBtn.classList.add('active'); searchInput.focus();
             } else {
-                searchBoxWrapper.style.display = 'none'; searchToggleBtn.classList.remove('active'); searchInput.value = ''; clearScanHighlight(); applySearchFilter();
+                searchBoxWrapper.style.display = 'none'; searchToggleBtn.classList.remove('active'); searchInput.value = ''; applySearchFilter();
             }
         });
 
-        searchInput.addEventListener('input', () => { clearScanHighlight(); applySearchFilter(); });
+        searchInput.addEventListener('input', applySearchFilter);
 
         function applySearchFilter() {
             const term = searchInput.value.toLowerCase();
@@ -402,7 +398,6 @@
 
         function resetTabletUI() {
             document.querySelectorAll('details').forEach(d => d.open = false);
-            clearScanHighlight();
             workerSelect.selectedIndex = 0; newWorkerInput.style.display = 'none'; newWorkerInput.value = '';
             searchInput.value = ''; searchBoxWrapper.style.display = 'none'; searchToggleBtn.classList.remove('active');
             
