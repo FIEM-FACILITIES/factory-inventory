@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Διαχείριση - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; text-align: center; min-height: 100vh; display: flex; flex-direction: column; }
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; }
@@ -148,9 +149,10 @@
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button id="low-stock-btn" style="background:#ef4444; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 15px;">⚠️ Είδη σε Έλλειψη</button>
                 <button id="order-list-btn" style="background:#f59e0b; color:#0f172a; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 15px;">🛒 Λίστα Παραγγελιών</button>
+                <button id="toggle-add-panel-btn" style="background:#10b981; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 15px;">➕ Προσθήκη Νέου Προϊόντος</button>
             </div>
             <h1>Πίνακας Ελέγχου</h1>
-            <div style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center; justify-content: flex-end;">
                 <button id="logout-btn" class="logout-btn">Αποσύνδεση</button>
             </div>
         </div>
@@ -159,7 +161,7 @@
             <input type="text" id="admin-search-input" class="admin-search-input" placeholder="🔍 Αναζήτηση (Προϊόν, Προμηθευτής, Κατηγορία, Κωδικός)...">
         </div>
 
-        <div class="admin-panel">
+        <div class="admin-panel" id="admin-panel" style="display: none;">
             <div class="input-group"><input type="text" id="new-name" placeholder="Όνομα είδους"></div>
             <div class="input-group"><input type="text" id="new-code" placeholder="Κωδικός / Barcode"></div>
             <div class="input-group"><input type="url" id="new-image" placeholder="Link Εικόνας (Προαιρετικό)"></div>
@@ -214,6 +216,16 @@
         </div>
 
         <div class="admin-sections-wrapper">
+            <div class="section-box" style="flex-basis: 100%;">
+                <h2 style="color: #38bdf8; font-size: 20px; margin-top: 0; margin-bottom: 15px;">
+                    📊 Κατανάλωση ανά Προϊόν (Τελευταίες 30 Ημέρες)
+                </h2>
+                <div style="position: relative; height: 320px;">
+                    <canvas id="consumption-chart"></canvas>
+                </div>
+                <div id="consumption-chart-empty" style="display:none; color: #94a3b8; text-align:center; padding: 40px 0;">Δεν υπάρχουν κινήσεις τις τελευταίες 30 ημέρες.</div>
+            </div>
+
             <div class="section-box">
                 <h2 style="color: #38bdf8; font-size: 20px; margin-top: 0; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
                     <span>👥 Διαχείριση Εργαζομένων <span id="worker-count" style="font-size: 16px; color: #94a3b8; margin-left: 5px;">(0)</span></span>
@@ -261,7 +273,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, deleteDoc, setDoc, getDocs, query, orderBy, limit, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, deleteDoc, setDoc, getDocs, query, orderBy, limit, where, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
@@ -300,7 +312,8 @@
         const workerInputName = document.getElementById('worker-input-name');
         const addWorkerBtn = document.getElementById('add-worker-btn');
         
-        let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory;
+        let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory, unsubscribeConsumption;
+        let consumptionChartInstance = null;
         let lowStockMode = false; 
         let globalItemsData = []; 
         let isItemsLoaded = false;
@@ -386,8 +399,16 @@
             } else {
                 loginScreen.style.display = 'flex'; mainApp.style.display = 'none';
                 document.getElementById('login-password').value = ''; errorMsg.style.display = 'none';
-                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeHistory) unsubscribeHistory();
+                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeHistory) unsubscribeHistory(); if(unsubscribeConsumption) unsubscribeConsumption();
             }
+        });
+
+        document.getElementById('toggle-add-panel-btn').addEventListener('click', () => {
+            const panel = document.getElementById('admin-panel');
+            const btn = document.getElementById('toggle-add-panel-btn');
+            const isHidden = panel.style.display === 'none';
+            panel.style.display = isHidden ? 'flex' : 'none';
+            btn.textContent = isHidden ? '➖ Απόκρυψη Φόρμας' : '➕ Προσθήκη Νέου Προϊόντος';
         });
 
         document.getElementById('low-stock-btn').addEventListener('click', (e) => {
@@ -816,6 +837,62 @@
                     historyContainer.appendChild(div);
                 });
             });
+
+            const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+            const consumptionQuery = query(collection(db, "history"), where("createdAt", ">=", thirtyDaysAgo));
+            unsubscribeConsumption = onSnapshot(consumptionQuery, (snapshot) => {
+                const totals = {};
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const key = data.item || 'Άγνωστο';
+                    const qty = typeof data.quantity === 'number' ? data.quantity : 0;
+                    totals[key] = (totals[key] || 0) + qty;
+                });
+
+                const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 10);
+                renderConsumptionChart(sorted);
+            });
+        }
+
+        function renderConsumptionChart(sortedEntries) {
+            const canvas = document.getElementById('consumption-chart');
+            const emptyMsg = document.getElementById('consumption-chart-empty');
+
+            if (consumptionChartInstance) { consumptionChartInstance.destroy(); consumptionChartInstance = null; }
+
+            if (!sortedEntries || sortedEntries.length === 0) {
+                canvas.style.display = 'none';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            canvas.style.display = 'block';
+            emptyMsg.style.display = 'none';
+
+            const labels = sortedEntries.map(([name]) => name.length > 40 ? name.slice(0, 40) + '…' : name);
+            const values = sortedEntries.map(([, qty]) => qty);
+
+            consumptionChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Ποσότητα (τελ. 30 ημέρες)',
+                        data: values,
+                        backgroundColor: '#38bdf8',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                        y: { ticks: { color: '#e2e8f0', font: { size: 12 } }, grid: { display: false } }
+                    }
+                }
+            });
         }
 
         const addItemInputs = ['new-name', 'new-code', 'new-image', 'new-supplier', 'new-supplier2', 'new-stock', 'new-unit', 'new-box-multiplier', 'new-min-stock', 'new-cleaning-text', 'new-electrical-text', 'new-childcategory', 'new-subchildcategory'];
@@ -854,6 +931,9 @@
             document.getElementById('new-unit').value = ''; document.getElementById('new-childcategory').value = ''; document.getElementById('new-subchildcategory').value = ''; 
             subcleaningSelect.value = ''; document.getElementById('new-cleaning-text').value = ''; document.getElementById('new-cleaning-text').style.display = 'none';
             subelectricalSelect.value = ''; document.getElementById('new-electrical-text').value = ''; document.getElementById('new-electrical-text').style.display = 'none';
+
+            document.getElementById('admin-panel').style.display = 'none';
+            document.getElementById('toggle-add-panel-btn').textContent = '➕ Προσθήκη Νέου Προϊόντος';
         });
     </script>
 </body>
