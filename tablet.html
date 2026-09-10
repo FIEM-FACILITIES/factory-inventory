@@ -407,6 +407,7 @@
         function resetTabletUI() {
             document.querySelectorAll('details').forEach(d => d.open = false);
             workerSelect.selectedIndex = 0; newWorkerInput.style.display = 'none'; newWorkerInput.value = '';
+            destinationSelect.value = 'Έδρα';
             searchInput.value = ''; searchBoxWrapper.style.display = 'none'; searchToggleBtn.classList.remove('active');
             
             document.querySelectorAll('.reason-input').forEach(inp => inp.value = '');
