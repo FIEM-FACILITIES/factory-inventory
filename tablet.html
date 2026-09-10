@@ -141,6 +141,13 @@
                     </select>
                 </div>
                 <input type="text" id="new-worker-input" class="new-worker-input" placeholder="Πληκτρολογήστε το όνομα σας...">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <label for="destination-select" style="font-size:13px; color:#a0aec0; font-weight:600;">📍 Προορισμός:</label>
+                    <select id="destination-select" style="padding:6px 10px; border-radius:6px; border:1px solid #e2e8f0; font-size:14px; background:#f8fafc; color:#718096; font-weight:600; outline:none; cursor:pointer;">
+                        <option value="Έδρα" selected>Έδρα</option>
+                        <option value="Μεσολόγγι">Μεσολόγγι</option>
+                    </select>
+                </div>
             </div>
             
             <div style="display:flex; gap:10px;">
@@ -217,6 +224,7 @@
         const loadingMsg = document.getElementById('loading-msg');
         const workerSelect = document.getElementById('worker-name');
         const newWorkerInput = document.getElementById('new-worker-input');
+        const destinationSelect = document.getElementById('destination-select');
         let unsubscribeWorkers = null;
         let unsubscribeItems = null;
 
@@ -527,6 +535,7 @@
 
                                     let inputVal = parseInt(inputField.value); if (isNaN(inputVal) || inputVal <= 0) inputVal = 1;
                                     let reasonText = reasonField.value.trim();
+                                    let destination = destinationSelect.value || 'Έδρα';
 
                                     let multiplier = isBox ? boxMult : 1;
                                     let totalToRemove = inputVal * multiplier;
@@ -542,7 +551,7 @@
                                     if(item.childcategory && item.childcategory !== 'Γενικά') logParts.push(item.childcategory);
                                     if(item.subchildcategory && item.subchildcategory !== 'Γενικά') logParts.push(item.subchildcategory);
                                     let logSuffix = logParts.length > 0 ? ` (${logParts.join(' - ')})` : '';
-                                    
+
                                     let historyQtyText = isBox 
                                         ? `${inputVal} Κούτες (${totalToRemove} ${unit})` 
                                         : `${totalToRemove} ${unit}`;
@@ -554,6 +563,7 @@
                                         quantity: totalToRemove, 
                                         quantityText: historyQtyText,
                                         reason: reasonText,
+                                        destination: destination,
                                         timestamp: new Date().toLocaleString('el-GR'), 
                                         createdAt: Date.now()
                                     }).catch(()=>{});

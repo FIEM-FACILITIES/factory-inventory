@@ -227,22 +227,12 @@
             </div>
 
             <div class="section-box">
-                <h2 style="color: #38bdf8; font-size: 20px; margin-top: 0; margin-bottom: 15px;">
-                    ⚡ Γρήγορα Στατιστικά
+                <h2 style="color: #38bdf8; font-size: 20px; margin-top: 0; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📥 Ιστορικό Παραλαβών</span>
+                    <button id="clear-receipts-btn" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Απαλοιφή</button>
                 </h2>
-                <div style="display: flex; flex-direction: column; gap: 14px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 14px 18px; border-radius: 10px; border: 1px solid #334155;">
-                        <span style="color: #94a3b8; font-size: 14px;">📦 Αφαιρέσεις Σήμερα</span>
-                        <span id="stat-today-count" style="color: #38bdf8; font-size: 22px; font-weight: 700;">0</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 14px 18px; border-radius: 10px; border: 1px solid #334155;">
-                        <span style="color: #94a3b8; font-size: 14px;">🏆 Πιο Ενεργός Σήμερα</span>
-                        <span id="stat-top-worker" style="color: #38bdf8; font-size: 18px; font-weight: 700;">-</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 14px 18px; border-radius: 10px; border: 1px solid #334155;">
-                        <span style="color: #94a3b8; font-size: 14px;">🗂️ Σύνολο Προϊόντων</span>
-                        <span id="stat-total-products" style="color: #38bdf8; font-size: 22px; font-weight: 700;">0</span>
-                    </div>
+                <div class="history-box" id="receipts-container">
+                    <div style="color: #94a3b8; font-size: 14px; text-align: center;">Φόρτωση παραλαβών...</div>
                 </div>
             </div>
 
@@ -267,6 +257,11 @@
                         <button id="clear-history-btn" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Απαλοιφή</button>
                     </div>
                 </h2>
+                <div style="display:flex; gap:8px; margin-bottom: 12px;">
+                    <button class="dest-filter-btn active" data-dest="all" style="flex:1; background:#38bdf8; color:#0f172a; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:700; font-size:13px;">Όλα</button>
+                    <button class="dest-filter-btn" data-dest="Έδρα" style="flex:1; background:#334155; color:#e2e8f0; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:700; font-size:13px;">🏢 Έδρα</button>
+                    <button class="dest-filter-btn" data-dest="Μεσολόγγι" style="flex:1; background:#334155; color:#e2e8f0; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:700; font-size:13px;">🚚 Μεσολόγγι</button>
+                </div>
                 <div class="history-box" id="history-container">
                     <div style="color: #94a3b8; font-size: 14px; text-align: center;">Φόρτωση ιστορικού...</div>
                 </div>
@@ -332,8 +327,10 @@
         const workerInputName = document.getElementById('worker-input-name');
         const addWorkerBtn = document.getElementById('add-worker-btn');
         
-        let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory, unsubscribeConsumption, unsubscribeTodayStats;
+        let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory, unsubscribeConsumption, unsubscribeReceipts;
         let consumptionChartInstance = null;
+        let globalHistoryLogs = [];
+        let currentDestFilter = 'all';
         let lowStockMode = false; 
         let globalItemsData = []; 
         let isItemsLoaded = false;
@@ -419,7 +416,7 @@
             } else {
                 loginScreen.style.display = 'flex'; mainApp.style.display = 'none';
                 document.getElementById('login-password').value = ''; errorMsg.style.display = 'none';
-                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeHistory) unsubscribeHistory(); if(unsubscribeConsumption) unsubscribeConsumption(); if(unsubscribeTodayStats) unsubscribeTodayStats();
+                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeHistory) unsubscribeHistory(); if(unsubscribeConsumption) unsubscribeConsumption(); if(unsubscribeReceipts) unsubscribeReceipts();
             }
         });
 
@@ -563,24 +560,41 @@
             }
         });
 
+        document.getElementById('clear-receipts-btn').addEventListener('click', async () => {
+            if (confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε ΟΛΟ το ιστορικό παραλαβών; Αυτή η ενέργεια δεν αναιρείται (δεν επηρεάζει το τρέχον απόθεμα, μόνο το ιστορικό).')) {
+                try {
+                    const querySnapshot = await getDocs(collection(db, "receipts"));
+                    querySnapshot.forEach((docSnapshot) => { deleteDoc(doc(db, "receipts", docSnapshot.id)).catch(()=>{}); });
+                } catch (e) { alert('Υπήρξε ένα σφάλμα κατά τη διαγραφή του ιστορικού παραλαβών.'); }
+            }
+        });
+
         document.getElementById('export-csv-btn').addEventListener('click', async () => {
             try {
                 const querySnapshot = await getDocs(collection(db, "history"));
                 if (querySnapshot.empty) { alert('Δεν υπάρχουν δεδομένα.'); return; }
                 
-                let csv = "Ημερομηνία,Εργαζόμενος,Προϊόν,Ποσότητα,Αιτιολογία\n";
-                const allLogs = [];
+                let csv = "Ημερομηνία,Εργαζόμενος,Προϊόν,Ποσότητα,Προορισμός,Αιτιολογία\n";
+                let allLogs = [];
                 querySnapshot.forEach(doc => allLogs.push(doc.data()));
+
+                if (currentDestFilter !== 'all') {
+                    allLogs = allLogs.filter(l => l.destination === currentDestFilter);
+                }
+                if (allLogs.length === 0) { alert('Δεν υπάρχουν δεδομένα για αυτό το φίλτρο.'); return; }
+
                 allLogs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 
                 allLogs.forEach(l => { 
                     let r = l.reason ? l.reason.replace(/"/g, '""') : "";
                     let qText = l.quantityText ? l.quantityText : `${l.quantity}`;
-                    csv += `"${l.timestamp}","${l.worker}","${l.item}","${qText}","${r}"\n`; 
+                    let dest = l.destination || "";
+                    csv += `"${l.timestamp}","${l.worker}","${l.item}","${qText}","${dest}","${r}"\n`; 
                 });
                 const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); 
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = 'istoriko_apothikis.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                const filenameSuffix = currentDestFilter === 'all' ? 'ola' : (currentDestFilter === 'Έδρα' ? 'edra' : 'mesologgi');
+                const a = document.createElement('a'); a.href = url; a.download = `istoriko_apothikis_${filenameSuffix}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
             } catch(e) { alert("Σφάλμα κατά την εξαγωγή του ιστορικού."); }
         });
 
@@ -690,7 +704,7 @@
                             document.getElementById(`edit-box-${item.id}`).addEventListener('click', () => { let val = prompt(`Πόσα ${unit} περιέχει μία Κούτα; (Γράψε αριθμό ή 0 αν δεν έχει κούτα):`, item.boxMultiplier || ""); if (val !== null && !isNaN(parseInt(val))) { updateDoc(doc(db, "items", item.id), { boxMultiplier: parseInt(val) }).catch(()=>{}); } });
 
                             document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`add-${item.id}`).click(); } });
-                            document.getElementById(`add-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; updateDoc(doc(db, "items", item.id), { stock: increment(val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
+                            document.getElementById(`add-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; updateDoc(doc(db, "items", item.id), { stock: increment(val) }).catch(()=>{}); addDoc(collection(db, "receipts"), { itemId: item.id, item: `${item.subcategory}: ${item.name}`, quantity: val, unit: item.unit || 'τμχ', timestamp: new Date().toLocaleString('el-GR'), createdAt: Date.now() }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
                             document.getElementById(`sub-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; if (val > item.stock) { alert('Δεν υπάρχει τόσο απόθεμα!'); return; } updateDoc(doc(db, "items", item.id), { stock: increment(-val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
                             document.getElementById(`del-${item.id}`).addEventListener('click', () => { if (confirm(`Διαγραφή του είδους "${item.name}";`)) { deleteDoc(doc(db, "items", item.id)).catch(()=>{}); } });
                         }, 0);
@@ -755,6 +769,56 @@
             applyAdminSearch(); 
         }
 
+        function renderHistoryList() {
+            const filtered = currentDestFilter === 'all'
+                ? globalHistoryLogs
+                : globalHistoryLogs.filter(log => log.destination === currentDestFilter);
+
+            historyContainer.innerHTML = '';
+            if (filtered.length === 0) { historyContainer.innerHTML = '<div style="color: #94a3b8; font-size: 14px; text-align: center;">Δεν υπάρχουν καταγεγραμμένες κινήσεις.</div>'; return; }
+
+            filtered.forEach(log => {
+                const div = document.createElement('div'); div.className = 'history-item';
+                let reasonHtml = log.reason ? `<div style="font-size: 13px; color: #facc15; margin-top: 4px;">📝 ${log.reason}</div>` : '';
+                let qtyDisplay = log.quantityText ? log.quantityText : `${log.quantity}`;
+                let destBadge = log.destination
+                    ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:8px; background:${log.destination === 'Μεσολόγγι' ? '#1e3a5f' : '#1a3a2a'}; color:${log.destination === 'Μεσολόγγι' ? '#38bdf8' : '#38a169'};">${log.destination === 'Μεσολόγγι' ? '🚚' : '🏢'} ${log.destination}</span>`
+                    : '';
+
+                div.innerHTML = `
+                    <div style="text-align: left; flex: 1; padding-right: 10px;">
+                        <div><span class="history-worker">${log.worker}</span> <span>αφαίρεσε <b>${qtyDisplay}</b> από <b>${log.item}</b></span>${destBadge}</div>
+                        ${reasonHtml}
+                    </div>
+                    <div style="display:flex; align-items:center; flex-shrink: 0;">
+                        <span class="history-time">${log.timestamp}</span>
+                        <button class="btn-undo" title="Ακύρωση αυτής της κίνησης">↩️ Αναίρεση</button>
+                    </div>
+                `;
+                div.querySelector('.btn-undo').addEventListener('click', () => {
+                    if (!log.itemId) { alert("Αυτή είναι παλιά εγγραφή και δεν μπορεί να αναιρεθεί αυτόματα."); return; }
+                    if (confirm(`Θέλετε να ακυρώσετε την αφαίρεση και να επιστραφούν τα ${log.quantity} στη βάση;`)) {
+                        updateDoc(doc(db, "items", log.itemId), { stock: increment(log.quantity) }).catch(()=>{});
+                        deleteDoc(doc(db, "history", log.id)).catch(()=>{});
+                    }
+                });
+                historyContainer.appendChild(div);
+            });
+        }
+
+        document.querySelectorAll('.dest-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentDestFilter = btn.dataset.dest;
+                document.querySelectorAll('.dest-filter-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = '#334155'; b.style.color = '#e2e8f0';
+                });
+                btn.classList.add('active');
+                btn.style.background = '#38bdf8'; btn.style.color = '#0f172a';
+                renderHistoryList();
+            });
+        });
+
         function loadData() {
             unsubscribeWorkers = onSnapshot(collection(db, "workers"), (snapshot) => {
                 workersListContainer.innerHTML = ''; const workers = [];
@@ -814,7 +878,6 @@
                 updateDatalist('child-list', childSet); updateDatalist('subchild-list', subchildSet); updateDatalist('supplier-list', supplierSet); updateDatalist('unit-list', unitSet);
 
                 isItemsLoaded = true;
-                document.getElementById('stat-total-products').textContent = globalItemsData.length;
                 renderEverything();
             });
 
@@ -829,34 +892,8 @@
                     });
                 }
                 historyInitialLoadDone = true;
-                historyContainer.innerHTML = '';
-                const logs = []; snapshot.forEach(docSnap => { logs.push({ id: docSnap.id, ...docSnap.data() }); });
-                if (logs.length === 0) { historyContainer.innerHTML = '<div style="color: #94a3b8; font-size: 14px; text-align: center;">Δεν υπάρχουν καταγεγραμμένες κινήσεις ακόμα.</div>'; return; }
-                
-                logs.forEach(log => {
-                    const div = document.createElement('div'); div.className = 'history-item';
-                    let reasonHtml = log.reason ? `<div style="font-size: 13px; color: #facc15; margin-top: 4px;">📝 ${log.reason}</div>` : '';
-                    let qtyDisplay = log.quantityText ? log.quantityText : `${log.quantity}`;
-
-                    div.innerHTML = `
-                        <div style="text-align: left; flex: 1; padding-right: 10px;">
-                            <div><span class="history-worker">${log.worker}</span> <span>αφαίρεσε <b>${qtyDisplay}</b> από <b>${log.item}</b></span></div>
-                            ${reasonHtml}
-                        </div>
-                        <div style="display:flex; align-items:center; flex-shrink: 0;">
-                            <span class="history-time">${log.timestamp}</span>
-                            <button class="btn-undo" title="Ακύρωση αυτής της κίνησης">↩️ Αναίρεση</button>
-                        </div>
-                    `;
-                    div.querySelector('.btn-undo').addEventListener('click', () => {
-                        if (!log.itemId) { alert("Αυτή είναι παλιά εγγραφή και δεν μπορεί να αναιρεθεί αυτόματα."); return; }
-                        if (confirm(`Θέλετε να ακυρώσετε την αφαίρεση και να επιστραφούν τα ${log.quantity} στη βάση;`)) {
-                            updateDoc(doc(db, "items", log.itemId), { stock: increment(log.quantity) }).catch(()=>{});
-                            deleteDoc(doc(db, "history", log.id)).catch(()=>{});
-                        }
-                    });
-                    historyContainer.appendChild(div);
-                });
+                globalHistoryLogs = []; snapshot.forEach(docSnap => { globalHistoryLogs.push({ id: docSnap.id, ...docSnap.data() }); });
+                renderHistoryList();
             });
 
             const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
@@ -874,19 +911,33 @@
                 renderConsumptionChart(sorted);
             });
 
-            const startOfToday = new Date();
-            startOfToday.setHours(0, 0, 0, 0);
-            const todayQuery = query(collection(db, "history"), where("createdAt", ">=", startOfToday.getTime()));
-            unsubscribeTodayStats = onSnapshot(todayQuery, (snapshot) => {
-                const workerCounts = {};
-                snapshot.forEach(docSnap => {
-                    const w = docSnap.data().worker || 'Άγνωστος';
-                    workerCounts[w] = (workerCounts[w] || 0) + 1;
-                });
-                document.getElementById('stat-today-count').textContent = snapshot.size;
+            const receiptsQuery = query(collection(db, "receipts"), orderBy("createdAt", "desc"), limit(50));
+            unsubscribeReceipts = onSnapshot(receiptsQuery, (snapshot) => {
+                const receiptsContainer = document.getElementById('receipts-container');
+                receiptsContainer.innerHTML = '';
+                const receipts = []; snapshot.forEach(docSnap => { receipts.push({ id: docSnap.id, ...docSnap.data() }); });
+                if (receipts.length === 0) { receiptsContainer.innerHTML = '<div style="color: #94a3b8; font-size: 14px; text-align: center;">Δεν υπάρχουν καταγεγραμμένες παραλαβές ακόμα.</div>'; return; }
 
-                const topEntry = Object.entries(workerCounts).sort((a, b) => b[1] - a[1])[0];
-                document.getElementById('stat-top-worker').textContent = topEntry ? `${topEntry[0]} (${topEntry[1]})` : '-';
+                receipts.forEach(r => {
+                    const div = document.createElement('div'); div.className = 'history-item';
+                    div.innerHTML = `
+                        <div style="text-align: left; flex: 1; padding-right: 10px;">
+                            <div><span style="color:#10b981; font-weight:700;">+${r.quantity} ${r.unit || ''}</span> <span>στο <b>${r.item}</b></span></div>
+                        </div>
+                        <div style="display:flex; align-items:center; flex-shrink: 0;">
+                            <span class="history-time">${r.timestamp}</span>
+                            <button class="btn-undo" title="Ακύρωση αυτής της παραλαβής">↩️ Αναίρεση</button>
+                        </div>
+                    `;
+                    div.querySelector('.btn-undo').addEventListener('click', () => {
+                        if (!r.itemId) { alert("Αυτή είναι παλιά εγγραφή και δεν μπορεί να αναιρεθεί αυτόματα."); return; }
+                        if (confirm(`Θέλετε να ακυρώσετε την παραλαβή και να αφαιρεθούν ${r.quantity} ${r.unit || ''} από το απόθεμα;`)) {
+                            updateDoc(doc(db, "items", r.itemId), { stock: increment(-r.quantity) }).catch(()=>{});
+                            deleteDoc(doc(db, "receipts", r.id)).catch(()=>{});
+                        }
+                    });
+                    receiptsContainer.appendChild(div);
+                });
             });
         }
 
