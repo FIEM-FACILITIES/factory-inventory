@@ -151,7 +151,7 @@
                 <button id="order-list-btn" style="background:#f59e0b; color:#0f172a; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 15px;">🛒 Λίστα Παραγγελιών</button>
                 <button id="toggle-add-panel-btn" style="background:#10b981; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 15px;">➕ Προσθήκη Νέου Προϊόντος</button>
             </div>
-            <h1>Πίνακας Ελέγχου</h1>
+            <h1 id="dashboard-title" style="cursor: pointer;" title="Επιστροφή στην αρχική κατάσταση">Πίνακας Ελέγχου</h1>
             <div style="display: flex; align-items: center; justify-content: flex-end;">
                 <button id="logout-btn" class="logout-btn">Αποσύνδεση</button>
             </div>
@@ -428,6 +428,10 @@
             btn.textContent = isHidden ? '➖ Απόκρυψη Φόρμας' : '➕ Προσθήκη Νέου Προϊόντος';
         });
 
+        document.getElementById('dashboard-title').addEventListener('click', () => {
+            location.reload();
+        });
+
         document.getElementById('low-stock-btn').addEventListener('click', (e) => {
             lowStockMode = !lowStockMode;
             e.target.style.background = lowStockMode ? '#b91c1c' : '#ef4444';
@@ -438,7 +442,12 @@
             applyAdminSearch(); 
         });
 
-        document.getElementById('admin-search-input').addEventListener('input', applyAdminSearch);
+        document.getElementById('admin-search-input').addEventListener('input', () => {
+            if (document.getElementById('admin-search-input').value === '' && !lowStockMode) {
+                document.querySelectorAll('details').forEach(d => { d.open = false; });
+            }
+            applyAdminSearch();
+        });
 
         function applyAdminSearch() {
             const term = document.getElementById('admin-search-input').value.toLowerCase();
