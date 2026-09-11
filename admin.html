@@ -641,6 +641,14 @@
                         const isLowStock = item.stock <= minStock;
                         const stockColor = isLowStock && item.stock > 0 ? '#e53e3e' : '#38bdf8';
 
+                        let boxBreakdownHtml = '';
+                        if (item.boxMultiplier && item.boxMultiplier > 1) {
+                            const fullBoxes = Math.floor(item.stock / item.boxMultiplier);
+                            const remainder = item.stock % item.boxMultiplier;
+                            const boxText = remainder > 0 ? `${fullBoxes} κούτες + ${remainder} ${unit}` : `${fullBoxes} κούτες`;
+                            boxBreakdownHtml = `<div style="font-size: 13px; color: #94a3b8; margin-top: -4px; margin-bottom: 8px;">≈ ${boxText}</div>`;
+                        }
+
                         const imageHtml = item.imageUrl && item.imageUrl.trim() !== "" 
                             ? `<img src="${item.imageUrl}" class="product-img" id="img-${item.id}" onerror="this.outerHTML='<div class=\\'no-img\\'>📦</div>'">` 
                             : `<div class="no-img">📦</div>`;
@@ -676,6 +684,7 @@
                             <div class="item-stock" style="color: ${stockColor}">
                                 ${item.stock} <span class="item-unit">${unit} <button class="btn-edit-item" id="edit-unit-${item.id}" style="font-size:12px;" title="Αλλαγή Μονάδας">✏️</button></span> 
                             </div>
+                            ${boxBreakdownHtml}
                             <div class="item-limit">
                                 Όριο: ${minStock} <button class="btn-edit-item" id="edit-min-${item.id}" style="font-size:12px;" title="Αλλαγή Ορίου">✏️</button>
                                 | Κούτα: ${item.boxMultiplier > 1 ? item.boxMultiplier + ' ' + unit : '-'} <button class="btn-edit-item" id="edit-box-${item.id}" style="font-size:12px;" title="Αλλαγή Τεμαχίων ανά Κούτα">✏️</button>
