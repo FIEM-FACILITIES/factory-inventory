@@ -251,7 +251,7 @@
 
             <div class="section-box">
                 <h2 style="color: #38bdf8; font-size: 20px; margin-top: 0; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <span>📋 Ιστορικό Κινήσεων (Τελευταίες 100)</span>
+                    <span>📋 Ιστορικό Κινήσεων (Όλες)</span>
                     <div>
                         <button id="export-csv-btn" style="background: transparent; border: 1px solid #10b981; color: #10b981; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; margin-right: 5px;">📥 Excel</button>
                         <button id="clear-history-btn" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Απαλοιφή</button>
@@ -899,7 +899,7 @@
                 renderEverything();
             });
 
-            const historyQuery = query(collection(db, "history"), orderBy("createdAt", "desc"), limit(100));
+            const historyQuery = query(collection(db, "history"), orderBy("createdAt", "desc"));
             let historyInitialLoadDone = false;
             unsubscribeHistory = onSnapshot(historyQuery, (snapshot) => {
                 if (historyInitialLoadDone) {
