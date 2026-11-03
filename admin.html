@@ -105,6 +105,7 @@
         #enlarged-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .btn-close-image { margin-top: 20px; background: #ef4444; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; }
 
+
         .admin-sections-wrapper { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; max-width: 1400px; margin: 40px auto 0 auto; }
         .section-box { flex: 1; min-width: 350px; background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; text-align: left; }
         .workers-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; max-height: 200px; overflow-y: auto; }
@@ -390,12 +391,24 @@
             } catch (e) {}
         }
 
+        function showReceiptNotification(r) {
+            playNotificationSound();
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const notif = new Notification('📥 Νέα Παραλαβή', {
+                    body: `${r.receivedBy} παρέλαβε: +${r.quantity} ${r.unit || ''}\n${r.item}`,
+                    tag: 'stock-receipt-' + Date.now()
+                });
+                setTimeout(() => notif.close(), 8000);
+            }
+        }
+
         function showTakeNotification(log) {
             playNotificationSound();
             if ('Notification' in window && Notification.permission === 'granted') {
                 const qty = log.quantityText || log.quantity;
-                const notif = new Notification('📦 Αφαίρεση Υλικού', {
-                    body: `${log.worker} πήρε: ${qty}\n${log.item}`,
+                const isAdd = log.type === 'add';
+                const notif = new Notification(isAdd ? '➕ Προσθήκη / Επιστροφή Υλικού' : '📦 Αφαίρεση Υλικού', {
+                    body: isAdd ? `${log.worker} πρόσθεσε: ${qty}\n${log.item}${log.reason ? '\n📝 ' + log.reason : ''}` : `${log.worker} πήρε: ${qty}\n${log.item}`,
                     tag: 'stock-take-' + Date.now()
                 });
                 setTimeout(() => notif.close(), 8000);
@@ -722,7 +735,13 @@
                             document.getElementById(`edit-box-${item.id}`).addEventListener('click', () => { let val = prompt(`Πόσα ${unit} περιέχει μία Κούτα; (Γράψε αριθμό ή 0 αν δεν έχει κούτα):`, item.boxMultiplier || ""); if (val !== null && !isNaN(parseInt(val))) { updateDoc(doc(db, "items", item.id), { boxMultiplier: parseInt(val) }).catch(()=>{}); } });
 
                             document.getElementById(`input-${item.id}`).addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById(`add-${item.id}`).click(); } });
-                            document.getElementById(`add-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; updateDoc(doc(db, "items", item.id), { stock: increment(val) }).catch(()=>{}); addDoc(collection(db, "receipts"), { itemId: item.id, item: `${item.subcategory}: ${item.name}`, quantity: val, unit: item.unit || 'τμχ', timestamp: new Date().toLocaleString('el-GR'), createdAt: Date.now() }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
+                            document.getElementById(`add-${item.id}`).addEventListener('click', () => {
+                                let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1;
+                                document.getElementById(`input-${item.id}`).value = '';
+                                const unitTxt = item.unit || 'τμχ';
+                                updateDoc(doc(db, "items", item.id), { stock: increment(val) }).catch(()=>{});
+                                addDoc(collection(db, "receipts"), { itemId: item.id, item: `${item.subcategory}: ${item.name}`, quantity: val, unit: unitTxt, timestamp: new Date().toLocaleString('el-GR'), createdAt: Date.now() }).catch(()=>{});
+                            });
                             document.getElementById(`sub-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; if (val > item.stock) { alert('Δεν υπάρχει τόσο απόθεμα!'); return; } updateDoc(doc(db, "items", item.id), { stock: increment(-val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
                             document.getElementById(`del-${item.id}`).addEventListener('click', () => { if (confirm(`Διαγραφή του είδους "${item.name}";`)) { deleteDoc(doc(db, "items", item.id)).catch(()=>{}); } });
                         }, 0);
@@ -797,6 +816,7 @@
 
             filtered.forEach(log => {
                 const div = document.createElement('div'); div.className = 'history-item';
+                const isAdd = log.type === 'add';
                 let reasonHtml = log.reason ? `<div style="font-size: 13px; color: #facc15; margin-top: 4px;">📝 ${log.reason}</div>` : '';
                 let qtyDisplay = log.quantityText ? log.quantityText : `${log.quantity}`;
                 let destBadge = log.destination
@@ -805,7 +825,7 @@
 
                 div.innerHTML = `
                     <div style="text-align: left; flex: 1; padding-right: 10px;">
-                        <div><span class="history-worker">${log.worker}</span> <span>αφαίρεσε <b>${qtyDisplay}</b> από <b>${log.item}</b></span>${destBadge}</div>
+                        <div><span class="history-worker">${log.worker}</span> ${isAdd ? `<span>πρόσθεσε <b style="color:#10b981;">${qtyDisplay}</b> στο <b>${log.item}</b></span><span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:8px; background:#3b2a0a; color:#f59e0b;">➕ Αλλαγή/Επιστροφή</span>` : `<span>αφαίρεσε <b>${qtyDisplay}</b> από <b>${log.item}</b></span>${destBadge}`}</div>
                         ${reasonHtml}
                     </div>
                     <div style="display:flex; align-items:center; flex-shrink: 0;">
@@ -815,8 +835,9 @@
                 `;
                 div.querySelector('.btn-undo').addEventListener('click', () => {
                     if (!log.itemId) { alert("Αυτή είναι παλιά εγγραφή και δεν μπορεί να αναιρεθεί αυτόματα."); return; }
-                    if (confirm(`Θέλετε να ακυρώσετε την αφαίρεση και να επιστραφούν τα ${log.quantity} στη βάση;`)) {
-                        updateDoc(doc(db, "items", log.itemId), { stock: increment(log.quantity) }).catch(()=>{});
+                    const undoMsg = isAdd ? `Θέλετε να ακυρώσετε την προσθήκη και να αφαιρεθούν ${log.quantity} από τη βάση;` : `Θέλετε να ακυρώσετε την αφαίρεση και να επιστραφούν τα ${log.quantity} στη βάση;`;
+                    if (confirm(undoMsg)) {
+                        updateDoc(doc(db, "items", log.itemId), { stock: increment(isAdd ? -log.quantity : log.quantity) }).catch(()=>{});
                         deleteDoc(doc(db, "history", log.id)).catch(()=>{});
                     }
                 });
@@ -922,15 +943,22 @@
                     const data = docSnap.data();
                     const key = data.item || 'Άγνωστο';
                     const qty = typeof data.quantity === 'number' ? data.quantity : 0;
-                    totals[key] = (totals[key] || 0) + qty;
+                    totals[key] = (totals[key] || 0) + (data.type === 'add' ? -qty : qty);
                 });
 
-                const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 10);
+                const sorted = Object.entries(totals).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 10);
                 renderConsumptionChart(sorted);
             });
 
             const receiptsQuery = query(collection(db, "receipts"), orderBy("createdAt", "desc"), limit(50));
+            let receiptsInitialLoadDone = false;
             unsubscribeReceipts = onSnapshot(receiptsQuery, (snapshot) => {
+                if (receiptsInitialLoadDone) {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added' && change.doc.data().source === 'tablet') showReceiptNotification(change.doc.data());
+                    });
+                }
+                receiptsInitialLoadDone = true;
                 const receiptsContainer = document.getElementById('receipts-container');
                 receiptsContainer.innerHTML = '';
                 const receipts = []; snapshot.forEach(docSnap => { receipts.push({ id: docSnap.id, ...docSnap.data() }); });
@@ -938,9 +966,10 @@
 
                 receipts.forEach(r => {
                     const div = document.createElement('div'); div.className = 'history-item';
+                    let receivedByHtml = r.receivedBy ? ` — παρέλαβε <span class="history-worker">${r.receivedBy}</span>` : '';
                     div.innerHTML = `
                         <div style="text-align: left; flex: 1; padding-right: 10px;">
-                            <div><span style="color:#10b981; font-weight:700;">+${r.quantity} ${r.unit || ''}</span> <span>στο <b>${r.item}</b></span></div>
+                            <div><span style="color:#10b981; font-weight:700;">+${r.quantity} ${r.unit || ''}</span> <span>στο <b>${r.item}</b></span>${receivedByHtml}</div>
                         </div>
                         <div style="display:flex; align-items:center; flex-shrink: 0;">
                             <span class="history-time">${r.timestamp}</span>
