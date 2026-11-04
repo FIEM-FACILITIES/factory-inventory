@@ -81,6 +81,8 @@
         .action-buttons { display: flex; gap: 8px; margin-bottom: 10px; margin-top: auto; }
         .btn-add-stock { flex: 1; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-sub-stock { flex: 1; background: #f59e0b; color: #0f172a; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-adjust { background: transparent; color: #38bdf8; border: 1px solid #38bdf8; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+        .btn-adjust:hover { background: rgba(56,189,248,0.1); }
         .btn-delete { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
         .btn-edit-group { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 0 4px; filter: grayscale(0.2); transition: transform 0.1s; }
@@ -265,6 +267,16 @@
                 </div>
                 <div class="history-box" id="history-container">
                     <div style="color: #94a3b8; font-size: 14px; text-align: center;">Φόρτωση ιστορικού...</div>
+                </div>
+            </div>
+
+            <div class="section-box" style="grid-column: 1 / -1;">
+                <h2 style="color: #38bdf8; font-size: 20px; margin-top: 0; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>🔁 Αλλαγές / Επιστροφές</span>
+                    <button id="clear-changes-btn" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Απαλοιφή</button>
+                </h2>
+                <div class="history-box" id="changes-container">
+                    <div style="color: #94a3b8; font-size: 14px; text-align: center;">Φόρτωση...</div>
                 </div>
             </div>
         </div>
@@ -574,11 +586,27 @@
         });
 
         document.getElementById('clear-history-btn').addEventListener('click', async () => {
-            if (confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε ΟΛΟ το ιστορικό; Αυτή η ενέργεια δεν αναιρείται.')) {
+            if (confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε ΟΛΟ το ιστορικό κινήσεων; Αυτή η ενέργεια δεν αναιρείται. (Οι Αλλαγές/Επιστροφές δεν διαγράφονται.)')) {
                 try {
                     const querySnapshot = await getDocs(collection(db, "history"));
-                    querySnapshot.forEach((docSnapshot) => { deleteDoc(doc(db, "history", docSnapshot.id)).catch(()=>{}); });
+                    querySnapshot.forEach((docSnapshot) => {
+                        const t = docSnapshot.data().type;
+                        if (t === 'add' || t === 'adjust') return;
+                        deleteDoc(doc(db, "history", docSnapshot.id)).catch(()=>{});
+                    });
                 } catch (e) { alert('Υπήρξε ένα σφάλμα κατά τη διαγραφή του ιστορικού.'); }
+            }
+        });
+
+        document.getElementById('clear-changes-btn').addEventListener('click', async () => {
+            if (confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε ΟΛΟ το ιστορικό Αλλαγών/Επιστροφών; Δεν επηρεάζει το τρέχον απόθεμα.')) {
+                try {
+                    const querySnapshot = await getDocs(collection(db, "history"));
+                    querySnapshot.forEach((docSnapshot) => {
+                        const t = docSnapshot.data().type;
+                        if (t === 'add' || t === 'adjust') deleteDoc(doc(db, "history", docSnapshot.id)).catch(()=>{});
+                    });
+                } catch (e) { alert('Υπήρξε ένα σφάλμα κατά τη διαγραφή.'); }
             }
         });
 
@@ -596,7 +624,7 @@
                 const querySnapshot = await getDocs(collection(db, "history"));
                 if (querySnapshot.empty) { alert('Δεν υπάρχουν δεδομένα.'); return; }
                 
-                let csv = "Ημερομηνία,Εργαζόμενος,Προϊόν,Ποσότητα,Προορισμός,Αιτιολογία\n";
+                let csv = "Ημερομηνία,Εργαζόμενος,Προϊόν,Ποσότητα,Προορισμός,Αιτιολογία,Τύπος\n";
                 let allLogs = [];
                 querySnapshot.forEach(doc => allLogs.push(doc.data()));
 
@@ -611,7 +639,8 @@
                     let r = l.reason ? l.reason.replace(/"/g, '""') : "";
                     let qText = l.quantityText ? l.quantityText : `${l.quantity}`;
                     let dest = l.destination || "";
-                    csv += `"${l.timestamp}","${l.worker}","${l.item}","${qText}","${dest}","${r}"\n`; 
+                    let typeLabel = l.type === 'add' ? 'Προσθήκη/Επιστροφή' : (l.type === 'adjust' ? 'Διόρθωση' : 'Αφαίρεση');
+                    csv += `"${l.timestamp}","${l.worker}","${l.item}","${qText}","${dest}","${r}","${typeLabel}"\n`; 
                 });
                 const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); 
                 const url = URL.createObjectURL(blob);
@@ -714,6 +743,7 @@
 
                             <div class="input-row"><input type="number" id="input-${item.id}" class="restock-input" placeholder="Ποσότητα προσ/αφαίρ." inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
                             <div class="action-buttons"><button class="btn-add-stock" id="add-${item.id}">+</button><button class="btn-sub-stock" id="sub-${item.id}">-</button></div>
+                            <button class="btn-adjust" id="adj-${item.id}" title="Διόρθωση του αποθέματος μετά από καταμέτρηση (δεν καταγράφεται πουθενά)">🔧 Διόρθωση αποθέματος</button>
                             <button class="btn-delete" id="del-${item.id}">Διαγραφή</button>
                         `;
                         grid.appendChild(card);
@@ -743,6 +773,15 @@
                                 addDoc(collection(db, "receipts"), { itemId: item.id, item: `${item.subcategory}: ${item.name}`, quantity: val, unit: unitTxt, timestamp: new Date().toLocaleString('el-GR'), createdAt: Date.now() }).catch(()=>{});
                             });
                             document.getElementById(`sub-${item.id}`).addEventListener('click', () => { let val = parseInt(document.getElementById(`input-${item.id}`).value); if (isNaN(val) || val <= 0) val = 1; if (val > item.stock) { alert('Δεν υπάρχει τόσο απόθεμα!'); return; } updateDoc(doc(db, "items", item.id), { stock: increment(-val) }).catch(()=>{}); document.getElementById(`input-${item.id}`).value = ''; });
+                            document.getElementById(`adj-${item.id}`).addEventListener('click', () => {
+                                const raw = prompt(`Σωστό απόθεμα για "${item.name}" μετά την καταμέτρηση\n(τώρα: ${item.stock} ${unit}):`, item.stock);
+                                if (raw === null) return;
+                                const newStock = parseInt(raw);
+                                if (isNaN(newStock) || newStock < 0) { alert('⚠️ Γράψτε έναν έγκυρο αριθμό (0 ή μεγαλύτερο).'); return; }
+                                if (newStock === item.stock) return;
+                                const delta = newStock - item.stock; // Σιωπηλή διόρθωση: δεν καταγράφεται πουθενά
+                                updateDoc(doc(db, "items", item.id), { stock: increment(delta) }).catch(()=>{});
+                            });
                             document.getElementById(`del-${item.id}`).addEventListener('click', () => { if (confirm(`Διαγραφή του είδους "${item.name}";`)) { deleteDoc(doc(db, "items", item.id)).catch(()=>{}); } });
                         }, 0);
                     });
@@ -807,9 +846,10 @@
         }
 
         function renderHistoryList() {
+            const movements = globalHistoryLogs.filter(log => log.type !== 'add' && log.type !== 'adjust');
             const filtered = currentDestFilter === 'all'
-                ? globalHistoryLogs
-                : globalHistoryLogs.filter(log => log.destination === currentDestFilter);
+                ? movements
+                : movements.filter(log => log.destination === currentDestFilter);
 
             historyContainer.innerHTML = '';
             if (filtered.length === 0) { historyContainer.innerHTML = '<div style="color: #94a3b8; font-size: 14px; text-align: center;">Δεν υπάρχουν καταγεγραμμένες κινήσεις.</div>'; return; }
@@ -842,6 +882,42 @@
                     }
                 });
                 historyContainer.appendChild(div);
+            });
+        }
+
+        function renderChangesList() {
+            const container = document.getElementById('changes-container');
+            const changes = globalHistoryLogs.filter(log => log.type === 'add' || log.type === 'adjust');
+            container.innerHTML = '';
+            if (changes.length === 0) { container.innerHTML = '<div style="color: #94a3b8; font-size: 14px; text-align: center;">Δεν υπάρχουν αλλαγές ή επιστροφές.</div>'; return; }
+
+            changes.forEach(log => {
+                const isAdjust = log.type === 'adjust';
+                const div = document.createElement('div'); div.className = 'history-item';
+                let reasonHtml = (!isAdjust && log.reason) ? `<div style="font-size: 13px; color: #facc15; margin-top: 4px;">📝 ${log.reason}</div>` : '';
+                const mainHtml = isAdjust
+                    ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; margin-right:8px; background:#1e3a5f; color:#38bdf8;">🔧 Διόρθωση</span><span><b>${log.item}</b>: <b>${log.quantityText}</b></span>`
+                    : `<span class="history-worker">${log.worker}</span> <span>πρόσθεσε <b style="color:#10b981;">${log.quantityText || log.quantity}</b> στο <b>${log.item}</b></span><span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:8px; background:#3b2a0a; color:#f59e0b;">➕ Αλλαγή/Επιστροφή</span>`;
+                div.innerHTML = `
+                    <div style="text-align: left; flex: 1; padding-right: 10px;">
+                        <div>${mainHtml}</div>
+                        ${reasonHtml}
+                    </div>
+                    <div style="display:flex; align-items:center; flex-shrink: 0;">
+                        <span class="history-time">${log.timestamp}</span>
+                        <button class="btn-undo" title="Ακύρωση">↩️ Αναίρεση</button>
+                    </div>
+                `;
+                div.querySelector('.btn-undo').addEventListener('click', () => {
+                    if (!log.itemId) { alert("Αυτή είναι παλιά εγγραφή και δεν μπορεί να αναιρεθεί αυτόματα."); return; }
+                    const change = isAdjust ? (log.delta || 0) : log.quantity;
+                    const msg = isAdjust ? 'Θέλετε να ακυρώσετε τη διόρθωση και να επανέλθει το προηγούμενο απόθεμα;' : `Θέλετε να ακυρώσετε την προσθήκη και να αφαιρεθούν ${log.quantity} από τη βάση;`;
+                    if (confirm(msg)) {
+                        updateDoc(doc(db, "items", log.itemId), { stock: increment(-change) }).catch(()=>{});
+                        deleteDoc(doc(db, "history", log.id)).catch(()=>{});
+                    }
+                });
+                container.appendChild(div);
             });
         }
 
@@ -925,7 +1001,7 @@
             unsubscribeHistory = onSnapshot(historyQuery, (snapshot) => {
                 if (historyInitialLoadDone) {
                     snapshot.docChanges().forEach((change) => {
-                        if (change.type === 'added') {
+                        if (change.type === 'added' && change.doc.data().type !== 'adjust') {
                             showTakeNotification(change.doc.data());
                         }
                     });
@@ -933,6 +1009,7 @@
                 historyInitialLoadDone = true;
                 globalHistoryLogs = []; snapshot.forEach(docSnap => { globalHistoryLogs.push({ id: docSnap.id, ...docSnap.data() }); });
                 renderHistoryList();
+                renderChangesList();
             });
 
             const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
@@ -941,6 +1018,7 @@
                 const totals = {};
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
+                    if (data.type === 'adjust') return;
                     const key = data.item || 'Άγνωστο';
                     const qty = typeof data.quantity === 'number' ? data.quantity : 0;
                     totals[key] = (totals[key] || 0) + (data.type === 'add' ? -qty : qty);
