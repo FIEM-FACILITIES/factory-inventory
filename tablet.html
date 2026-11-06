@@ -110,10 +110,26 @@
         #receive-toggle-btn { flex-direction: column; font-size: 13px; font-weight: 700; color: #2f855a; line-height: 1.2; gap: 2px; }
         #receive-toggle-btn.active { border-color: #2f855a; background: #f0fff4; }
 
+        .search-toggle-btn.labeled { flex-direction: column; font-size: 13px; font-weight: 700; line-height: 1.2; gap: 2px; color: #4a5568; }
+        .tool-buttons { display: flex; gap: 10px; }
+
+        #undo-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2500; align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; }
+        .undo-box { background: white; border-radius: 16px; width: 100%; max-width: 640px; max-height: 90vh; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .undo-box h2 { margin: 0 0 6px 0; color: #1a202c; font-size: 22px; }
+        .undo-sub { color: #718096; font-size: 14px; margin-bottom: 12px; }
+        .undo-box .worker-select { width: 100%; box-sizing: border-box; margin-bottom: 12px; }
+        #undo-list { overflow-y: auto; flex: 1; min-height: 120px; }
+        .undo-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+        .undo-row-main { flex: 1; font-size: 14px; color: #2d3748; line-height: 1.35; word-break: break-word; }
+        .undo-row-sub { font-size: 12px; color: #718096; margin-top: 2px; }
+        .undo-row-btn { background: #dd6b20; color: white; border: none; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+        .undo-row-btn:disabled { opacity: 0.5; }
+        .undo-empty { text-align: center; color: #718096; padding: 25px 0; font-size: 15px; }
+
         .loading { font-size: 20px; color: #718096; width: 100%; text-align: center; font-weight: 600; }
         .creator-credit { text-align: center; margin-top: auto; padding-top: 40px; font-size: 13px; color: #a0aec0; font-weight: 500; width: 100%; }
 
-        .toast { visibility: hidden; min-width: 250px; background-color: #38a169; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; transform: translateX(-50%); bottom: 30px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.4s, bottom 0.4s; }
+        .toast { visibility: hidden; min-width: 250px; background-color: #38a169; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 4000; left: 50%; transform: translateX(-50%); bottom: 30px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.4s, bottom 0.4s; }
         .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
         @media (max-width: 850px) {
@@ -122,6 +138,32 @@
             .header-container { flex-direction: column; gap: 15px; }
             .top-actions { flex-direction: column; align-items: center; }
             .worker-bar { width: 100%; }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            h1 { font-size: 22px; line-height: 1.2; }
+            details { min-width: 0; }
+            .sub-inventory-section { grid-template-columns: 1fr; }
+            .top-actions { gap: 10px; }
+            .worker-bar { padding: 12px 14px; box-sizing: border-box; }
+            .worker-inner { flex-direction: column; gap: 8px; }
+            .worker-select { width: 100%; box-sizing: border-box; font-size: 16px; }
+            .new-worker-input { width: 100%; box-sizing: border-box; font-size: 16px; }
+            .tool-buttons { width: 100%; justify-content: space-between; }
+            .tool-buttons .search-toggle-btn { flex: 1; padding: 10px 6px; }
+            summary.main-summary { font-size: 20px; padding: 16px 18px; }
+            summary.sub-summary { font-size: 17px; }
+            .sub-details { padding: 8px; }
+            .item-stock { font-size: 30px; }
+            .qty-input { font-size: 16px; padding: 12px; }
+            .reason-input { font-size: 16px; padding: 10px; }
+            .take-btn { padding: 14px 4px; font-size: 15px; }
+            #receive-banner { flex-direction: column; text-align: center; font-size: 15px; padding: 12px 14px; }
+            .undo-box { padding: 14px; }
+            .undo-row { flex-direction: column; align-items: stretch; }
+            .undo-row-btn { padding: 12px; }
+            .creator-credit { padding-top: 25px; }
         }
     </style>
 </head>
@@ -162,10 +204,11 @@
                 </div>
             </div>
             
-            <div style="display:flex; gap:10px;">
+            <div class="tool-buttons">
                 <button id="search-toggle-btn" class="search-toggle-btn" title="Αναζήτηση">🔍</button>
                 <button id="camera-btn" class="search-toggle-btn" style="font-size:24px;" title="Σκανάρισμα Barcode">📷</button>
-                <button id="receive-toggle-btn" class="search-toggle-btn" title="Παραλαβή εμπορεύματος"><span style="font-size:24px;">📥</span><span>Παραλαβή</span></button>
+                <button id="receive-toggle-btn" class="search-toggle-btn labeled" title="Παραλαβή εμπορεύματος"><span style="font-size:24px;">📥</span><span>Παραλαβή</span></button>
+                <button id="undo-open-btn" class="search-toggle-btn labeled" title="Αναίρεση κίνησης"><span style="font-size:24px;">↩️</span><span>Αναίρεση</span></button>
             </div>
         </div>
 
@@ -206,12 +249,22 @@
         <button id="close-image-btn" class="btn-close-image">Κλείσιμο</button>
     </div>
 
+    <div id="undo-modal">
+        <div class="undo-box">
+            <h2>↩️ Αναίρεση κίνησης</h2>
+            <div class="undo-sub">Επιλέξτε το όνομά σας και μετά την κίνηση που έγινε λάθος (τελευταίες 48 ώρες).</div>
+            <select id="undo-worker-select" class="worker-select"></select>
+            <div id="undo-list"></div>
+            <button id="undo-close-btn" class="btn-close-cam" style="margin-top:12px; align-self:center;">Κλείσιμο</button>
+        </div>
+    </div>
+
     <div id="toast" class="toast">Επιτυχής Αφαίρεση!</div>
     <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, setDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, setDoc, getDocs, query, where, orderBy, runTransaction, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
@@ -422,6 +475,124 @@
             }
         }
 
+        // ===== ΑΝΑΙΡΕΣΗ ΑΠΟ ΤΟ TABLET =====
+        const undoModal = document.getElementById('undo-modal');
+        const undoList = document.getElementById('undo-list');
+        const undoSelect = document.getElementById('undo-worker-select');
+        let undoEntries = [];
+
+        function fillUndoWorkers() {
+            undoSelect.innerHTML = '<option value="" disabled selected>-- Επιλέξτε Όνομα --</option>';
+            Array.from(workerSelect.options).forEach(o => {
+                if (!o.value || o.value === '__NEW_WORKER__') return;
+                const opt = document.createElement('option'); opt.value = o.value; opt.textContent = o.textContent; undoSelect.appendChild(opt);
+            });
+            const cur = workerSelect.value;
+            if (cur && cur !== '__NEW_WORKER__' && Array.from(undoSelect.options).some(o => o.value === cur)) undoSelect.value = cur;
+        }
+
+        async function loadUndoEntries() {
+            undoList.innerHTML = '<div class="undo-empty">Φόρτωση...</div>';
+            const since = Date.now() - 48 * 60 * 60 * 1000;
+            try {
+                const [hSnap, rSnap] = await Promise.all([
+                    getDocs(query(collection(db, "history"), where("createdAt", ">=", since), orderBy("createdAt", "desc"))),
+                    getDocs(query(collection(db, "receipts"), where("createdAt", ">=", since), orderBy("createdAt", "desc")))
+                ]);
+                undoEntries = [];
+                hSnap.forEach(d => {
+                    const x = d.data();
+                    if (!x.itemId || x.type === 'adjust') return;
+                    undoEntries.push({ coll: 'history', id: d.id, kind: x.type === 'add' ? 'add' : 'take', worker: x.worker || '', item: x.item || '', itemId: x.itemId, quantity: x.quantity || 0, qtyText: x.quantityText || String(x.quantity), destination: x.destination || '', reason: x.reason || '', timestamp: x.timestamp || '', createdAt: x.createdAt || 0 });
+                });
+                rSnap.forEach(d => {
+                    const x = d.data();
+                    if (x.source !== 'tablet' || !x.itemId) return;
+                    undoEntries.push({ coll: 'receipts', id: d.id, kind: 'receipt', worker: x.receivedBy || '', item: x.item || '', itemId: x.itemId, quantity: x.quantity || 0, qtyText: `+${x.quantity} ${x.unit || ''}`.trim(), destination: '', reason: '', timestamp: x.timestamp || '', createdAt: x.createdAt || 0 });
+                });
+                undoEntries.sort((a, b) => b.createdAt - a.createdAt);
+                renderUndoList();
+            } catch (e) {
+                undoList.innerHTML = '<div class="undo-empty">⚠️ Δεν ήταν δυνατή η φόρτωση. Ελέγξτε τη σύνδεση.</div>';
+            }
+        }
+
+        function renderUndoList() {
+            undoList.innerHTML = '';
+            if (undoEntries.length === 0) { undoList.innerHTML = '<div class="undo-empty">Δεν υπάρχουν κινήσεις τις τελευταίες 48 ώρες.</div>'; return; }
+            const verbs = { take: 'πήρε', add: 'πρόσθεσε', receipt: 'παρέλαβε' };
+            undoEntries.forEach(entry => {
+                const row = document.createElement('div'); row.className = 'undo-row';
+                const main = document.createElement('div'); main.className = 'undo-row-main';
+                const line1 = document.createElement('div');
+                const b = document.createElement('b'); b.textContent = entry.worker;
+                line1.appendChild(b);
+                line1.appendChild(document.createTextNode(` ${verbs[entry.kind]} ${entry.qtyText} — ${entry.item}`));
+                const line2 = document.createElement('div'); line2.className = 'undo-row-sub';
+                const extra = [entry.timestamp, entry.destination ? `📍 ${entry.destination}` : '', entry.reason ? `📝 ${entry.reason}` : ''].filter(Boolean);
+                line2.textContent = extra.join(' · ');
+                main.appendChild(line1); main.appendChild(line2);
+                const btn = document.createElement('button'); btn.className = 'undo-row-btn'; btn.textContent = '↩️ Αναίρεση';
+                btn.addEventListener('click', () => performUndo(entry, btn));
+                row.appendChild(main); row.appendChild(btn);
+                undoList.appendChild(row);
+            });
+        }
+
+        async function performUndo(entry, btn) {
+            const undoer = undoSelect.value;
+            if (!undoer) { alert('⚠️ Επιλέξτε πρώτα το όνομά σας!'); undoSelect.focus(); return; }
+            const verbs = { take: 'πήρε', add: 'πρόσθεσε', receipt: 'παρέλαβε' };
+            if (!confirm(`Αναίρεση: ${entry.worker} ${verbs[entry.kind]} ${entry.qtyText} — ${entry.item};\n\nΗ αναίρεση θα καταγραφεί στο όνομά σας (${undoer}).`)) return;
+            btn.disabled = true;
+            try {
+                await runTransaction(db, async (tx) => {
+                    const srcRef = doc(db, entry.coll, entry.id);
+                    const itemRef = doc(db, "items", entry.itemId);
+                    const srcSnap = await tx.get(srcRef);
+                    if (!srcSnap.exists()) throw new Error('GONE');
+                    const itemSnap = await tx.get(itemRef);
+                    if (!itemSnap.exists()) throw new Error('NOITEM');
+                    const cur = itemSnap.data().stock || 0;
+                    const delta = entry.kind === 'take' ? entry.quantity : -entry.quantity;
+                    if (cur + delta < 0) throw new Error('NOSTOCK');
+                    tx.update(itemRef, { stock: cur + delta });
+                    tx.delete(srcRef);
+                    tx.set(doc(collection(db, "undos")), {
+                        undoneBy: undoer,
+                        originalWorker: entry.worker,
+                        kind: entry.kind,
+                        item: entry.item,
+                        itemId: entry.itemId,
+                        quantity: entry.quantity,
+                        quantityText: entry.qtyText,
+                        destination: entry.destination,
+                        reason: entry.reason,
+                        originalTimestamp: entry.timestamp,
+                        timestamp: new Date().toLocaleString('el-GR'),
+                        createdAt: Date.now()
+                    });
+                });
+                showToast('↩️ Η κίνηση αναιρέθηκε');
+                undoEntries = undoEntries.filter(e => !(e.coll === entry.coll && e.id === entry.id));
+                renderUndoList();
+            } catch (e) {
+                btn.disabled = false;
+                if (e.message === 'GONE') { alert('Αυτή η κίνηση έχει ήδη αναιρεθεί.'); loadUndoEntries(); }
+                else if (e.message === 'NOSTOCK') alert('⚠️ Δεν μπορεί να αναιρεθεί: το τρέχον απόθεμα δεν επαρκεί.');
+                else if (e.message === 'NOITEM') alert('⚠️ Το προϊόν δεν υπάρχει πια.');
+                else alert('⚠️ Η αναίρεση δεν ολοκληρώθηκε. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.');
+            }
+        }
+
+        document.getElementById('undo-open-btn').addEventListener('click', () => {
+            fillUndoWorkers();
+            undoModal.style.display = 'flex';
+            loadUndoEntries();
+        });
+        document.getElementById('undo-close-btn').addEventListener('click', () => { undoModal.style.display = 'none'; });
+        undoModal.addEventListener('click', (e) => { if (e.target === undoModal) undoModal.style.display = 'none'; });
+
         function resolveWorker() {
             let worker = workerSelect.value;
             if (!worker || worker === "-- Επιλέξτε Όνομα --") { alert("⚠️ Παρακαλώ επιλέξτε το όνομά σας!"); workerSelect.focus(); return null; }
@@ -561,7 +732,7 @@
                                         <button class="take-btn rcv-btn" id="rcv-${item.id}">📥 Παραλαβή</button>
                                     </div>
                                 </div>
-                                <input type="text" id="reason-${item.id}" class="reason-input normal-actions" placeholder="Αιτιολογία (υποχρεωτική στην Προσθήκη)...">
+                                <input type="text" id="reason-${item.id}" class="reason-input normal-actions" placeholder="Αιτιολογία (υποχρ. στην Προσθήκη)...">
                             `;
                             grid.appendChild(card);
                             

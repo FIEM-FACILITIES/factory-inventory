@@ -6,6 +6,7 @@
     <title>Διαχείριση - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; text-align: center; min-height: 100vh; display: flex; flex-direction: column; }
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; }
@@ -124,7 +125,49 @@
         .btn-undo { background: transparent; border: 1px solid #f59e0b; color: #f59e0b; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; margin-left: 10px; }
         .btn-undo:hover { background: rgba(245, 158, 11, 0.1); }
 
+        #backup-banner { background: transparent; border: 1px solid; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+        #backup-banner.ok { color: #6ee7b7; border-color: #10b981; background: rgba(16,185,129,0.10); }
+        #backup-banner.warn { color: #fca5a5; border-color: #ef4444; background: rgba(239,68,68,0.15); animation: backupGlow 1.4s ease-in-out infinite; }
+        @keyframes backupGlow { 0%, 100% { box-shadow: 0 0 4px rgba(239,68,68,0.5); } 50% { box-shadow: 0 0 18px 4px rgba(239,68,68,0.95); } }
+        #backup-banner.info { color: #fcd34d; border-color: #f59e0b; background: rgba(245,158,11,0.12); animation: backupGlowAmber 1.4s ease-in-out infinite; }
+        @keyframes backupGlowAmber { 0%, 100% { box-shadow: 0 0 4px rgba(245,158,11,0.5); } 50% { box-shadow: 0 0 18px 4px rgba(245,158,11,0.9); } }
+        .search-row { display: flex; gap: 10px; align-items: stretch; }
+        .search-row .admin-search-input { flex: 1; min-width: 0; width: auto; }
+        .scan-btn { background: #1e293b; border: 2px solid #334155; border-radius: 12px; font-size: 24px; padding: 0 18px; cursor: pointer; color: white; }
+        .scan-btn:hover { border-color: #38bdf8; background: #0f172a; }
+        #scan-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.88); z-index: 3500; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        #scan-reader-box { width: 100%; max-width: 500px; background: white; padding: 12px; border-radius: 12px; box-sizing: border-box; }
+        .undo-log-row { padding: 12px 0; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; font-size: 14px; }
+        .undo-log-main { text-align: left; flex: 1; min-width: 0; word-break: break-word; line-height: 1.4; }
+        .undo-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #3b2a0a; color: #f59e0b; margin-right: 6px; }
+        .undo-orig { color: #94a3b8; font-size: 13px; margin-top: 3px; }
+
         .creator-credit { text-align: center; margin-top: auto; padding-top: 40px; font-size: 13px; color: #475569; font-weight: 500; width: 100%; }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            h1 { font-size: 24px; }
+            details { min-width: 0; }
+            .section-box { min-width: 0; padding: 15px; }
+            .admin-sections-wrapper { gap: 15px; margin-top: 25px; }
+            .admin-panel { padding: 15px; gap: 10px; }
+            .admin-panel .input-group, .admin-panel input, .admin-panel select { width: 100%; box-sizing: border-box; }
+            .header-container > div:first-child { justify-content: center; }
+            .header-container > div:last-child { justify-content: center !important; }
+            summary.main-summary { font-size: 18px; padding: 14px 16px; }
+            summary.sub-summary { font-size: 16px; padding: 10px 14px; }
+            .admin-search-input { font-size: 16px; padding: 12px; }
+            .scan-btn { padding: 0 14px; }
+            input, select { font-size: 16px; }
+            .history-item { flex-direction: column; gap: 6px; }
+            .history-item > div:last-child { width: 100%; justify-content: space-between; }
+            .undo-log-row { flex-direction: column; gap: 4px; }
+            .order-content { padding: 15px; max-height: 90vh; }
+            .order-item-row { flex-direction: column; gap: 2px; }
+            .order-item-details { margin-left: 0; }
+            .btn-close-modal { top: 10px; right: 10px; }
+            .creator-credit { padding-top: 25px; }
+        }
 
         @media (max-width: 850px) {
             .columns-wrapper { flex-direction: column; }
@@ -155,13 +198,17 @@
                 <button id="toggle-add-panel-btn" style="background:#10b981; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 15px;">➕ Προσθήκη Νέου Προϊόντος</button>
             </div>
             <h1 id="dashboard-title" style="cursor: pointer;" title="Επιστροφή στην αρχική κατάσταση">Πίνακας Ελέγχου</h1>
-            <div style="display: flex; align-items: center; justify-content: flex-end;">
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+                <button id="backup-banner" title="Backup">💾 Backup</button>
                 <button id="logout-btn" class="logout-btn">Αποσύνδεση</button>
             </div>
         </div>
 
         <div class="admin-search-wrapper">
-            <input type="text" id="admin-search-input" class="admin-search-input" placeholder="🔍 Αναζήτηση (Προϊόν, Προμηθευτής, Κατηγορία, Κωδικός)...">
+            <div class="search-row">
+                <input type="text" id="admin-search-input" class="admin-search-input" placeholder="🔍 Αναζήτηση (Προϊόν, Προμηθευτής, Κατηγορία, Κωδικός)...">
+                <button id="admin-scan-btn" class="scan-btn" title="Σκανάρισμα Barcode με κάμερα">📷</button>
+            </div>
         </div>
 
         <div class="admin-panel" id="admin-panel" style="display: none;">
@@ -270,7 +317,7 @@
                 </div>
             </div>
 
-            <div class="section-box" style="grid-column: 1 / -1;">
+            <div class="section-box">
                 <h2 style="color: #38bdf8; font-size: 20px; margin-top: 0; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                     <span>🔁 Αλλαγές / Επιστροφές</span>
                     <button id="clear-changes-btn" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Απαλοιφή</button>
@@ -279,8 +326,23 @@
                     <div style="color: #94a3b8; font-size: 14px; text-align: center;">Φόρτωση...</div>
                 </div>
             </div>
+
+            <div class="section-box">
+                <h2 style="color: #f59e0b; font-size: 20px; margin-top: 0; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <span>↩️ Αναιρέσεις από Tablet</span>
+                    <button id="clear-undos-btn" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Απαλοιφή</button>
+                </h2>
+                <div style="color:#94a3b8; font-size:13px;">Κάθε φορά που ένας εργαζόμενος αναιρεί μια κίνηση, φαίνεται εδώ ποιος το έκανε και πότε.</div>
+                <div class="history-box" id="undos-container" style="max-height: 320px;">
+                    <div style="color: #94a3b8; font-size: 14px; text-align: center;">Φόρτωση...</div>
+                </div>
+            </div>
         </div>
         
+        <div style="text-align:center; margin-top: 30px;">
+            <button id="restore-btn" style="background: transparent; border: 1px solid #475569; color: #94a3b8; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600;">♻️ Επαναφορά από αρχείο backup</button>
+            <input type="file" id="restore-file" accept=".json,application/json" style="display:none;">
+        </div>
         <div class="creator-credit">👨‍💻 Made by Fotis Vasilopoulos</div>
     </div>
 
@@ -294,6 +356,12 @@
     </div>
 
     <!-- MODAL ΕΙΚΟΝΑΣ -->
+    <div id="scan-modal">
+        <h2 style="color:white; margin: 0 0 15px 0;">Σκανάρισμα Barcode</h2>
+        <div id="scan-reader-box"><div id="scan-reader"></div></div>
+        <button id="scan-close-btn" class="btn-close-image">Ακύρωση</button>
+    </div>
+
     <div id="image-modal">
         <img id="enlarged-img" src="" alt="Προϊόν">
         <button id="close-image-btn" class="btn-close-image">Κλείσιμο</button>
@@ -301,7 +369,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, deleteDoc, setDoc, getDocs, query, orderBy, limit, where, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, addDoc, deleteDoc, setDoc, getDocs, query, orderBy, limit, where, writeBatch, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
@@ -340,7 +408,7 @@
         const workerInputName = document.getElementById('worker-input-name');
         const addWorkerBtn = document.getElementById('add-worker-btn');
         
-        let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory, unsubscribeConsumption, unsubscribeReceipts;
+        let unsubscribeWorkers, unsubscribeItems, unsubscribeHistory, unsubscribeConsumption, unsubscribeReceipts, unsubscribeUndos, unsubscribeBackup, backupTimer;
         let consumptionChartInstance = null;
         let globalHistoryLogs = [];
         let currentDestFilter = 'all';
@@ -403,6 +471,162 @@
             } catch (e) {}
         }
 
+        function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+        const undoVerbs = { take: 'πήρε', add: 'πρόσθεσε', receipt: 'παρέλαβε' };
+
+        function showUndoNotification(u) {
+            playNotificationSound();
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const notif = new Notification('↩️ Αναίρεση από Tablet', {
+                    body: `${u.undoneBy} αναίρεσε: ${u.originalWorker} ${undoVerbs[u.kind] || ''} ${u.quantityText}\n${u.item}`,
+                    tag: 'stock-undo-' + Date.now()
+                });
+                setTimeout(() => notif.close(), 8000);
+            }
+        }
+
+        function renderUndosList(undos) {
+            const container = document.getElementById('undos-container');
+            container.innerHTML = '';
+            if (undos.length === 0) { container.innerHTML = '<div style="color: #94a3b8; font-size: 14px; text-align: center;">Δεν έχουν γίνει αναιρέσεις.</div>'; return; }
+            undos.forEach(u => {
+                const div = document.createElement('div'); div.className = 'undo-log-row';
+                const dest = u.destination ? ` · ${u.destination === 'Μεσολόγγι' ? '🚚' : '🏢'} ${esc(u.destination)}` : '';
+                const reason = u.reason ? ` · 📝 ${esc(u.reason)}` : '';
+                div.innerHTML = `
+                    <div class="undo-log-main">
+                        <div><span class="undo-badge">↩️ ΑΝΑΙΡΕΣΗ</span><span class="history-worker">${esc(u.undoneBy)}</span> αναίρεσε</div>
+                        <div class="undo-orig">${esc(u.originalWorker)} ${undoVerbs[u.kind] || ''} <b>${esc(u.quantityText)}</b> — ${esc(u.item)}${dest}${reason}</div>
+                        <div class="undo-orig">Αρχική κίνηση: ${esc(u.originalTimestamp)}</div>
+                    </div>
+                    <span class="history-time" style="flex-shrink:0;">${esc(u.timestamp)}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ===== BACKUP =====
+        const BACKUP_COLLECTIONS = ['items', 'workers', 'history', 'receipts', 'undos', 'settings'];
+        const localDay = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+
+        async function downloadBackup() {
+            const out = {};
+            for (const name of BACKUP_COLLECTIONS) {
+                const snap = await getDocs(collection(db, name));
+                out[name] = {};
+                snap.forEach(d => { out[name][d.id] = d.data(); });
+            }
+            const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), collections: out }, null, 1)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `backup-${localDay()}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+            try { localStorage.setItem('lastLocalBackupDay', localDay()); localStorage.setItem('lastLocalBackupTs', String(Date.now())); } catch (e) {}
+            refreshBackupPill();
+        }
+
+        document.getElementById('backup-banner').addEventListener('click', async () => {
+            try { await downloadBackup(); } catch (e) { alert('⚠️ Το backup δεν κατέβηκε. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.'); }
+        });
+
+        async function maybeAutoBackup() {
+            try {
+                if (new Date().getHours() < 6) return;
+                if (localStorage.getItem('lastLocalBackupDay') === localDay()) return;
+                await downloadBackup();
+            } catch (e) {}
+        }
+
+        function refreshBackupPill() {
+            const banner = document.getElementById('backup-banner');
+            let ts = 0;
+            try { ts = Number(localStorage.getItem('lastLocalBackupTs') || 0); } catch (e) {}
+            if (!ts) {
+                banner.className = 'info'; banner.textContent = '💾 Backup: —';
+                banner.title = 'Δεν έχει γίνει ακόμα backup σε αυτόν τον υπολογιστή. Πατήστε για κατέβασμα.';
+                return;
+            }
+            const hours = (Date.now() - ts) / 3600000;
+            const whenTxt = new Date(ts).toLocaleString('el-GR', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+            if (hours <= 30) {
+                banner.className = 'ok'; banner.textContent = '✅ Backup';
+                banner.title = `Τελευταίο backup: ${whenTxt}. Πατήστε για νέο κατέβασμα.`;
+            } else {
+                banner.className = 'warn'; banner.textContent = '⚠️ Backup';
+                banner.title = `Τελευταίο backup: ${whenTxt}. Πατήστε για νέο κατέβασμα.`;
+            }
+        }
+
+        // ===== ΕΠΑΝΑΦΟΡΑ ΑΠΟ ΑΡΧΕΙΟ BACKUP =====
+        document.getElementById('restore-btn').addEventListener('click', () => document.getElementById('restore-file').click());
+        document.getElementById('restore-file').addEventListener('change', async (e) => {
+            const f = e.target.files[0]; e.target.value = '';
+            if (!f) return;
+            let data;
+            try {
+                data = JSON.parse(await f.text()).collections;
+                if (!data || typeof data !== 'object') throw new Error('bad');
+            } catch (err) { alert('⚠️ Αυτό δεν είναι έγκυρο αρχείο backup.'); return; }
+            const names = Object.keys(data).filter(n => BACKUP_COLLECTIONS.includes(n));
+            const total = names.reduce((a, n) => a + Object.keys(data[n] || {}).length, 0);
+            if (!total) { alert('⚠️ Το αρχείο δεν περιέχει δεδομένα.'); return; }
+            if (!confirm(`Επαναφορά ${total} εγγράφων από το αρχείο "${f.name}";
+
+Τα έγγραφα του αρχείου θα ΑΝΤΙΚΑΤΑΣΤΗΣΟΥΝ τα τρέχοντα με το ίδιο id (το απόθεμα θα γυρίσει στις τιμές του backup). Έγγραφα που προστέθηκαν μετά το backup δεν διαγράφονται.`)) return;
+            if (!confirm('ΤΕΛΕΥΤΑΙΑ ΕΠΙΒΕΒΑΙΩΣΗ: Να γίνει η επαναφορά τώρα;')) return;
+            try {
+                let batch = writeBatch(db); let count = 0;
+                for (const name of names) {
+                    for (const [id, d] of Object.entries(data[name])) {
+                        batch.set(doc(db, name, id), d);
+                        if (++count % 400 === 0) { await batch.commit(); batch = writeBatch(db); }
+                    }
+                }
+                await batch.commit();
+                alert(`✅ Η επαναφορά ολοκληρώθηκε (${total} έγγραφα).`);
+            } catch (err) { alert('⚠️ Η επαναφορά απέτυχε. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.'); }
+        });
+
+        // ===== ΣΚΑΝΑΡΙΣΜΑ BARCODE =====
+        let adminQr = null; let adminScanActive = false;
+        function playScanBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const o = ctx.createOscillator(); const g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination); o.type = 'sine';
+                o.frequency.setValueAtTime(1200, ctx.currentTime);
+                g.gain.setValueAtTime(0.25, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                o.start(); o.stop(ctx.currentTime + 0.15);
+            } catch (e) {}
+        }
+        function closeScanModal() { document.getElementById('scan-modal').style.display = 'none'; }
+        document.getElementById('admin-scan-btn').addEventListener('click', () => {
+            if (typeof Html5Qrcode === 'undefined') { alert('Δεν φορτώθηκε η βιβλιοθήκη σκαναρίσματος. Ελέγξτε τη σύνδεση στο internet.'); return; }
+            document.getElementById('scan-modal').style.display = 'flex';
+            if (!adminQr) adminQr = new Html5Qrcode('scan-reader');
+            adminQr.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 250, height: 250 } }, (text) => {
+                if (!adminScanActive) return;
+                adminScanActive = false; playScanBeep();
+                adminQr.stop().then(() => {
+                    closeScanModal();
+                    const input = document.getElementById('admin-search-input');
+                    input.value = text;
+                    input.dispatchEvent(new Event('input'));
+                    const first = Array.from(document.querySelectorAll('.item-card')).find(c => c.style.display !== 'none');
+                    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }).catch(() => closeScanModal());
+            }, () => {}).then(() => { adminScanActive = true; }).catch(() => {
+                alert('Δεν ήταν δυνατή η πρόσβαση στην κάμερα. Ελέγξτε ότι επιτρέπεται η χρήση κάμερας για αυτή τη σελίδα.');
+                closeScanModal();
+            });
+        });
+        document.getElementById('scan-close-btn').addEventListener('click', () => {
+            if (adminQr && adminScanActive) { adminScanActive = false; adminQr.stop().then(closeScanModal).catch(closeScanModal); }
+            else closeScanModal();
+        });
+
         function showReceiptNotification(r) {
             playNotificationSound();
             if ('Notification' in window && Notification.permission === 'granted') {
@@ -441,7 +665,7 @@
             } else {
                 loginScreen.style.display = 'flex'; mainApp.style.display = 'none';
                 document.getElementById('login-password').value = ''; errorMsg.style.display = 'none';
-                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeHistory) unsubscribeHistory(); if(unsubscribeConsumption) unsubscribeConsumption(); if(unsubscribeReceipts) unsubscribeReceipts();
+                if(unsubscribeWorkers) unsubscribeWorkers(); if(unsubscribeItems) unsubscribeItems(); if(unsubscribeHistory) unsubscribeHistory(); if(unsubscribeConsumption) unsubscribeConsumption(); if(unsubscribeReceipts) unsubscribeReceipts(); if(unsubscribeUndos) unsubscribeUndos(); if(unsubscribeBackup) unsubscribeBackup(); if(backupTimer) clearInterval(backupTimer);
             }
         });
 
@@ -595,6 +819,15 @@
                         deleteDoc(doc(db, "history", docSnapshot.id)).catch(()=>{});
                     });
                 } catch (e) { alert('Υπήρξε ένα σφάλμα κατά τη διαγραφή του ιστορικού.'); }
+            }
+        });
+
+        document.getElementById('clear-undos-btn').addEventListener('click', async () => {
+            if (confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε το ιστορικό αναιρέσεων; Δεν επηρεάζει το τρέχον απόθεμα.')) {
+                try {
+                    const qs = await getDocs(collection(db, "undos"));
+                    qs.forEach(d => deleteDoc(doc(db, "undos", d.id)).catch(()=>{}));
+                } catch (e) { alert('Υπήρξε σφάλμα κατά τη διαγραφή.'); }
             }
         });
 
@@ -1026,6 +1259,20 @@
 
                 const sorted = Object.entries(totals).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 10);
                 renderConsumptionChart(sorted);
+            });
+
+            refreshBackupPill();
+            maybeAutoBackup();
+            backupTimer = setInterval(() => { maybeAutoBackup(); refreshBackupPill(); }, 30 * 60 * 1000);
+
+            let undosInitialLoadDone = false;
+            unsubscribeUndos = onSnapshot(query(collection(db, "undos"), orderBy("createdAt", "desc"), limit(100)), (snapshot) => {
+                if (undosInitialLoadDone) {
+                    snapshot.docChanges().forEach((change) => { if (change.type === 'added') showUndoNotification(change.doc.data()); });
+                }
+                undosInitialLoadDone = true;
+                const undos = []; snapshot.forEach(d => undos.push({ id: d.id, ...d.data() }));
+                renderUndosList(undos);
             });
 
             const receiptsQuery = query(collection(db, "receipts"), orderBy("createdAt", "desc"), limit(50));
